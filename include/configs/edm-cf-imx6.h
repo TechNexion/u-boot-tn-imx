@@ -141,7 +141,6 @@
 	"initrd_high=0xffffffff\0" \
 	"fdt_addr=0x18000000\0" \
 	"boot_fdt=try\0" \
-	"ip_dyn=yes\0" \
 	"mmcdev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
 	"mmcpart=1\0" \
 	"searchbootdev=" \
@@ -149,20 +148,6 @@
 			"setenv mmcroot /dev/mmcblk2p2 rootwait rw; " \
 		"else " \
 			"setenv mmcroot /dev/mmcblk0p2 rootwait rw; " \
-		"fi\0" \
-	"update_sd_firmware_filename=u-boot.imx\0" \
-	"update_sd_firmware=" \
-		"if test ${ip_dyn} = yes; then " \
-			"setenv get_cmd dhcp; " \
-		"else " \
-			"setenv get_cmd tftp; " \
-		"fi; " \
-		"if mmc dev ${mmcdev}; then "	\
-			"if ${get_cmd} ${update_sd_firmware_filename}; then " \
-				"setexpr fw_sz ${filesize} / 0x200; " \
-				"setexpr fw_sz ${fw_sz} + 1; "	\
-				"mmc write ${loadaddr} 0x2 ${fw_sz}; " \
-			"fi; "	\
 		"fi\0" \
 	"mmcargs=setenv bootargs console=${console},${baudrate} " \
 		"root=${mmcroot}; run videoargs\0" \
@@ -211,30 +196,6 @@
 		"run mmcargs; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
 			"if run loadfdt; then " \
-				"bootz ${loadaddr} - ${fdt_addr}; " \
-			"else " \
-				"if test ${boot_fdt} = try; then " \
-					"bootz; " \
-				"else " \
-					"echo WARN: Cannot load the DT; " \
-				"fi; " \
-			"fi; " \
-		"else " \
-			"bootz; " \
-		"fi;\0" \
-	"netargs=setenv bootargs console=${console},${baudrate} " \
-		"root=/dev/nfs " \
-	"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
-		"netboot=echo Booting from net ...; " \
-		"run netargs; " \
-		"if test ${ip_dyn} = yes; then " \
-			"setenv get_cmd dhcp; " \
-		"else " \
-			"setenv get_cmd tftp; " \
-		"fi; " \
-		"${get_cmd} ${image}; " \
-		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
-			"if ${get_cmd} ${fdt_addr} ${fdtfile}; then " \
 				"bootz ${loadaddr} - ${fdt_addr}; " \
 			"else " \
 				"if test ${boot_fdt} = try; then " \
