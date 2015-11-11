@@ -1,0 +1,6 @@
+Technexion EDM-CF-IMX6 board
+M:	Richard Hu <richard.hu@technexion.com>
+S:	Maintained
+F:	board/edm-cf-imx6/
+F:	include/configs/edm-cf-imx6.h
+F:	configs/edm-cf-imx6_defconfig
