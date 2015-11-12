@@ -189,6 +189,8 @@ int board_mmc_init(bd_t *bis)
 	return 0;
 }
 
+
+
 static int mx6_rgmii_rework(struct phy_device *phydev)
 {
 	unsigned short val;
@@ -407,10 +409,27 @@ int board_late_init(void)
 #endif
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
+	char *s;
+
 	if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
 		setenv("board_rev", "MX6Q");
 	else
 		setenv("board_rev", "MX6DL");
+
+	if ((s = getenv ("bootdev_autodetect")) != NULL) {
+		if (strncmp (s, "off", 3) != 0) {
+			switch (get_boot_device()) {
+			case SD3_BOOT:
+				setenv("bootdev", "SD0");
+				break;
+			case SD1_BOOT:
+				setenv("bootdev", "SD1");
+				break;
+			default:
+				printf("Wrong boot device!");
+			}
+		}
+	}
 #endif
 	return 0;
 }

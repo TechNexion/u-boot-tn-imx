@@ -144,7 +144,12 @@
 	"ip_dyn=yes\0" \
 	"mmcdev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
 	"mmcpart=1\0" \
-	"mmcroot=/dev/mmcblk2p2 rootwait rw\0" \
+	"searchbootdev=" \
+		"if test ${bootdev} = SD0; then " \
+			"setenv mmcroot /dev/mmcblk2p2 rootwait rw; " \
+		"else " \
+			"setenv mmcroot /dev/mmcblk0p2 rootwait rw; " \
+		"fi\0" \
 	"update_sd_firmware_filename=u-boot.imx\0" \
 	"update_sd_firmware=" \
 		"if test ${ip_dyn} = yes; then " \
@@ -161,6 +166,7 @@
 		"fi\0" \
 	"mmcargs=setenv bootargs console=${console},${baudrate} " \
 		"root=${mmcroot}; run videoargs\0" \
+	"bootdev_autodetect=on\0" \
 	"display_autodetect=on\0" \
 	"videoargs=" \
 		"if test ${display_autodetect} = off; then " \
@@ -201,6 +207,7 @@
 	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
 	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdtfile}\0" \
 	"mmcboot=echo Booting from mmc ...; " \
+		"run searchbootdev; " \
 		"run mmcargs; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
 			"if run loadfdt; then " \
