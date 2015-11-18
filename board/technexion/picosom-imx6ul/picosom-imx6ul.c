@@ -238,17 +238,17 @@ void iox74lv_set(int index)
 
 #ifdef CONFIG_SYS_I2C_MXC
 #define PC MUX_PAD_CTRL(I2C_PAD_CTRL)
-/* I2C1 for PMIC and EEPROM */
+/* I2C2 for PMIC */
 struct i2c_pads_info i2c_pad_info1 = {
 	.scl = {
-		.i2c_mode =  MX6_PAD_UART4_TX_DATA__I2C1_SCL | PC,
-		.gpio_mode = MX6_PAD_UART4_TX_DATA__GPIO1_IO28 | PC,
-		.gp = IMX_GPIO_NR(1, 28),
+		.i2c_mode =  MX6_PAD_GPIO1_IO02__I2C1_SCL | PC,
+		.gpio_mode = MX6_PAD_GPIO1_IO02__GPIO1_IO02  | PC,
+		.gp = IMX_GPIO_NR(1, 2),
 	},
 	.sda = {
-		.i2c_mode = MX6_PAD_UART4_RX_DATA__I2C1_SDA | PC,
-		.gpio_mode = MX6_PAD_UART4_RX_DATA__GPIO1_IO29 | PC,
-		.gp = IMX_GPIO_NR(1, 29),
+		.i2c_mode = MX6_PAD_GPIO1_IO03__I2C1_SDA | PC,
+		.gpio_mode = MX6_PAD_GPIO1_IO03__GPIO1_IO03 | PC,
+		.gp = IMX_GPIO_NR(1, 3),
 	},
 };
 #endif
