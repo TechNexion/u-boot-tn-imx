@@ -130,7 +130,7 @@
 #define CONFIG_POWER_PFUZE300_I2C_ADDR	0x08
 
 
-#define CONFIG_VIDEO
+/* #define CONFIG_VIDEO */
 
 /* Command definition */
 #include <config_cmd_default.h>
@@ -313,7 +313,6 @@
 #define CONFIG_SYS_USE_NAND
 #define CONFIG_ENV_IS_IN_NAND
 #else
-#define CONFIG_FSL_QSPI
 #define CONFIG_ENV_IS_IN_MMC
 #endif
 
