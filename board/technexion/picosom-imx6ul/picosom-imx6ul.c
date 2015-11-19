@@ -96,146 +96,6 @@ DECLARE_GLOBAL_DATA_PTR;
 	PAD_CTL_PUS_47K_UP  | PAD_CTL_SPEED_LOW |		\
 	PAD_CTL_DSE_80ohm   | PAD_CTL_SRE_FAST  | PAD_CTL_HYS)
 
-#define IOX_SDI IMX_GPIO_NR(5, 10)
-#define IOX_STCP IMX_GPIO_NR(5, 7)
-#define IOX_SHCP IMX_GPIO_NR(5, 11)
-#define IOX_OE IMX_GPIO_NR(5, 18)
-
-static iomux_v3_cfg_t const iox_pads[] = {
-	/* IOX_SDI */
-	MX6_PAD_BOOT_MODE0__GPIO5_IO10 | MUX_PAD_CTRL(NO_PAD_CTRL),
-	/* IOX_SHCP */
-	MX6_PAD_BOOT_MODE1__GPIO5_IO11 | MUX_PAD_CTRL(NO_PAD_CTRL),
-	/* IOX_STCP */
-	MX6_PAD_SNVS_TAMPER7__GPIO5_IO07 | MUX_PAD_CTRL(NO_PAD_CTRL),
-	/* IOX_nOE */
-	MX6_PAD_SNVS_TAMPER8__GPIO5_IO08 | MUX_PAD_CTRL(NO_PAD_CTRL),
-};
-
-/*
- * HDMI_nRST --> Q0
- * ENET1_nRST --> Q1
- * ENET2_nRST --> Q2
- * CAN1_2_STBY --> Q3
- * BT_nPWD --> Q4
- * CSI_RST --> Q5
- * CSI_PWDN --> Q6
- * LCD_nPWREN --> Q7
- */
-enum qn {
-	HDMI_nRST,
-	ENET1_nRST,
-	ENET2_nRST,
-	CAN1_2_STBY,
-	BT_nPWD,
-	CSI_RST,
-	CSI_PWDN,
-	LCD_nPWREN,
-};
-
-enum qn_func {
-	qn_reset,
-	qn_enable,
-	qn_disable,
-};
-
-enum qn_level {
-	qn_low = 0,
-	qn_high = 1,
-};
-
-static enum qn_level seq[3][2] = {
-	{0, 1}, {1, 1}, {0, 0}
-};
-
-static enum qn_func qn_output[8] = {
-	qn_reset, qn_reset, qn_reset, qn_enable, qn_disable, qn_reset, qn_disable,
-	qn_enable
-};
-
-void iox74lv_init(void)
-{
-	int i;
-
-	gpio_direction_output(IOX_OE, 0);
-
-	for (i = 7; i >= 0; i--) {
-		gpio_direction_output(IOX_SHCP, 0);
-		gpio_direction_output(IOX_SDI, seq[qn_output[i]][0]);
-		udelay(500);
-		gpio_direction_output(IOX_SHCP, 1);
-		udelay(500);
-	}
-
-	gpio_direction_output(IOX_STCP, 0);
-	udelay(500);
-	/*
-	  * shift register will be output to pins
-	  */
-	gpio_direction_output(IOX_STCP, 1);
-
-	for (i = 7; i >= 0; i--) {
-		gpio_direction_output(IOX_SHCP, 0);
-		gpio_direction_output(IOX_SDI, seq[qn_output[i]][1]);
-		udelay(500);
-		gpio_direction_output(IOX_SHCP, 1);
-		udelay(500);
-	}
-	gpio_direction_output(IOX_STCP, 0);
-	udelay(500);
-	/*
-	  * shift register will be output to pins
-	  */
-	gpio_direction_output(IOX_STCP, 1);
-
-	gpio_direction_output(IOX_OE, 1);
-};
-
-void iox74lv_set(int index)
-{
-	int i;
-
-	gpio_direction_output(IOX_OE, 0);
-
-	for (i = 7; i >= 0; i--) {
-		gpio_direction_output(IOX_SHCP, 0);
-
-		if (i == index)
-			gpio_direction_output(IOX_SDI, seq[qn_output[i]][0]);
-		else
-			gpio_direction_output(IOX_SDI, seq[qn_output[i]][1]);
-		udelay(500);
-		gpio_direction_output(IOX_SHCP, 1);
-		udelay(500);
-	}
-
-	gpio_direction_output(IOX_STCP, 0);
-	udelay(500);
-	/*
-	  * shift register will be output to pins
-	  */
-	gpio_direction_output(IOX_STCP, 1);
-
-	for (i = 7; i >= 0; i--) {
-		gpio_direction_output(IOX_SHCP, 0);
-		gpio_direction_output(IOX_SDI, seq[qn_output[i]][1]);
-		udelay(500);
-		gpio_direction_output(IOX_SHCP, 1);
-		udelay(500);
-	}
-
-	gpio_direction_output(IOX_STCP, 0);
-	udelay(500);
-	/*
-	  * shift register will be output to pins
-	  */
-	gpio_direction_output(IOX_STCP, 1);
-
-	gpio_direction_output(IOX_OE, 1);
-};
-
-
-
 #ifdef CONFIG_SYS_I2C_MXC
 #define PC MUX_PAD_CTRL(I2C_PAD_CTRL)
 /* I2C2 for PMIC */
@@ -281,25 +141,6 @@ static iomux_v3_cfg_t const usdhc1_pads[] = {
 //	MX6_PAD_GPIO1_IO09__GPIO1_IO09 | MUX_PAD_CTRL(NO_PAD_CTRL),
 };
 
-#if defined(CONFIG_MX6UL_EVK_EMMC_REWORK)
-static iomux_v3_cfg_t const usdhc2_emmc_pads[] = {
-	MX6_PAD_NAND_RE_B__USDHC2_CLK | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_NAND_WE_B__USDHC2_CMD | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_NAND_DATA00__USDHC2_DATA0 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_NAND_DATA01__USDHC2_DATA1 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_NAND_DATA02__USDHC2_DATA2 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_NAND_DATA03__USDHC2_DATA3 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_NAND_DATA04__USDHC2_DATA4 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_NAND_DATA05__USDHC2_DATA5 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_NAND_DATA06__USDHC2_DATA6 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_NAND_DATA07__USDHC2_DATA7 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-
-	/*
-	 * RST_B
-	 */
-	MX6_PAD_NAND_ALE__GPIO4_IO10 | MUX_PAD_CTRL(NO_PAD_CTRL),
-};
-#else
 static iomux_v3_cfg_t const usdhc2_pads[] = {
 	MX6_PAD_NAND_RE_B__USDHC2_CLK | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_NAND_WE_B__USDHC2_CMD | MUX_PAD_CTRL(USDHC_PAD_CTRL),
@@ -320,9 +161,6 @@ static iomux_v3_cfg_t const usdhc2_cd_pads[] = {
 static iomux_v3_cfg_t const usdhc2_dat3_pads[] = {
 	MX6_PAD_NAND_DATA03__USDHC2_DATA3 | MUX_PAD_CTRL(USDHC_DAT3_CD_PAD_CTRL),
 };
-
-
-#endif
 
 #ifdef CONFIG_SYS_USE_NAND
 static iomux_v3_cfg_t const nand_pads[] = {
@@ -433,41 +271,10 @@ static void setup_iomux_uart(void)
 	imx_iomux_v3_setup_multiple_pads(uart6_pads, ARRAY_SIZE(uart6_pads));
 }
 
-#ifdef CONFIG_FSL_QSPI
-
-#define QSPI_PAD_CTRL1	\
-	(PAD_CTL_SRE_FAST | PAD_CTL_SPEED_MED | \
-	 PAD_CTL_PKE | PAD_CTL_PUE | PAD_CTL_PUS_47K_UP | PAD_CTL_DSE_120ohm)
-
-static iomux_v3_cfg_t const quadspi_pads[] = {
-	MX6_PAD_NAND_WP_B__QSPI_A_SCLK	| MUX_PAD_CTRL(QSPI_PAD_CTRL1),
-	MX6_PAD_NAND_READY_B__QSPI_A_DATA00	| MUX_PAD_CTRL(QSPI_PAD_CTRL1),
-	MX6_PAD_NAND_CE0_B__QSPI_A_DATA01	| MUX_PAD_CTRL(QSPI_PAD_CTRL1),
-	MX6_PAD_NAND_CE1_B__QSPI_A_DATA02	| MUX_PAD_CTRL(QSPI_PAD_CTRL1),
-	MX6_PAD_NAND_CLE__QSPI_A_DATA03	| MUX_PAD_CTRL(QSPI_PAD_CTRL1),
-	MX6_PAD_NAND_DQS__QSPI_A_SS0_B	| MUX_PAD_CTRL(QSPI_PAD_CTRL1),
-};
-
-int board_qspi_init(void)
-{
-	/* Set the iomux */
-	imx_iomux_v3_setup_multiple_pads(quadspi_pads, ARRAY_SIZE(quadspi_pads));
-
-	/* Set the clock */
-	enable_qspi_clk(0);
-
-	return 0;
-}
-#endif
-
 #ifdef CONFIG_FSL_ESDHC
 static struct fsl_esdhc_cfg usdhc_cfg[2] = {
 	{USDHC1_BASE_ADDR, 0, 4},
-#if defined(CONFIG_MX6UL_EVK_EMMC_REWORK)
-	{USDHC2_BASE_ADDR, 0, 8},
-#else
 	{USDHC2_BASE_ADDR, 0, 4},
-#endif
 };
 
 #define USDHC1_CD_GPIO	IMX_GPIO_NR(1, 19)
@@ -509,9 +316,6 @@ int board_mmc_getcd(struct mmc *mmc)
 		ret = 1;
 		break;
 	case USDHC2_BASE_ADDR:
-#if defined(CONFIG_MX6UL_EVK_EMMC_REWORK)
-		ret = 1;
-#else
 		imx_iomux_v3_setup_multiple_pads(
 				usdhc2_cd_pads, ARRAY_SIZE(usdhc2_cd_pads));
 		gpio_direction_input(USDHC2_CD_GPIO);
@@ -521,7 +325,6 @@ int board_mmc_getcd(struct mmc *mmc)
 
 		imx_iomux_v3_setup_multiple_pads(
 				usdhc2_dat3_pads, ARRAY_SIZE(usdhc2_dat3_pads));
-#endif
 		break;
 	}
 
@@ -925,10 +728,6 @@ int board_init(void)
 	setup_usb();
 #endif
 
-#ifdef CONFIG_FSL_QSPI
-	board_qspi_init();
-#endif
-
 	return 0;
 }
 
@@ -937,7 +736,6 @@ static const struct boot_mode board_boot_modes[] = {
 	/* 4 bit bus width */
 	{"sd1", MAKE_CFGVAL(0x42, 0x20, 0x00, 0x00)},
 	{"sd2", MAKE_CFGVAL(0x40, 0x28, 0x00, 0x00)},
-	{"qspi1", MAKE_CFGVAL(0x10, 0x00, 0x00, 0x00)},
 	{NULL,	 0},
 };
 #endif
