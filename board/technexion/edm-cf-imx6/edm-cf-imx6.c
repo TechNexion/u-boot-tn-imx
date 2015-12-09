@@ -49,6 +49,22 @@ DECLARE_GLOBAL_DATA_PTR;
 #define USDHC1_CD_GPIO		IMX_GPIO_NR(1, 2)
 #define USDHC3_CD_GPIO		IMX_GPIO_NR(3, 9)
 #define ETH_PHY_RESET		IMX_GPIO_NR(3, 29)
+#define EDM_SOM_DET_R149	IMX_GPIO_NR(2, 28)
+#define EDM_SOM_DET_R170	IMX_GPIO_NR(3, 12)
+#define EDM_SOM_DET_R173	IMX_GPIO_NR(3, 5)
+
+#define BOX_PMIC_I2C_BUS 2
+#define PMIC_I2C_ADDR 0x08
+
+static int board_type = -1;
+
+enum edm_som_type {
+	EDM1_CF_IMX6_SOM,
+	EDM2_CF_IMX6_SOM,
+	WANDBOARD_B1_SOM,
+	WANDBOARD_C1_SOM,
+	BOX_IMX6,
+};
 
 int dram_init(void)
 {
@@ -104,6 +120,15 @@ static iomux_v3_cfg_t const enet_pads[] = {
 	IOMUX_PADS(PAD_EIM_D29__GPIO3_IO29    | MUX_PAD_CTRL(NO_PAD_CTRL)),
 };
 
+static iomux_v3_cfg_t const som_detection_pads[] = {
+	/* R149 */
+	IOMUX_PADS(PAD_EIM_EB0__GPIO2_IO28  | MUX_PAD_CTRL(NO_PAD_CTRL)),
+	/* R170 */
+	IOMUX_PADS(PAD_EIM_DA12__GPIO3_IO12  | MUX_PAD_CTRL(NO_PAD_CTRL)),
+	/* R173 */
+	IOMUX_PADS(PAD_EIM_DA5__GPIO3_IO05  | MUX_PAD_CTRL(NO_PAD_CTRL)),
+};
+
 static void setup_iomux_uart(void)
 {
 	SETUP_IOMUX_PADS(uart1_pads);
@@ -117,6 +142,11 @@ static void setup_iomux_enet(void)
 	gpio_direction_output(ETH_PHY_RESET, 0);
 	udelay(500);
 	gpio_set_value(ETH_PHY_RESET, 1);
+}
+
+static void setup_iomux_som_detection(void)
+{
+	SETUP_IOMUX_PADS(som_detection_pads);
 }
 
 static struct fsl_esdhc_cfg usdhc_cfg[2] = {
@@ -355,6 +385,50 @@ static iomux_v3_cfg_t const fwadapt_7wvga_pads[] = {
 	IOMUX_PADS(PAD_SD4_DAT3__GPIO2_IO11 | MUX_PAD_CTRL(NO_PAD_CTRL)), /* DISP0_VDDEN */
 };
 
+static void setup_iomux_i2c(void)
+{
+	if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D)) {
+		//setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &mx6q_i2c1_pad_info);
+		setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, &mx6q_i2c2_pad_info);
+		setup_i2c(2, CONFIG_SYS_I2C_SPEED, 0x7f, &mx6q_i2c3_pad_info);
+	} else {
+		//setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &mx6dl_i2c1_pad_info);
+		setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, &mx6dl_i2c2_pad_info);
+		setup_i2c(2, CONFIG_SYS_I2C_SPEED, 0x7f, &mx6dl_i2c3_pad_info);
+	}
+}
+
+static enum edm_som_type som_detection(void)
+{
+	/*
+	 * Box-imx6 board has Pfuze100 PMIC on I2C bus 3
+	 * EDM boards don't have PMIC, except EDM-imx6qp(PMIC is on I2C bus 2)
+	 */
+
+	if ((0 == i2c_set_bus_num(BOX_PMIC_I2C_BUS)) && (0 == i2c_probe(PMIC_I2C_ADDR))) {
+		return BOX_IMX6;
+	}
+	/*
+	 * Wandboard boots from SD3
+	 * EDM boots from i-NAND or SD1
+	 */
+	gpio_direction_input(EDM_SOM_DET_R149);
+	gpio_direction_input(EDM_SOM_DET_R170);
+	gpio_direction_input(EDM_SOM_DET_R173);
+
+	if (!gpio_get_value(EDM_SOM_DET_R173) && gpio_get_value(EDM_SOM_DET_R170)) {
+		if (!gpio_get_value(EDM_SOM_DET_R149))
+			return WANDBOARD_B1_SOM;
+		else
+			return WANDBOARD_C1_SOM;
+	} else {
+		if (!gpio_get_value(EDM_SOM_DET_R149))
+			return EDM1_CF_IMX6_SOM;
+		else
+			return EDM2_CF_IMX6_SOM;
+	}
+}
+
 static void do_enable_hdmi(struct display_info_t const *dev)
 {
 	imx_enable_hdmi_phy();
@@ -552,10 +626,32 @@ int board_late_init(void)
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	char *s;
 
-	if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
-		setenv("board_rev", "MX6Q");
-	else
-		setenv("board_rev", "MX6DL");
+	if ((s = getenv ("fdtfile_autodetect")) != NULL) {
+		if (strncmp (s, "off", 3) != 0) {
+			switch (board_type) {
+			case EDM1_CF_IMX6_SOM:
+			case EDM2_CF_IMX6_SOM:
+				if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
+					setenv("fdtfile", "imx6q-edm1-cf.dtb");
+				else
+					setenv("fdtfile", "imx6dl-edm1-cf.dtb");
+				break;
+			case WANDBOARD_B1_SOM:
+			case WANDBOARD_C1_SOM:
+				if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
+					setenv("fdtfile", "imx6q-wandboard.dtb");
+				else
+					setenv("fdtfile", "imx6dl-wandboard.dtb");
+				break;
+			case BOX_IMX6:
+				if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
+					setenv("fdtfile", "imx6q-box.dtb");
+				else
+					setenv("fdtfile", "imx6dl-box.dtb");
+				break;
+			}
+		}
+	}
 
 	if ((s = getenv ("bootdev_autodetect")) != NULL) {
 		if (strncmp (s, "off", 3) != 0) {
@@ -580,22 +676,32 @@ int board_init(void)
 	/* address of boot parameters */
 	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
 
-	if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D)) {
-		//setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &mx6q_i2c1_pad_info);
-		setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, &mx6q_i2c2_pad_info);
-		setup_i2c(2, CONFIG_SYS_I2C_SPEED, 0x7f, &mx6q_i2c3_pad_info);
-	} else {
-		//setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &mx6dl_i2c1_pad_info);
-		setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, &mx6dl_i2c2_pad_info);
-		setup_i2c(2, CONFIG_SYS_I2C_SPEED, 0x7f, &mx6dl_i2c3_pad_info);
-	}
+	setup_iomux_i2c();
+	setup_iomux_som_detection();
+	board_type = som_detection();
 
 	return 0;
 }
 
 int checkboard(void)
 {
-	puts("Board: edm1-cf-imx6\n");
+	switch (board_type) {
+	case EDM1_CF_IMX6_SOM:
+		puts("Board: edm1-cf-imx6\n");
+		break;
+	case EDM2_CF_IMX6_SOM:
+		puts("Board: edm2-cf-imx6\n");
+		break;
+	case WANDBOARD_B1_SOM:
+		puts("Board: wandboard rev.B1\n");
+		break;
+	case WANDBOARD_C1_SOM:
+		puts("Board: wandboard rev.C1\n");
+		break;
+	case BOX_IMX6:
+		puts("Board: box-imx6\n");
+		break;
+	}
 
 	return 0;
 }
