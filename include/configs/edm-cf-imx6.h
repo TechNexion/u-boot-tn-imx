@@ -21,7 +21,7 @@
 
 #define CONFIG_MX6
 #define CONFIG_DISPLAY_CPUINFO
-#define CONFIG_DISPLAY_BOARDINFO
+#define CONFIG_DISPLAY_BOARDINFO_LATE  /* display board info (after reloc) */
 
 #define MACH_TYPE_EDM_CF_IMX6		4257
 #define CONFIG_MACH_TYPE		MACH_TYPE_EDM_CF_IMX6
@@ -151,6 +151,7 @@
 		"fi\0" \
 	"mmcargs=setenv bootargs console=${console},${baudrate} " \
 		"root=${mmcroot}; run videoargs\0" \
+	"fdtfile_autodetect=on\0" \
 	"bootdev_autodetect=on\0" \
 	"display_autodetect=on\0" \
 	"videoargs=" \
@@ -207,20 +208,12 @@
 		"else " \
 			"bootz; " \
 		"fi;\0" \
-	"findfdt="\
-		"if test $board_rev = MX6Q ; then " \
-			"setenv fdtfile imx6q-edm1-cf.dtb; fi; " \
-		"if test $board_rev = MX6DL ; then " \
-			"setenv fdtfile imx6dl-edm1-cf.dtb; fi; " \
-		"if test $fdtfile = undefined; then " \
-			"echo WARNING: Could not determine dtb to use; fi; \0" \
 	"bootenv=uEnv.txt\0" \
 	"loadbootenv=fatload mmc ${mmcdev} ${loadaddr} ${bootenv}\0" \
 	"importbootenv=echo Importing environment from mmc ...; " \
 		"env import -t -r $loadaddr $filesize\0" \
 
 #define CONFIG_BOOTCOMMAND \
-	   "run findfdt; " \
 	   "mmc dev ${mmcdev}; if mmc rescan; then " \
 		   "if run loadbootenv; then " \
 			   "echo Loaded environment from ${bootenv};" \
