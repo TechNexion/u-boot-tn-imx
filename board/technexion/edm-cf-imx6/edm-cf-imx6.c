@@ -28,6 +28,8 @@
 #include <phy.h>
 #include <input.h>
 #include <i2c.h>
+#include <power/pmic.h>
+#include <power/pfuze100_pmic.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -427,6 +429,31 @@ static enum edm_som_type som_detection(void)
 		else
 			return EDM2_CF_IMX6_SOM;
 	}
+}
+
+/* setup board specific PMIC */
+int power_init_board(void)
+{
+	struct pmic *p;
+	u32 reg;
+
+	if (board_type == BOX_IMX6) {
+	/* configure PFUZE100 PMIC */
+		power_pfuze100_init(CONFIG_I2C_PMIC);
+		p = pmic_get("PFUZE100");
+		if (p && !pmic_probe(p)) {
+			pmic_reg_read(p, PFUZE100_DEVICEID, &reg);
+			printf("PMIC:  PFUZE100 ID=0x%02x\n", reg);
+
+			/* Set VGEN2 to 1.5V and enable */
+			pmic_reg_read(p, PFUZE100_VGEN2VOL, &reg);
+			reg &= ~(LDO_VOL_MASK);
+			reg |= (LDOA_1_50V | (1 << (LDO_EN)));
+			pmic_reg_write(p, PFUZE100_VGEN2VOL, reg);
+		}
+	}
+
+	return 0;
 }
 
 static void do_enable_hdmi(struct display_info_t const *dev)
