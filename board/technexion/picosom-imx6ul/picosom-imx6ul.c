@@ -132,30 +132,8 @@ static iomux_v3_cfg_t const usdhc1_pads[] = {
 	MX6_PAD_SD1_DATA1__USDHC1_DATA1 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_SD1_DATA2__USDHC1_DATA2 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_SD1_DATA3__USDHC1_DATA3 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-
-	/* VSELECT */
-//	MX6_PAD_GPIO1_IO05__USDHC1_VSELECT | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	/* CD */
-//	MX6_PAD_UART1_RTS_B__GPIO1_IO19 | MUX_PAD_CTRL(NO_PAD_CTRL),
-	/* RST_B */
-//	MX6_PAD_GPIO1_IO09__GPIO1_IO09 | MUX_PAD_CTRL(NO_PAD_CTRL),
-};
-
-static iomux_v3_cfg_t const usdhc2_pads[] = {
-	MX6_PAD_CSI_VSYNC__USDHC2_CLK | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_CSI_HSYNC__USDHC2_CMD | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_CSI_DATA00__USDHC2_DATA0 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_CSI_DATA01__USDHC2_DATA1 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_CSI_DATA02__USDHC2_DATA2 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_CSI_DATA03__USDHC2_DATA3 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-};
-
-static iomux_v3_cfg_t const usdhc2_cd_pads[] = {
-
-	/* The evk board uses DAT3 to detect CD card plugin, in u-boot we mux the pin to
-	  * GPIO when doing board_mmc_getcd.
-	  */
-	MX6_PAD_UART1_CTS_B__GPIO1_IO18 | MUX_PAD_CTRL(USDHC_SD_CD_PAD_CTRL),
+	MX6_PAD_UART1_CTS_B__GPIO1_IO18 | MUX_PAD_CTRL(NO_PAD_CTRL),
 };
 
 #ifdef CONFIG_SYS_USE_NAND
@@ -270,10 +248,9 @@ static void setup_iomux_uart(void)
 #ifdef CONFIG_FSL_ESDHC
 static struct fsl_esdhc_cfg usdhc_cfg[2] = {
 	{USDHC1_BASE_ADDR, 0, 4},
-	{USDHC2_BASE_ADDR, 0, 4},
 };
 
-#define USDHC2_CD_GPIO	IMX_GPIO_NR(1, 18)
+#define USDHC1_CD_GPIO	IMX_GPIO_NR(1, 18)
 
 int mmc_get_env_devno(void)
 {
@@ -305,16 +282,7 @@ int board_mmc_getcd(struct mmc *mmc)
 
 	switch (cfg->esdhc_base) {
 	case USDHC1_BASE_ADDR:
-		ret = 1;
-		break;
-	case USDHC2_BASE_ADDR:
-
-		imx_iomux_v3_setup_multiple_pads(
-				usdhc2_cd_pads, ARRAY_SIZE(usdhc2_cd_pads));
-		gpio_direction_input(USDHC2_CD_GPIO);
-
-		ret = gpio_get_value(USDHC2_CD_GPIO);
-
+		ret = !gpio_get_value(USDHC1_CD_GPIO);
 		break;
 	}
 
@@ -330,7 +298,6 @@ int board_mmc_init(bd_t *bis)
 	 * According to the board_mmc_init() the following map is done:
 	 * (U-boot device node)    (Physical Port)
 	 * mmc0                    USDHC1
-	 * mmc1                    USDHC2
 	 */
 	for (i = 0; i < CONFIG_SYS_FSL_USDHC_NUM; i++) {
 		switch (i) {
@@ -338,11 +305,6 @@ int board_mmc_init(bd_t *bis)
 			imx_iomux_v3_setup_multiple_pads(
 				usdhc1_pads, ARRAY_SIZE(usdhc1_pads));
 			usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC_CLK);
-			break;
-		case 1:
-			imx_iomux_v3_setup_multiple_pads(
-				usdhc2_pads, ARRAY_SIZE(usdhc2_pads));
-			usdhc_cfg[1].sdhc_clk = mxc_get_clock(MXC_ESDHC2_CLK);
 			break;
 		default:
 			printf("Warning: you configured more USDHC controllers"
