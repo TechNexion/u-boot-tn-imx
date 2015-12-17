@@ -120,8 +120,8 @@
 
 
 #define CONFIG_DEFAULT_FDT_FILE "imx6ul-picosom.dtb"
-#define PHYS_SDRAM_SIZE			SZ_512M
-#define CONFIG_BOOTARGS_CMA_SIZE   ""
+#define PHYS_SDRAM_SIZE                        SZ_256M
+#define CONFIG_BOOTARGS_CMA_SIZE   "cma=96M "
 
 /* PMIC */
 #define CONFIG_POWER
