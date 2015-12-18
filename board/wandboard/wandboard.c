@@ -103,6 +103,8 @@ static iomux_v3_cfg_t const enet_pads[] = {
 	IOMUX_PADS(PAD_RGMII_RX_CTL__RGMII_RX_CTL | MUX_PAD_CTRL(ENET_PAD_CTRL)),
 	/* AR8031 PHY Reset */
 	IOMUX_PADS(PAD_EIM_D29__GPIO3_IO29    | MUX_PAD_CTRL(NO_PAD_CTRL)),
+	IOMUX_PADS(PAD_GPIO_6__GPIO1_IO06     | MUX_PAD_CTRL(NO_PAD_CTRL)),
+	IOMUX_PADS(PAD_KEY_COL4__GPIO4_IO14   | MUX_PAD_CTRL(NO_PAD_CTRL)),
 };
 
 static void setup_iomux_uart(void)
@@ -289,6 +291,24 @@ static int detect_i2c(struct display_info_t const *dev)
 			(0 == i2c_probe(dev->addr));
 }
 
+static void enable_lvds(struct display_info_t const *dev)
+{
+	struct iomuxc *iomux = (struct iomuxc *)
+				IOMUXC_BASE_ADDR;
+
+	/* set CH0 data width to 24bit (IOMUXC_GPR2:5 0=18bit, 1=24bit) */
+	u32 reg = readl(&iomux->gpr[2]);
+	reg |= IOMUXC_GPR2_DATA_WIDTH_CH0_24BIT;
+	writel(reg, &iomux->gpr[2]);
+
+	/* Enable Backlight - use GPIO for Brightness adjustment */
+	SETUP_IOMUX_PAD(PAD_SD4_DAT1__GPIO2_IO09);
+	gpio_direction_output(IMX_GPIO_NR(2, 9), 1);
+
+	SETUP_IOMUX_PAD(PAD_SD4_DAT0__GPIO2_IO08);
+	gpio_direction_output(IMX_GPIO_NR(2, 8), 1);
+}
+
 static void enable_fwadapt_7wvga(struct display_info_t const *dev)
 {
 	SETUP_IOMUX_PADS(fwadapt_7wvga_pads);
@@ -298,6 +318,26 @@ static void enable_fwadapt_7wvga(struct display_info_t const *dev)
 }
 
 struct display_info_t const displays[] = {{
+	.bus	= -1,
+	.addr	= 0,
+	.pixfmt = IPU_PIX_FMT_RGB24,
+	.detect = NULL,
+	.enable = enable_lvds,
+	.mode	= {
+		.name		= "hj070na",
+		.refresh	= 60,
+		.xres		= 1024,
+		.yres		= 600,
+		.pixclock	= 15385,
+		.left_margin	= 220,
+		.right_margin	= 40,
+		.upper_margin	= 21,
+		.lower_margin	= 7,
+		.hsync_len	= 60,
+		.vsync_len	= 10,
+		.sync		= FB_SYNC_EXT,
+		.vmode		= FB_VMODE_NONINTERLACED
+} }, {
 	.bus	= -1,
 	.addr	= 0,
 	.pixfmt	= IPU_PIX_FMT_RGB24,
@@ -343,19 +383,54 @@ size_t display_count = ARRAY_SIZE(displays);
 static void setup_display(void)
 {
 	struct mxc_ccm_reg *mxc_ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
+	struct iomuxc *iomux = (struct iomuxc *)IOMUXC_BASE_ADDR;
 	int reg;
 
 	enable_ipu_clock();
 	imx_setup_hdmi();
+
+	/* Turn on LDB0,IPU,IPU DI0 clocks */
+	reg = __raw_readl(&mxc_ccm->CCGR3);
+	reg |= MXC_CCM_CCGR3_LDB_DI0_MASK;
+	writel(reg, &mxc_ccm->CCGR3);
+
+	/* set LDB0, LDB1 clk select to 011/011 */
+	reg = readl(&mxc_ccm->cs2cdr);
+	reg &= ~(MXC_CCM_CS2CDR_LDB_DI0_CLK_SEL_MASK
+		 |MXC_CCM_CS2CDR_LDB_DI1_CLK_SEL_MASK);
+	reg |= (3<<MXC_CCM_CS2CDR_LDB_DI0_CLK_SEL_OFFSET)
+	      |(3<<MXC_CCM_CS2CDR_LDB_DI1_CLK_SEL_OFFSET);
+	writel(reg, &mxc_ccm->cs2cdr);
+
+	reg = readl(&mxc_ccm->cscmr2);
+	reg |= MXC_CCM_CSCMR2_LDB_DI0_IPU_DIV;
+	writel(reg, &mxc_ccm->cscmr2);
 
 	reg = readl(&mxc_ccm->chsccdr);
 	reg |= (CHSCCDR_CLK_SEL_LDB_DI0
 		<< MXC_CCM_CHSCCDR_IPU1_DI0_CLK_SEL_OFFSET);
 	writel(reg, &mxc_ccm->chsccdr);
 
-	/* Disable LCD backlight */
+	/* Disable TTL LCD backlight */
 	SETUP_IOMUX_PAD(PAD_DI0_PIN4__GPIO4_IO20);
 	gpio_direction_input(IMX_GPIO_NR(4, 20));
+
+	reg = IOMUXC_GPR2_BGREF_RRMODE_EXTERNAL_RES
+	     |IOMUXC_GPR2_DI1_VS_POLARITY_ACTIVE_LOW
+	     |IOMUXC_GPR2_DI0_VS_POLARITY_ACTIVE_LOW
+	     |IOMUXC_GPR2_BIT_MAPPING_CH1_SPWG
+	     |IOMUXC_GPR2_DATA_WIDTH_CH1_24BIT
+	     |IOMUXC_GPR2_BIT_MAPPING_CH0_SPWG
+	     |IOMUXC_GPR2_DATA_WIDTH_CH0_24BIT
+	     |IOMUXC_GPR2_LVDS_CH1_MODE_ENABLED_DI1
+	     |IOMUXC_GPR2_LVDS_CH0_MODE_ENABLED_DI0;
+	writel(reg, &iomux->gpr[2]);
+
+	reg = readl(&iomux->gpr[3]);
+	reg = (reg & ~IOMUXC_GPR3_LVDS0_MUX_CTL_MASK)
+	    | (IOMUXC_GPR3_MUX_SRC_IPU1_DI0
+	       <<IOMUXC_GPR3_LVDS0_MUX_CTL_OFFSET);
+	writel(reg, &iomux->gpr[3]);
 }
 #endif /* CONFIG_VIDEO_IPUV3 */
 
