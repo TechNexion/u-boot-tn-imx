@@ -213,8 +213,10 @@ static iomux_v3_cfg_t const fec_pads[] = {
 	MX6_PAD_ENET2_RX_EN__ENET2_RX_EN | MUX_PAD_CTRL(ENET_PAD_CTRL),
 	MX6_PAD_ENET2_RX_ER__ENET2_RX_ER | MUX_PAD_CTRL(ENET_PAD_CTRL),
 
-        MX6_PAD_UART4_TX_DATA__GPIO1_IO28 | MUX_PAD_CTRL(ENET_PAD_CTRL),
+        MX6_PAD_UART4_TX_DATA__GPIO1_IO28 | MUX_PAD_CTRL(NO_PAD_CTRL),
 };
+
+#define RMII_PHY_RESET IMX_GPIO_NR(1, 28)
 
 static void setup_iomux_fec(int fec_id)
 {
@@ -461,6 +463,10 @@ int board_eth_init(bd_t *bis)
 	int ret;
 
 	setup_iomux_fec(CONFIG_FEC_ENET_DEV);
+
+        gpio_direction_output(RMII_PHY_RESET, 0);
+        udelay(500);
+        gpio_direction_output(RMII_PHY_RESET, 1);
 
 	ret = fecmxc_initialize_multi(bis, CONFIG_FEC_ENET_DEV,
 		CONFIG_FEC_MXC_PHYADDR, IMX_FEC_BASE);
