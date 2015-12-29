@@ -478,10 +478,10 @@ static void enable_lvds(struct display_info_t const *dev)
 	writel(reg, &iomux->gpr[2]);
 
 	/* Enable Backlight - use GPIO for Brightness adjustment */
-	SETUP_IOMUX_PAD(PAD_SD4_DAT1__GPIO2_IO09);
+	SETUP_IOMUX_PAD(PAD_SD4_DAT1__GPIO2_IO09 | MUX_PAD_CTRL(NO_PAD_CTRL));
 	gpio_direction_output(IMX_GPIO_NR(2, 9), 1);
 
-	SETUP_IOMUX_PAD(PAD_SD4_DAT0__GPIO2_IO08);
+	SETUP_IOMUX_PAD(PAD_SD4_DAT0__GPIO2_IO08 | MUX_PAD_CTRL(NO_PAD_CTRL));
 	gpio_direction_output(IMX_GPIO_NR(2, 8), 1);
 }
 
