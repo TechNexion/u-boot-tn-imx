@@ -35,6 +35,10 @@
 #define CONFIG_INITRD_TAG
 #define CONFIG_REVISION_TAG
 
+#define CONFIG_SUPPORT_RAW_INITRD
+#define CONFIG_SERIAL_TAG
+#define CONFIG_CMD_BOOTA
+
 /* Size of malloc() pool */
 #define CONFIG_SYS_MALLOC_LEN		(16 * SZ_1M)
 
