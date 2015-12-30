@@ -102,7 +102,7 @@ DECLARE_GLOBAL_DATA_PTR;
 struct i2c_pads_info i2c_pad_info1 = {
 	.scl = {
 		.i2c_mode =  MX6_PAD_GPIO1_IO02__I2C1_SCL | PC,
-		.gpio_mode = MX6_PAD_GPIO1_IO02__GPIO1_IO02  | PC,
+		.gpio_mode = MX6_PAD_GPIO1_IO02__GPIO1_IO02 | PC,
 		.gp = IMX_GPIO_NR(1, 2),
 	},
 	.sda = {
@@ -503,7 +503,6 @@ static int setup_fec(int fec_id)
 
 int board_phy_config(struct phy_device *phydev)
 {
-
 	phy_write(phydev, MDIO_DEVAD_NONE, 0x1f, 0x8190);
 
 	if (phydev->drv->config)
@@ -533,7 +532,7 @@ int board_usb_phy_mode(int port)
 	if (port == 1)
 		return USB_INIT_HOST;
 	else
-		return usb_phy_mode(port);
+		return usb_phy_mode(port); /* port 0 = OTG */
 }
 
 int board_ehci_hcd_init(int port)
@@ -732,7 +731,12 @@ void board_fastboot_setup(void)
 				"${boot_nand_size};boota ${loadaddr}");
 		break;
 #endif /*CONFIG_FASTBOOT_STORAGE_NAND*/
-
+#if defined(CONFIG_FASTBOOT_STORAGE_QSPI)
+	case QSPI_BOOT:
+		if (!getenv("fastboot_dev"))
+			setenv("fastboot_dev", "qspi");
+		break;
+#endif
 	default:
 		printf("unsupported boot devices\n");
 		break;
@@ -784,6 +788,9 @@ void board_recovery_setup(void)
 	printf("setup env for recovery..\n");
 	setenv("bootcmd", "run bootcmd_android_recovery");
 }
+
+void check_recovery_mode(void) { }
+
 #endif /*CONFIG_ANDROID_RECOVERY*/
 
 #endif /*CONFIG_FSL_FASTBOOT*/
