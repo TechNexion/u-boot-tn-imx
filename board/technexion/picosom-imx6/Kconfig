@@ -1,0 +1,19 @@
+if TARGET_PICOSOM_IMX6
+
+config SYS_CPU
+	default "armv7"
+
+config SYS_BOARD
+	default "picosom-imx6"
+
+config SYS_VENDOR
+	string
+	default "technexion"
+
+config SYS_SOC
+	default "mx6"
+
+config SYS_CONFIG_NAME
+	default "picosom-imx6"
+
+endif
