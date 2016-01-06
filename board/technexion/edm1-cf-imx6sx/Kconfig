@@ -1,0 +1,15 @@
+if TARGET_EDM1_CF_IMX6SX
+
+config SYS_BOARD
+	default "edm1-cf-imx6sx"
+
+config SYS_VENDOR
+	default "technexion"
+
+config SYS_SOC
+	default "mx6"
+
+config SYS_CONFIG_NAME
+	default "edm1-cf-imx6sx"
+
+endif
