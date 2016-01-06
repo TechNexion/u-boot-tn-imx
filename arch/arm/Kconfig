@@ -497,6 +497,10 @@ config TARGET_PICOSOM_IMX6
 	select CPU_V7
 	select SUPPORT_SPL
 
+config TARGET_EDM1_CF_IMX6SX
+	bool "Support edm1-cf-imx6sx"
+	select CPU_V7
+
 config TARGET_WARP
 	bool "Support WaRP"
 	select CPU_V7
@@ -953,6 +957,7 @@ source "board/udoo/Kconfig"
 source "board/vpac270/Kconfig"
 source "board/wandboard/Kconfig"
 source "board/technexion/edm-cf-imx6/Kconfig"
+source "board/technexion/edm1-cf-imx6sx/Kconfig"
 source "board/technexion/picosom-imx6/Kconfig"
 source "board/warp/Kconfig"
 source "board/woodburn/Kconfig"
