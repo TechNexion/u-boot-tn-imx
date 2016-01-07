@@ -42,11 +42,20 @@
 #define CONFIG_MXC_GPIO
 
 #define CONFIG_MXC_UART
-#define CONFIG_MXC_UART_BASE		UART1_BASE
 
 /* allow to overwrite serial and ethaddr */
 #define CONFIG_ENV_OVERWRITE
+
+#ifdef CONFIG_NO_DEBUG_CONSOLE
+#define CONFIG_MXC_UART_BASE		UART5_BASE
+#define CONFIG_CONS_INDEX		5
+#define CONFIG_DEBUG_TTY               ttyUSB0
+#else
+#define CONFIG_MXC_UART_BASE		UART1_BASE
 #define CONFIG_CONS_INDEX		1
+#define CONFIG_DEBUG_TTY               ttymxc0
+#endif
+
 #define CONFIG_BAUDRATE			115200
 
 /* Command definition */
@@ -138,10 +147,11 @@
 #endif
 
 #define CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
+
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	"script=boot.scr\0" \
 	"image=zImage\0" \
-	"console=ttymxc0\0" \
+	"console=" __stringify(CONFIG_DEBUG_TTY)"\0" \
 	"splashpos=m,m\0" \
 	"fdtfile=undefined\0" \
 	"fdt_high=0xffffffff\0" \
