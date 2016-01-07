@@ -75,10 +75,17 @@ int dram_init(void)
 	return 0;
 }
 
+#ifdef CONFIG_NO_DEBUG_CONSOLE
+static iomux_v3_cfg_t const uart5_pads[] = {
+	IOMUX_PADS(PAD_CSI0_DAT14__UART5_TX_DATA | MUX_PAD_CTRL(UART_PAD_CTRL)),
+	IOMUX_PADS(PAD_CSI0_DAT15__UART5_RX_DATA | MUX_PAD_CTRL(UART_PAD_CTRL)),
+};
+#else
 static iomux_v3_cfg_t const uart1_pads[] = {
 	IOMUX_PADS(PAD_CSI0_DAT10__UART1_TX_DATA | MUX_PAD_CTRL(UART_PAD_CTRL)),
 	IOMUX_PADS(PAD_CSI0_DAT11__UART1_RX_DATA | MUX_PAD_CTRL(UART_PAD_CTRL)),
 };
+#endif
 
 static iomux_v3_cfg_t const usdhc1_pads[] = {
 	IOMUX_PADS(PAD_SD1_CLK__SD1_CLK    | MUX_PAD_CTRL(USDHC_PAD_CTRL)),
@@ -133,7 +140,11 @@ static iomux_v3_cfg_t const som_detection_pads[] = {
 
 static void setup_iomux_uart(void)
 {
+#ifdef CONFIG_NO_DEBUG_CONSOLE
+	SETUP_IOMUX_PADS(uart5_pads);
+#else
 	SETUP_IOMUX_PADS(uart1_pads);
+#endif
 }
 
 static void setup_iomux_enet(void)

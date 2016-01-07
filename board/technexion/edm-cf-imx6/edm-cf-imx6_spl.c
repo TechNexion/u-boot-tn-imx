@@ -345,8 +345,9 @@ void board_init_f(ulong dummy)
 	timer_init();
 
 	/* UART clocks enabled and gd valid - init serial console */
+#ifndef CONFIG_NO_DEBUG_CONSOLE
 	preloader_console_init();
-
+#endif
 	/* DDR initialization */
 	spl_dram_init();
 
