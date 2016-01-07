@@ -122,10 +122,10 @@ static iomux_v3_cfg_t const usdhc3_pads[] = {
 	MX6_PAD_SD3_DATA7__USDHC3_DATA7 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 
 	/* CD pin */
-	MX6_PAD_KEY_COL0__GPIO2_IO_10 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	MX6_PAD_SD1_CLK__GPIO6_IO_0 | MUX_PAD_CTRL(NO_PAD_CTRL),
 
 	/* RST_B, used for power reset cycle */
-	MX6_PAD_KEY_COL1__GPIO2_IO_11 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	MX6_PAD_SD1_CMD__GPIO6_IO_1 | MUX_PAD_CTRL(NO_PAD_CTRL),
 };
 
 static iomux_v3_cfg_t const usdhc4_pads[] = {
@@ -630,8 +630,8 @@ static struct fsl_esdhc_cfg usdhc_cfg[3] = {
 #endif
 };
 
-#define USDHC3_CD_GPIO	IMX_GPIO_NR(2, 10)
-#define USDHC3_PWR_GPIO	IMX_GPIO_NR(2, 11)
+#define USDHC3_CD_GPIO	IMX_GPIO_NR(6, 0)
+#define USDHC3_PWR_GPIO	IMX_GPIO_NR(6, 1)
 #define USDHC4_CD_GPIO	IMX_GPIO_NR(6, 21)
 
 int mmc_get_env_devno(void)
