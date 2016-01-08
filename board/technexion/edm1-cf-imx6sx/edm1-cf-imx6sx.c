@@ -281,7 +281,7 @@ static iomux_v3_cfg_t const lvds_ctrl_pads[] = {
 	MX6_PAD_QSPI1A_DATA2__GPIO4_IO_18 | MUX_PAD_CTRL(NO_PAD_CTRL),
 
 	/* Use GPIO for Brightness adjustment, duty cycle = period */
-	MX6_PAD_SD1_DATA1__GPIO6_IO_3 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	MX6_PAD_GPIO1_IO11__GPIO1_IO_11 | MUX_PAD_CTRL(NO_PAD_CTRL),
 };
 
 static iomux_v3_cfg_t const lcd_pads[] = {
@@ -329,17 +329,24 @@ struct lcd_panel_info_t {
 
 void do_enable_lvds(struct lcd_panel_info_t const *dev)
 {
+	struct iomuxc_gpr_base_regs *iomuxc_gpr_regs
+		= (struct iomuxc_gpr_base_regs *) IOMUXC_GPR_BASE_ADDR;
+
 	enable_lcdif_clock(dev->lcdif_base_addr);
 	enable_lvds(dev->lcdif_base_addr);
+
+	if (dev->depth == 24) {
+		u32 reg = readl(&iomuxc_gpr_regs->gpr[6]);
+		reg = reg &~ IOMUXC_GPR2_DATA_WIDTH_CH0_18BIT;
+		reg |= IOMUXC_GPR2_DATA_WIDTH_CH0_24BIT;
+		writel(reg, &iomuxc_gpr_regs->gpr[6]);
+	}
 
 	imx_iomux_v3_setup_multiple_pads(lvds_ctrl_pads,
 							ARRAY_SIZE(lvds_ctrl_pads));
 
-	/* Enable CABC */
-	gpio_direction_output(IMX_GPIO_NR(4, 18) , 1);
-
 	/* Set Brightness to high */
-	gpio_direction_output(IMX_GPIO_NR(6, 3) , 1);
+	gpio_direction_output(IMX_GPIO_NR(1, 11) , 1);
 }
 
 void do_enable_parallel_lcd(struct lcd_panel_info_t const *dev)
@@ -357,21 +364,21 @@ void do_enable_parallel_lcd(struct lcd_panel_info_t const *dev)
 
 static struct lcd_panel_info_t const displays[] = {{
 	.lcdif_base_addr = LCDIF2_BASE_ADDR,
-	.depth = 18,
+	.depth = 24,
 	.enable	= do_enable_lvds,
 	.mode	= {
-		.name			= "Hannstar-XGA",
+		.name			= "hj070na",
 		.xres           = 1024,
-		.yres           = 768,
-		.pixclock       = 15385,
-		.left_margin    = 220,
-		.right_margin   = 40,
-		.upper_margin   = 21,
-		.lower_margin   = 7,
-		.hsync_len      = 60,
-		.vsync_len      = 10,
+		.yres           = 600,
+		.pixclock       = 19417,
+		.left_margin    = 90,
+		.right_margin   = 120,
+		.upper_margin   = 1,
+		.lower_margin   = 1,
+		.hsync_len      = 100,
+		.vsync_len      = 33,
 		.sync           = 0,
-		.vmode          = FB_VMODE_NONINTERLACED
+		.vmode          = FB_VMODE_NONINTERLACED | FB_SYNC_HOR_HIGH_ACT | FB_MODE_IS_DETAILED
 } }, {
 	.lcdif_base_addr = LCDIF1_BASE_ADDR,
 	.depth = 24,
