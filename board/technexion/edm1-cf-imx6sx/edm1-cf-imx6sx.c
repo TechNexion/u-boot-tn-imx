@@ -627,19 +627,13 @@ int board_early_init_f(void)
 	return 0;
 }
 
-static struct fsl_esdhc_cfg usdhc_cfg[3] = {
-	{USDHC2_BASE_ADDR, 0, 4},
+static struct fsl_esdhc_cfg usdhc_cfg[2] = {
 	{USDHC3_BASE_ADDR},
-#ifdef CONFIG_MX6SXSABRESD_EMMC_REWORK
 	{USDHC4_BASE_ADDR, 0, 8},
-#else
-	{USDHC4_BASE_ADDR},
-#endif
 };
 
 #define USDHC3_CD_GPIO	IMX_GPIO_NR(6, 0)
 #define USDHC3_PWR_GPIO	IMX_GPIO_NR(6, 1)
-#define USDHC4_CD_GPIO	IMX_GPIO_NR(6, 21)
 
 int mmc_get_env_devno(void)
 {
@@ -683,11 +677,7 @@ int board_mmc_getcd(struct mmc *mmc)
 		ret = !gpio_get_value(USDHC3_CD_GPIO);
 		break;
 	case USDHC4_BASE_ADDR:
-#ifdef CONFIG_MX6SXSABRESD_EMMC_REWORK
 		ret = 1;
-#else
-		ret = !gpio_get_value(USDHC4_CD_GPIO);
-#endif
 		break;
 	}
 
@@ -701,35 +691,23 @@ int board_mmc_init(bd_t *bis)
 
 	/*
 	 * According to the board_mmc_init() the following map is done:
-	 * (U-boot device node)    (Physical Port)
-	 * mmc0                    USDHC2
-	 * mmc1                    USDHC3
-	 * mmc2                    USDHC4
+	 * (U-boot device node)    (Physical Port)	(Hardware)
+	 * mmc0                    USDHC3		SD card on baseboard
+	 * mmc1                    USDHC4		eMMC on CPU module
 	 */
 	for (i = 0; i < CONFIG_SYS_FSL_USDHC_NUM; i++) {
 		switch (i) {
 		case 0:
 			imx_iomux_v3_setup_multiple_pads(
-				usdhc2_pads, ARRAY_SIZE(usdhc2_pads));
-			usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC2_CLK);
-			break;
-		case 1:
-			imx_iomux_v3_setup_multiple_pads(
 				usdhc3_pads, ARRAY_SIZE(usdhc3_pads));
 			gpio_direction_input(USDHC3_CD_GPIO);
 			gpio_direction_output(USDHC3_PWR_GPIO, 1);
-			usdhc_cfg[1].sdhc_clk = mxc_get_clock(MXC_ESDHC3_CLK);
+			usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC3_CLK);
 			break;
-		case 2:
-#ifdef CONFIG_MX6SXSABRESD_EMMC_REWORK
+		case 1:
 			imx_iomux_v3_setup_multiple_pads(
 				usdhc4_emmc_pads, ARRAY_SIZE(usdhc4_emmc_pads));
-#else
-			imx_iomux_v3_setup_multiple_pads(
-				usdhc4_pads, ARRAY_SIZE(usdhc4_pads));
-			gpio_direction_input(USDHC4_CD_GPIO);
-#endif
-			usdhc_cfg[2].sdhc_clk = mxc_get_clock(MXC_ESDHC4_CLK);
+			usdhc_cfg[1].sdhc_clk = mxc_get_clock(MXC_ESDHC4_CLK);
 			break;
 		default:
 			printf("Warning: you configured more USDHC controllers"
