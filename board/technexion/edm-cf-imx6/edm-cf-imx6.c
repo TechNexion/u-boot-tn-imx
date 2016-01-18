@@ -58,10 +58,15 @@ DECLARE_GLOBAL_DATA_PTR;
 #define BOX_PMIC_I2C_BUS 2
 #define PMIC_I2C_ADDR 0x08
 
+#define TLV32_AUD_CODEC_I2C_BUS 1
+#define TLV32_AUD_CODEC_I2C_SLAVE_ADDR 0x1b
+
+
 static int board_type = -1;
 
 enum edm_som_type {
 	EDM1_CF_IMX6_SOM,
+	EDM1_CF_IMX6_MIMAS,
 	EDM2_CF_IMX6_SOM,
 	WANDBOARD_B1_SOM,
 	WANDBOARD_C1_SOM,
@@ -421,6 +426,11 @@ static enum edm_som_type som_detection(void)
 	if ((0 == i2c_set_bus_num(BOX_PMIC_I2C_BUS)) && (0 == i2c_probe(PMIC_I2C_ADDR))) {
 		return BOX_IMX6;
 	}
+
+	if ((0 == i2c_set_bus_num(TLV32_AUD_CODEC_I2C_BUS)) && (0 == i2c_probe(TLV32_AUD_CODEC_I2C_SLAVE_ADDR))) {
+		return EDM1_CF_IMX6_MIMAS;
+	}
+
 	/*
 	 * Wandboard boots from SD3
 	 * EDM boots from i-NAND or SD1
@@ -673,6 +683,9 @@ int board_late_init(void)
 				else
 					setenv("fdtfile", "imx6dl-edm1-cf.dtb");
 				break;
+			case EDM1_CF_IMX6_MIMAS:
+				setenv("fdtfile", "imx6q-edm1-cf-mimas.dtb");
+				break;
 			case WANDBOARD_B1_SOM:
 			case WANDBOARD_C1_SOM:
 				if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
@@ -725,6 +738,9 @@ int checkboard(void)
 	switch (board_type) {
 	case EDM1_CF_IMX6_SOM:
 		puts("Board: edm1-cf-imx6\n");
+		break;
+	case EDM1_CF_IMX6_MIMAS:
+		puts("Board: edm1-cf-imx6-mimas\n");
 		break;
 	case EDM2_CF_IMX6_SOM:
 		puts("Board: edm2-cf-imx6\n");
