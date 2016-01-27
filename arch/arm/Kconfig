@@ -500,6 +500,7 @@ config TARGET_PICOSOM_IMX6
 config TARGET_EDM1_CF_IMX6SX
 	bool "Support edm1-cf-imx6sx"
 	select CPU_V7
+	select SUPPORT_SPL
 
 config TARGET_WARP
 	bool "Support WaRP"
