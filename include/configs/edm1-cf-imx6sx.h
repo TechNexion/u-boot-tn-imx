@@ -199,7 +199,6 @@
 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
 	"mmcpart=1\0" \
 	"mmcroot=" CONFIG_MMCROOT " rootwait rw\0" \
-	"mmcautodetect=yes\0" \
 	"mmcargs=setenv bootargs console=${console},${baudrate} " \
 		"root=${mmcroot}\0" \
 	"loadbootscript=" \
@@ -326,7 +325,7 @@
 #define	CONFIG_SF_DEFAULT_MODE		SPI_MODE_0
 #endif
 
-#define CONFIG_SYS_MMC_ENV_DEV		2  /*USDHC4*/
+#define CONFIG_SYS_MMC_ENV_DEV		0
 #define CONFIG_SYS_MMC_ENV_PART		0	/* user area */
 #define CONFIG_MMCROOT			"/dev/mmcblk3p2"  /* USDHC4 */
 
