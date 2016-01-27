@@ -781,6 +781,24 @@ int board_late_init(void)
 	add_board_boot_modes(board_boot_modes);
 #endif
 
+#ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
+	char *s;
+
+	if ((s = getenv ("bootdev_autodetect")) != NULL) {
+		if (strncmp (s, "off", 3) != 0) {
+			switch (get_boot_device()) {
+			case SD4_BOOT:
+				setenv("bootdev", "SD0");
+				break;
+			case SD3_BOOT:
+				setenv("bootdev", "SD1");
+				break;
+			default:
+				printf("Wrong boot device!");
+			}
+		}
+	}
+#endif
 	return 0;
 }
 
