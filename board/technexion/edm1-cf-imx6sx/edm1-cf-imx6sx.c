@@ -242,6 +242,8 @@ static int setup_fec(int fec_id)
 
 int board_eth_init(bd_t *bis)
 {
+	int ret;
+
 	if (0 == CONFIG_FEC_ENET_DEV)
 		imx_iomux_v3_setup_multiple_pads(fec1_pads, ARRAY_SIZE(fec1_pads));
 	else
@@ -249,7 +251,12 @@ int board_eth_init(bd_t *bis)
 
 	setup_fec(CONFIG_FEC_ENET_DEV);
 
-	return cpu_eth_init(bis);
+	ret = fecmxc_initialize_multi(bis, 0,
+		CONFIG_FEC_MXC_PHYADDR, IMX_FEC_BASE);
+	if (ret)
+		printf("FEC1 MXC: %s:failed\n", __func__);
+
+	return 0;
 }
 
 int board_phy_config(struct phy_device *phydev)
