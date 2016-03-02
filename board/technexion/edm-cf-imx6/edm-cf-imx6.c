@@ -55,7 +55,7 @@ DECLARE_GLOBAL_DATA_PTR;
 #define EDM_SOM_DET_R170	IMX_GPIO_NR(3, 12)
 #define EDM_SOM_DET_R173	IMX_GPIO_NR(3, 5)
 
-#define BOX_PMIC_I2C_BUS 2
+#define TEK3_PMIC_I2C_BUS 2
 #define PMIC_I2C_ADDR 0x08
 
 #define TLV32_AUD_CODEC_I2C_BUS 1
@@ -70,7 +70,7 @@ enum edm_som_type {
 	EDM2_CF_IMX6_SOM,
 	WANDBOARD_B1_SOM,
 	WANDBOARD_C1_SOM,
-	BOX_IMX6,
+	TEK3_IMX6,
 };
 
 int dram_init(void)
@@ -419,12 +419,12 @@ static void setup_iomux_i2c(void)
 static enum edm_som_type som_detection(void)
 {
 	/*
-	 * Box-imx6 board has Pfuze100 PMIC on I2C bus 3
+	 * TEK3-imx6 board has Pfuze100 PMIC on I2C bus 3
 	 * EDM boards don't have PMIC, except EDM-imx6qp(PMIC is on I2C bus 2)
 	 */
 
-	if ((0 == i2c_set_bus_num(BOX_PMIC_I2C_BUS)) && (0 == i2c_probe(PMIC_I2C_ADDR))) {
-		return BOX_IMX6;
+	if ((0 == i2c_set_bus_num(TEK3_PMIC_I2C_BUS)) && (0 == i2c_probe(PMIC_I2C_ADDR))) {
+		return TEK3_IMX6;
 	}
 
 	if ((0 == i2c_set_bus_num(TLV32_AUD_CODEC_I2C_BUS)) && (0 == i2c_probe(TLV32_AUD_CODEC_I2C_SLAVE_ADDR))) {
@@ -458,7 +458,7 @@ int power_init_board(void)
 	struct pmic *p;
 	u32 reg;
 
-	if (board_type == BOX_IMX6) {
+	if (board_type == TEK3_IMX6) {
 	/* configure PFUZE100 PMIC */
 		power_pfuze100_init(CONFIG_I2C_PMIC);
 		p = pmic_get("PFUZE100");
@@ -693,11 +693,11 @@ int board_late_init(void)
 				else
 					setenv("fdtfile", "imx6dl-wandboard.dtb");
 				break;
-			case BOX_IMX6:
+			case TEK3_IMX6:
 				if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
-					setenv("fdtfile", "imx6q-box.dtb");
+					setenv("fdtfile", "imx6q-tek3.dtb");
 				else
-					setenv("fdtfile", "imx6dl-box.dtb");
+					setenv("fdtfile", "imx6dl-tek3.dtb");
 				break;
 			}
 		}
@@ -751,8 +751,8 @@ int checkboard(void)
 	case WANDBOARD_C1_SOM:
 		puts("Board: wandboard rev.C1\n");
 		break;
-	case BOX_IMX6:
-		puts("Board: box-imx6\n");
+	case TEK3_IMX6:
+		puts("Board: tek3-imx6\n");
 		break;
 	}
 
