@@ -30,6 +30,9 @@
 #include <i2c.h>
 #include <power/pmic.h>
 #include <power/pfuze100_pmic.h>
+#ifdef CONFIG_CMD_SATA
+#include <asm/imx-common/sata.h>
+#endif
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -729,6 +732,9 @@ int board_init(void)
 	setup_iomux_i2c();
 	setup_iomux_som_detection();
 	board_type = som_detection();
+#ifdef CONFIG_CMD_SATA
+	setup_sata();
+#endif
 
 	return 0;
 }
