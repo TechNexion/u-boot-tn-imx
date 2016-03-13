@@ -20,6 +20,9 @@
 #include <asm/io.h>
 #include <asm/arch/sys_proto.h>
 #include <spl.h>
+#ifdef CONFIG_CMD_SATA
+#include <asm/imx-common/sata.h>
+#endif
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -290,7 +293,7 @@ static void ccgr_init(void)
 	writel(0x0FFFC000, &ccm->CCGR2);
 	writel(0x3FF00000, &ccm->CCGR3);
 	writel(0x00FFF300, &ccm->CCGR4);
-	writel(0x0F0000C3, &ccm->CCGR5);
+	writel(0x0F0000F3, &ccm->CCGR5);
 	writel(0x000003FF, &ccm->CCGR6);
 }
 
@@ -353,6 +356,10 @@ void board_init_f(ulong dummy)
 
 	/* Clear the BSS. */
 	memset(__bss_start, 0, __bss_end - __bss_start);
+
+#ifdef CONFIG_CMD_SATA
+	setup_sata();
+#endif
 
 	/* load/boot image from boot device */
 	board_init_r(NULL, 0);
