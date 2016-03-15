@@ -711,9 +711,15 @@ int board_late_init(void)
 			switch (get_boot_device()) {
 			case SD3_BOOT:
 				setenv("bootdev", "SD0");
+				setenv("bootmedia", "mmc");
 				break;
 			case SD1_BOOT:
 				setenv("bootdev", "SD1");
+				setenv("bootmedia", "mmc");
+				break;
+			case SATA_BOOT:
+				setenv("bootdev", "SATA");
+				setenv("bootmedia", "sata");
 				break;
 			default:
 				printf("Wrong boot device!");

@@ -180,8 +180,10 @@
 	"searchbootdev=" \
 		"if test ${bootdev} = SD0; then " \
 			"setenv mmcroot /dev/mmcblk2p2 rootwait rw; " \
-		"else " \
+		"elif test ${bootdev} = SD1; then; " \
 			"setenv mmcroot /dev/mmcblk0p2 rootwait rw; " \
+		"elif test ${bootdev} = SATA; then; " \
+			"setenv mmcroot /dev/sda2 rootwait rw; " \
 		"fi\0" \
 	"mmcargs=setenv bootargs console=${console},${baudrate} " \
 		"root=${mmcroot}; run videoargs\0" \
@@ -221,12 +223,12 @@
 			"setenv bootargs ${bootargs} ${fbmem};" \
 		"fi;\0" \
 	"loadbootscript=" \
-		"fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${script};\0" \
-	"bootscript=echo Running bootscript from mmc ...; " \
+		"fatload ${bootmedia} ${mmcdev}:${mmcpart} ${loadaddr} ${script};\0" \
+	"bootscript=echo Running bootscript from ${bootmedia} ...; " \
 		"source\0" \
-	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
-	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdtfile}\0" \
-	"mmcboot=echo Booting from mmc ...; " \
+	"loadimage=fatload ${bootmedia} ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
+	"loadfdt=fatload ${bootmedia} ${mmcdev}:${mmcpart} ${fdt_addr} ${fdtfile}\0" \
+	"mmcboot=echo Booting from ${bootmedia} ...; " \
 		"run searchbootdev; " \
 		"run mmcargs; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
@@ -243,12 +245,14 @@
 			"bootz; " \
 		"fi;\0" \
 	"bootenv=uEnv.txt\0" \
-	"loadbootenv=fatload mmc ${mmcdev} ${loadaddr} ${bootenv}\0" \
-	"importbootenv=echo Importing environment from mmc ...; " \
+	"loadbootenv=fatload ${bootmedia} ${mmcdev} ${loadaddr} ${bootenv}\0" \
+	"importbootenv=echo Importing environment from ${bootmedia} ...; " \
 		"env import -t -r $loadaddr $filesize\0" \
 
 #define CONFIG_BOOTCOMMAND \
-	   "mmc dev ${mmcdev}; if mmc rescan; then " \
+		   "if test ${bootmedia} = mmc; then " \
+			   "mmc dev ${mmcdev}; mmc rescan; " \
+		   "fi;" \
 		   "if run loadbootenv; then " \
 			   "echo Loaded environment from ${bootenv};" \
 			   "run importbootenv;" \
@@ -262,10 +266,10 @@
 		   "else " \
 			   "if run loadimage; then " \
 				   "run mmcboot; " \
-			   "else run netboot; " \
+			   "else " \
+				   "echo WARN: Cannot load kernel from boot media; " \
 			   "fi; " \
-		   "fi; " \
-	   "else run netboot; fi"
+		   "fi; "
 
 /* Miscellaneous configurable options */
 #define CONFIG_SYS_LONGHELP
@@ -297,14 +301,10 @@
 
 #define CONFIG_ENV_SIZE			(8 * 1024)
 
-#define CONFIG_FSL_ENV_IN_SATA
-#if defined(CONFIG_FSL_ENV_IN_MMC)
-#define CONFIG_ENV_IS_IN_MMC
+#define CONFIG_ENV_IS_IN_BOOT_DEVICE
+#ifdef CONFIG_ENV_IS_IN_BOOT_DEVICE
 #define CONFIG_ENV_OFFSET		(6 * 64 * 1024)
 #define CONFIG_SYS_MMC_ENV_DEV		0
-#elif defined(CONFIG_FSL_ENV_IN_SATA)
-#define CONFIG_ENV_IS_IN_SATA
-#define CONFIG_ENV_OFFSET		(6 * 64 * 1024)
 #define CONFIG_SATA_ENV_DEV		0
 #define CONFIG_SYS_DCACHE_OFF // remove when sata driver support cache
 #endif
