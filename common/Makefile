@@ -56,6 +56,7 @@ obj-$(CONFIG_ENV_IS_IN_SATA) += env_sata.o
 obj-$(CONFIG_ENV_IS_IN_SPI_FLASH) += env_sf.o
 obj-$(CONFIG_ENV_IS_IN_REMOTE) += env_remote.o
 obj-$(CONFIG_ENV_IS_IN_UBI) += env_ubi.o
+obj-$(CONFIG_ENV_IS_IN_BOOT_DEVICE) += env_bootdevice.o
 obj-$(CONFIG_ENV_IS_NOWHERE) += env_nowhere.o
 
 # command
