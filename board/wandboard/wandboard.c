@@ -50,6 +50,7 @@ DECLARE_GLOBAL_DATA_PTR;
 #define USDHC1_CD_GPIO		IMX_GPIO_NR(1, 2)
 #define USDHC3_CD_GPIO		IMX_GPIO_NR(3, 9)
 #define ETH_PHY_RESET		IMX_GPIO_NR(3, 29)
+#define WAND_REV_CHECK	IMX_GPIO_NR(2, 28)
 
 int dram_init(void)
 {
@@ -105,6 +106,10 @@ static iomux_v3_cfg_t const enet_pads[] = {
 	IOMUX_PADS(PAD_EIM_D29__GPIO3_IO29    | MUX_PAD_CTRL(NO_PAD_CTRL)),
 	IOMUX_PADS(PAD_GPIO_6__GPIO1_IO06     | MUX_PAD_CTRL(NO_PAD_CTRL)),
 	IOMUX_PADS(PAD_KEY_COL4__GPIO4_IO14   | MUX_PAD_CTRL(NO_PAD_CTRL)),
+};
+
+static iomux_v3_cfg_t const wandboard_rev_check_pads[] = {
+	IOMUX_PADS(PAD_EIM_EB0__GPIO2_IO28  | MUX_PAD_CTRL(NO_PAD_CTRL)),
 };
 
 static void setup_iomux_uart(void)
@@ -475,10 +480,20 @@ int board_late_init(void)
 #endif
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
-	if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
-		setenv("board_rev", "MX6Q");
-	else
-		setenv("board_rev", "MX6DL");
+	SETUP_IOMUX_PADS(wandboard_rev_check_pads);
+	mdelay(10);
+
+	if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D)) {
+		if(gpio_get_value(WAND_REV_CHECK))
+			setenv("board_rev", "MX6Q-REVC1");
+		else
+			setenv("board_rev", "MX6Q-REVB1");
+	}else {
+		if(gpio_get_value(WAND_REV_CHECK))
+			setenv("board_rev", "MX6DL-REVC1");
+		else
+			setenv("board_rev", "MX6DL-REVB1");
+	}
 #endif
 	return 0;
 }
