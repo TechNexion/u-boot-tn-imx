@@ -178,7 +178,7 @@
 	"mmcdev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
 	"mmcpart=1\0" \
 	"searchbootdev=" \
-		"if test ${bootdev} = SD0; then " \
+		"if test ${bootdev} = MMC3; then " \
 			"setenv mmcroot /dev/mmcblk2p2 rootwait rw; " \
 		"elif test ${bootdev} = SD1; then; " \
 			"setenv mmcroot /dev/mmcblk0p2 rootwait rw; " \

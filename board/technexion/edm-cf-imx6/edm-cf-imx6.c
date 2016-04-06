@@ -709,8 +709,8 @@ int board_late_init(void)
 	if ((s = getenv ("bootdev_autodetect")) != NULL) {
 		if (strncmp (s, "off", 3) != 0) {
 			switch (get_boot_device()) {
-			case SD3_BOOT:
-				setenv("bootdev", "SD0");
+			case MMC3_BOOT:
+				setenv("bootdev", "MMC3");
 				setenv("bootmedia", "mmc");
 				break;
 			case SD1_BOOT:
@@ -722,7 +722,7 @@ int board_late_init(void)
 				setenv("bootmedia", "sata");
 				break;
 			default:
-				printf("Wrong boot device!");
+				printf("Wrong boot device!\r\n");
 			}
 		}
 	}
