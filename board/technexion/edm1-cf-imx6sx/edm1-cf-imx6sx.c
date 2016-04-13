@@ -24,7 +24,6 @@
 #include <netdev.h>
 #include <power/pmic.h>
 #include <power/pfuze100_pmic.h>
-#include "../common/pfuze.h"
 #include <usb.h>
 #include <usb/ehci-fsl.h>
 
@@ -472,45 +471,46 @@ struct i2c_pads_info i2c_pad_info2 = {
 static struct pmic *pfuze;
 int power_init_board(void)
 {
-	unsigned int reg, ret;
+	struct pmic *p;
+	u32 reg;
 
-	pfuze = pfuze_common_init(I2C_PMIC);
-	if (!pfuze)
-		return -ENODEV;
+	/* configure PFUZE100 PMIC */
+	power_pfuze100_init(CONFIG_I2C_PMIC);
+	p = pmic_get("PFUZE100");
+	if (p && !pmic_probe(p)) {
+		pmic_reg_read(p, PFUZE100_DEVICEID, &reg);
+		printf("PMIC:  PFUZE100 ID=0x%02x\n", reg);
 
-	ret = pfuze_mode_init(pfuze, APS_PFM);
-	if (ret < 0)
-		return ret;
+		/* set SW1AB standby volatage 1.10V */
+		pmic_reg_read(p, PFUZE100_SW1ABSTBY, &reg);
+		reg &= ~0x3f;
+		reg |= PFUZE100_SW1ABC_SETP(11000);
+		pmic_reg_write(p, PFUZE100_SW1ABSTBY, reg);
 
-	/* set SW1AB standby volatage 1.10V */
-	pmic_reg_read(pfuze, PFUZE100_SW1ABSTBY, &reg);
-	reg &= ~0x3f;
-	reg |= PFUZE100_SW1ABC_SETP(11000);
-	pmic_reg_write(pfuze, PFUZE100_SW1ABSTBY, reg);
+		/* set SW1AB/VDDARM step ramp up time from 16us to 4us/25mV */
+		pmic_reg_read(p, PFUZE100_SW1ABCONF, &reg);
+		reg &= ~0xc0;
+		reg |= 0x40;
+		pmic_reg_write(p, PFUZE100_SW1ABCONF, reg);
 
-	/* set SW1AB/VDDARM step ramp up time from 16us to 4us/25mV */
-	pmic_reg_read(pfuze, PFUZE100_SW1ABCONF, &reg);
-	reg &= ~0xc0;
-	reg |= 0x40;
-	pmic_reg_write(pfuze, PFUZE100_SW1ABCONF, reg);
+		/* set SW1C standby volatage 1.10V */
+		pmic_reg_read(p, PFUZE100_SW1CSTBY, &reg);
+		reg &= ~0x3f;
+		reg |= PFUZE100_SW1ABC_SETP(11000);
+		pmic_reg_write(p, PFUZE100_SW1CSTBY, reg);
 
-	/* set SW1C standby volatage 1.10V */
-	pmic_reg_read(pfuze, PFUZE100_SW1CSTBY, &reg);
-	reg &= ~0x3f;
-	reg |= PFUZE100_SW1ABC_SETP(11000);
-	pmic_reg_write(pfuze, PFUZE100_SW1CSTBY, reg);
+		/* set SW1C/VDDSOC step ramp up time to from 16us to 4us/25mV */
+		pmic_reg_read(p, PFUZE100_SW1CCONF, &reg);
+		reg &= ~0xc0;
+		reg |= 0x40;
+		pmic_reg_write(p, PFUZE100_SW1CCONF, reg);
 
-	/* set SW1C/VDDSOC step ramp up time to from 16us to 4us/25mV */
-	pmic_reg_read(pfuze, PFUZE100_SW1CCONF, &reg);
-	reg &= ~0xc0;
-	reg |= 0x40;
-	pmic_reg_write(pfuze, PFUZE100_SW1CCONF, reg);
-
-	/* Enable power of VGEN5 3V3, needed for SD3 */
-	pmic_reg_read(pfuze, PFUZE100_VGEN5VOL, &reg);
-	reg &= ~LDO_VOL_MASK;
-	reg |= (LDOB_3_30V | (1 << LDO_EN));
-	pmic_reg_write(pfuze, PFUZE100_VGEN5VOL, reg);
+		/* Enable power of VGEN5 3V3, needed for SD3 */
+		pmic_reg_read(p, PFUZE100_VGEN5VOL, &reg);
+		reg &= ~LDO_VOL_MASK;
+		reg |= (LDOB_3_30V | (1 << LDO_EN));
+		pmic_reg_write(p, PFUZE100_VGEN5VOL, reg);
+	}
 
 	return 0;
 }
