@@ -789,8 +789,6 @@ void board_recovery_setup(void)
 	setenv("bootcmd", "run bootcmd_android_recovery");
 }
 
-void check_recovery_mode(void) { }
-
 #endif /*CONFIG_ANDROID_RECOVERY*/
 
 #endif /*CONFIG_FSL_FASTBOOT*/
