@@ -20,7 +20,6 @@
 #include <netdev.h>
 #include <power/pmic.h>
 #include <power/pfuze300_pmic.h>
-#include "../common/pfuze.h"
 #include <asm/arch/clock_slice.h>
 #ifdef CONFIG_SYS_I2C_MXC
 #include <i2c.h>
