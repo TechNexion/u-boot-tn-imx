@@ -1,19 +1,19 @@
-U-Boot for picosom_imx6
+U-Boot for pico_imx6
 --------------------
 
-The version of u-boot for picosom_imx6 with SPL.
+The version of u-boot for pico_imx6 with SPL.
 
 The u-boot is suitable for i.mx6 solo, dual lite, quad.
 
 For more details, please refer to:
 http://www.technexion.com
 
-Building U-boot for picosom_imx6
+Building U-boot for pico_imx6
 -----------------------------
 
 To build U-Boot for i.mx6 solo, dual lite, quad:
 
-$ make picosom-imx6_defconfig
+$ make pico-imx6_defconfig
 $ make
 
 Flashing U-boot into the SD card

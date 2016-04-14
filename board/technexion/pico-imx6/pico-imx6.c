@@ -616,9 +616,9 @@ int board_late_init(void)
 	if ((s = getenv ("fdtfile_autodetect")) != NULL) {
 		if (strncmp (s, "off", 3) != 0) {
 			if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
-				setenv("fdtfile", "imx6q-picosom.dtb");
+				setenv("fdtfile", "imx6q-pico.dtb");
 			else
-				setenv("fdtfile", "imx6dl-picosom.dtb");
+				setenv("fdtfile", "imx6dl-pico.dtb");
 		}
 	}
 
@@ -663,7 +663,7 @@ int board_init(void)
 
 int checkboard(void)
 {
-	puts("Board: picosom-imx6\n");
+	puts("Board: pico-imx6\n");
 
 	return 0;
 }

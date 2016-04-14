@@ -5,5 +5,5 @@
 # SPDX-License-Identifier:	GPL-2.0+
 #
 
-obj-y  := picosom-imx6.o
-obj-$(CONFIG_SPL_BUILD) += picosom-imx6_spl.o
+obj-y  := pico-imx6.o
+obj-$(CONFIG_SPL_BUILD) += pico-imx6_spl.o

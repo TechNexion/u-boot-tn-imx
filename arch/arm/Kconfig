@@ -492,8 +492,8 @@ config TARGET_EDM_CF_IMX6
 	select CPU_V7
 	select SUPPORT_SPL
 
-config TARGET_PICOSOM_IMX6
-	bool "Support picosom-imx6"
+config TARGET_PICO_IMX6
+	bool "Support pico-imx6"
 	select CPU_V7
 	select SUPPORT_SPL
 
@@ -979,7 +979,7 @@ source "board/vpac270/Kconfig"
 source "board/wandboard/Kconfig"
 source "board/technexion/edm-cf-imx6/Kconfig"
 source "board/technexion/edm1-cf-imx6sx/Kconfig"
-source "board/technexion/picosom-imx6/Kconfig"
+source "board/technexion/pico-imx6/Kconfig"
 source "board/technexion/picosom-imx6-android/Kconfig"
 source "board/technexion/tek3-imx6/Kconfig"
 source "board/technexion/tek5-imx6/Kconfig"
