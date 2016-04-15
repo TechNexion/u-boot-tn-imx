@@ -669,11 +669,7 @@ u32 get_board_rev(void)
 
 int checkboard(void)
 {
-#if defined(CONFIG_MX6UL_9X9_LPDDR2)
-    puts("Board: MX6UL 9x9 EVK\n");
-#else
-    puts("Board: MX6UL 14x14 EVK\n");
-#endif
+    puts("Board: TEK3-IMX6UL\n");
 
 	return 0;
 }

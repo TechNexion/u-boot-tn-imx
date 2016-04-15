@@ -121,7 +121,7 @@
 #define CONFIG_POWER_PFUZE300
 #define CONFIG_POWER_PFUZE300_I2C_ADDR	0x08
 
-#define CONFIG_DEFAULT_FDT_FILE "imx6ul-14x14-evk.dtb"
+#define CONFIG_DEFAULT_FDT_FILE "imx6ul-tek3.dtb"
 #define PHYS_SDRAM_SIZE			SZ_256M
 #define CONFIG_BOOTARGS_CMA_SIZE   "cma=96M "
 
@@ -361,9 +361,9 @@
 #define CONFIG_ENV_SIZE			CONFIG_ENV_SECT_SIZE
 #endif
 
-#define CONFIG_SYS_MMC_ENV_DEV		1   /* USDHC2 */
+#define CONFIG_SYS_MMC_ENV_DEV		0   /* USDHC1 */
 #define CONFIG_SYS_MMC_ENV_PART		0	/* user area */
-#define CONFIG_MMCROOT			"/dev/mmcblk1p2"  /* USDHC2 */
+#define CONFIG_MMCROOT			"/dev/mmcblk0p2"  /* USDHC1 */
 
 #define CONFIG_OF_LIBFDT
 #define CONFIG_CMD_BOOTZ
