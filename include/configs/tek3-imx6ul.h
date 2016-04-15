@@ -124,7 +124,7 @@
 #define CONFIG_DEFAULT_FDT_FILE "imx6ul-tek3.dtb"
 #define PHYS_SDRAM_SIZE			SZ_256M
 #define CONFIG_BOOTARGS_CMA_SIZE   "cma=96M "
-
+#undef CONFIG_LDO_BYPASS_CHECK
 
 #define CONFIG_VIDEO
 

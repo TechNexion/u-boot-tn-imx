@@ -32,7 +32,6 @@
 #ifdef CONFIG_POWER
 #include <power/pmic.h>
 #include <power/pfuze300_pmic.h>
-#include "../../freescale/common/pfuze.h"
 #endif
 
 #ifdef CONFIG_FSL_FASTBOOT
@@ -345,14 +344,6 @@ static iomux_v3_cfg_t const lcd_pads[] = {
 	MX6_PAD_LCD_DATA21__LCDIF_DATA21 | MUX_PAD_CTRL(LCD_PAD_CTRL),
 	MX6_PAD_LCD_DATA22__LCDIF_DATA22 | MUX_PAD_CTRL(LCD_PAD_CTRL),
 	MX6_PAD_LCD_DATA23__LCDIF_DATA23 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-
-	/* LCD_RST */
-	MX6_PAD_SNVS_TAMPER9__GPIO5_IO09	| MUX_PAD_CTRL(NO_PAD_CTRL),
-
-	/*
-	 * Use GPIO for Brightness adjustment, duty cycle = period.
-	 */
-	MX6_PAD_GPIO1_IO08__GPIO1_IO08 | MUX_PAD_CTRL(NO_PAD_CTRL),
 };
 
 struct lcd_panel_info_t {
@@ -579,42 +570,6 @@ int power_init_board(void)
 	return 0;
 }
 
-#ifdef CONFIG_LDO_BYPASS_CHECK
-void ldo_mode_set(int ldo_bypass)
-{
-	unsigned int value;
-	u32 vddarm;
-
-	struct pmic *p = pfuze;
-
-	if (!p) {
-		printf("No PMIC found!\n");
-		return;
-	}
-
-	/* switch to ldo_bypass mode */
-	if (ldo_bypass) {
-		prep_anatop_bypass();
-		/* decrease VDDARM to 1.275V */
-		pmic_reg_read(pfuze, PFUZE300_SW1BVOLT, &value);
-		value &= ~0x1f;
-		value |= PFUZE300_SW1AB_SETP(1275);
-		pmic_reg_write(pfuze, PFUZE300_SW1BVOLT, value);
-
-		set_anatop_bypass(1);
-		vddarm = PFUZE300_SW1AB_SETP(1175);
-
-		pmic_reg_read(pfuze, PFUZE300_SW1BVOLT, &value);
-		value &= ~0x1f;
-		value |= vddarm;
-		pmic_reg_write(pfuze, PFUZE300_SW1BVOLT, value);
-
-		finish_anatop_bypass();
-
-		printf("switch to ldo_bypass mode!\n");
-	}
-}
-#endif
 #endif
 
 int board_init(void)
