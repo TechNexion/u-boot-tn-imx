@@ -53,11 +53,6 @@ DECLARE_GLOBAL_DATA_PTR;
 	PAD_CTL_PUS_22K_UP  | PAD_CTL_SPEED_LOW |		\
 	PAD_CTL_DSE_80ohm   | PAD_CTL_SRE_FAST  | PAD_CTL_HYS)
 
-#define USDHC_DAT3_CD_PAD_CTRL (PAD_CTL_PKE | PAD_CTL_PUE |		\
-	PAD_CTL_PUS_100K_DOWN  | PAD_CTL_SPEED_LOW |		\
-	PAD_CTL_DSE_80ohm   | PAD_CTL_SRE_FAST  | PAD_CTL_HYS)
-
-
 #define ENET_PAD_CTRL  (PAD_CTL_PUS_100K_UP | PAD_CTL_PUE |     \
 	PAD_CTL_SPEED_HIGH   |                                   \
 	PAD_CTL_DSE_48ohm   | PAD_CTL_SRE_FAST)
@@ -191,33 +186,6 @@ static void setup_iomux_uart(void)
 {
 	imx_iomux_v3_setup_multiple_pads(uart1_pads, ARRAY_SIZE(uart1_pads));
 }
-
-#ifdef CONFIG_FSL_QSPI
-
-#define QSPI_PAD_CTRL1	\
-	(PAD_CTL_SRE_FAST | PAD_CTL_SPEED_MED | \
-	 PAD_CTL_PKE | PAD_CTL_PUE | PAD_CTL_PUS_47K_UP | PAD_CTL_DSE_120ohm)
-
-static iomux_v3_cfg_t const quadspi_pads[] = {
-	MX6_PAD_NAND_WP_B__QSPI_A_SCLK	| MUX_PAD_CTRL(QSPI_PAD_CTRL1),
-	MX6_PAD_NAND_READY_B__QSPI_A_DATA00	| MUX_PAD_CTRL(QSPI_PAD_CTRL1),
-	MX6_PAD_NAND_CE0_B__QSPI_A_DATA01	| MUX_PAD_CTRL(QSPI_PAD_CTRL1),
-	MX6_PAD_NAND_CE1_B__QSPI_A_DATA02	| MUX_PAD_CTRL(QSPI_PAD_CTRL1),
-	MX6_PAD_NAND_CLE__QSPI_A_DATA03	| MUX_PAD_CTRL(QSPI_PAD_CTRL1),
-	MX6_PAD_NAND_DQS__QSPI_A_SS0_B	| MUX_PAD_CTRL(QSPI_PAD_CTRL1),
-};
-
-int board_qspi_init(void)
-{
-	/* Set the iomux */
-	imx_iomux_v3_setup_multiple_pads(quadspi_pads, ARRAY_SIZE(quadspi_pads));
-
-	/* Set the clock */
-	enable_qspi_clk(0);
-
-	return 0;
-}
-#endif
 
 #ifdef CONFIG_FSL_ESDHC
 static struct fsl_esdhc_cfg usdhc_cfg[2] = {
@@ -667,10 +635,6 @@ int board_init(void)
 	setup_usb();
 #endif
 
-#ifdef CONFIG_FSL_QSPI
-	board_qspi_init();
-#endif
-
 	return 0;
 }
 
@@ -679,7 +643,6 @@ static const struct boot_mode board_boot_modes[] = {
 	/* 4 bit bus width */
 	{"sd1", MAKE_CFGVAL(0x42, 0x20, 0x00, 0x00)},
 	{"sd2", MAKE_CFGVAL(0x40, 0x28, 0x00, 0x00)},
-	{"qspi1", MAKE_CFGVAL(0x10, 0x00, 0x00, 0x00)},
 	{NULL,	 0},
 };
 #endif
