@@ -98,7 +98,7 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #ifdef CONFIG_SYS_I2C_MXC
 #define PC MUX_PAD_CTRL(I2C_PAD_CTRL)
-/* I2C1 for PMIC and EEPROM */
+/* I2C1 for PMIC */
 struct i2c_pads_info i2c_pad_info1 = {
 	.scl = {
 		.i2c_mode =  MX6_PAD_GPIO1_IO02__I2C1_SCL | PC,
@@ -132,16 +132,10 @@ static iomux_v3_cfg_t const usdhc1_pads[] = {
 	MX6_PAD_SD1_DATA1__USDHC1_DATA1 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_SD1_DATA2__USDHC1_DATA2 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_SD1_DATA3__USDHC1_DATA3 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-
-	/* VSELECT */
-	MX6_PAD_GPIO1_IO05__USDHC1_VSELECT | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	/* CD */
-	MX6_PAD_UART1_RTS_B__GPIO1_IO19 | MUX_PAD_CTRL(NO_PAD_CTRL),
-	/* RST_B */
-	MX6_PAD_GPIO1_IO09__GPIO1_IO09 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	MX6_PAD_CSI_DATA02__GPIO4_IO23 | MUX_PAD_CTRL(NO_PAD_CTRL),
 };
 
-#if defined(CONFIG_MX6UL_EVK_EMMC_REWORK)
 static iomux_v3_cfg_t const usdhc2_emmc_pads[] = {
 	MX6_PAD_NAND_RE_B__USDHC2_CLK | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_NAND_WE_B__USDHC2_CMD | MUX_PAD_CTRL(USDHC_PAD_CTRL),
@@ -153,36 +147,11 @@ static iomux_v3_cfg_t const usdhc2_emmc_pads[] = {
 	MX6_PAD_NAND_DATA05__USDHC2_DATA5 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_NAND_DATA06__USDHC2_DATA6 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_NAND_DATA07__USDHC2_DATA7 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-
 	/*
 	 * RST_B
 	 */
 	MX6_PAD_NAND_ALE__GPIO4_IO10 | MUX_PAD_CTRL(NO_PAD_CTRL),
 };
-#else
-static iomux_v3_cfg_t const usdhc2_pads[] = {
-	MX6_PAD_NAND_RE_B__USDHC2_CLK | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_NAND_WE_B__USDHC2_CMD | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_NAND_DATA00__USDHC2_DATA0 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_NAND_DATA01__USDHC2_DATA1 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_NAND_DATA02__USDHC2_DATA2 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_NAND_DATA03__USDHC2_DATA3 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-};
-
-static iomux_v3_cfg_t const usdhc2_cd_pads[] = {
-
-	/* The evk board uses DAT3 to detect CD card plugin, in u-boot we mux the pin to
-	  * GPIO when doing board_mmc_getcd.
-	  */
-	MX6_PAD_NAND_DATA03__GPIO4_IO05 | MUX_PAD_CTRL(USDHC_DAT3_CD_PAD_CTRL),
-};
-
-static iomux_v3_cfg_t const usdhc2_dat3_pads[] = {
-	MX6_PAD_NAND_DATA03__USDHC2_DATA3 | MUX_PAD_CTRL(USDHC_DAT3_CD_PAD_CTRL),
-};
-
-
-#endif
 
 #ifdef CONFIG_SYS_USE_NAND
 static iomux_v3_cfg_t const nand_pads[] = {
@@ -323,14 +292,10 @@ int board_qspi_init(void)
 #ifdef CONFIG_FSL_ESDHC
 static struct fsl_esdhc_cfg usdhc_cfg[2] = {
 	{USDHC1_BASE_ADDR, 0, 4},
-#if defined(CONFIG_MX6UL_EVK_EMMC_REWORK)
 	{USDHC2_BASE_ADDR, 0, 8},
-#else
-	{USDHC2_BASE_ADDR, 0, 4},
-#endif
 };
 
-#define USDHC1_CD_GPIO	IMX_GPIO_NR(1, 19)
+#define USDHC1_CD_GPIO	IMX_GPIO_NR(4, 23)
 #define USDHC1_PWR_GPIO	IMX_GPIO_NR(1, 9)
 #define USDHC2_CD_GPIO	IMX_GPIO_NR(4, 5)
 #define USDHC2_PWR_GPIO	IMX_GPIO_NR(4, 10)
@@ -374,19 +339,7 @@ int board_mmc_getcd(struct mmc *mmc)
 		ret = !gpio_get_value(USDHC1_CD_GPIO);
 		break;
 	case USDHC2_BASE_ADDR:
-#if defined(CONFIG_MX6UL_EVK_EMMC_REWORK)
 		ret = 1;
-#else
-		imx_iomux_v3_setup_multiple_pads(
-				usdhc2_cd_pads, ARRAY_SIZE(usdhc2_cd_pads));
-		gpio_direction_input(USDHC2_CD_GPIO);
-
-		/* Since it is the DAT3 pin, this pin is pulled to a low voltage if no card */
-		ret = gpio_get_value(USDHC2_CD_GPIO);
-
-		imx_iomux_v3_setup_multiple_pads(
-				usdhc2_dat3_pads, ARRAY_SIZE(usdhc2_dat3_pads));
-#endif
 		break;
 	}
 
@@ -417,13 +370,9 @@ int board_mmc_init(bd_t *bis)
 			gpio_direction_output(USDHC1_PWR_GPIO, 1);
 			break;
 		case 1:
-#if defined(CONFIG_MX6UL_EVK_EMMC_REWORK)
 			imx_iomux_v3_setup_multiple_pads(
 				usdhc2_emmc_pads, ARRAY_SIZE(usdhc2_emmc_pads));
-#else
-			imx_iomux_v3_setup_multiple_pads(
-				usdhc2_pads, ARRAY_SIZE(usdhc2_pads));
-#endif
+
 			gpio_direction_output(USDHC2_PWR_GPIO, 0);
 			udelay(500);
 			gpio_direction_output(USDHC2_PWR_GPIO, 1);
