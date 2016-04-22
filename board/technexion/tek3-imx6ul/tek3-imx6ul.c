@@ -172,6 +172,14 @@ static iomux_v3_cfg_t const fec2_pads[] = {
 	MX6_PAD_ENET2_RX_ER__ENET2_RX_ER | MUX_PAD_CTRL(ENET_PAD_CTRL),
 };
 
+static iomux_v3_cfg_t const fec_reset_pads[] = {
+	MX6_PAD_SNVS_TAMPER2__GPIO5_IO02 | MUX_PAD_CTRL(ENET_PAD_CTRL),
+	MX6_PAD_SNVS_TAMPER3__GPIO5_IO03  | MUX_PAD_CTRL(ENET_PAD_CTRL),
+};
+
+#define RMII_PHY1_RESET IMX_GPIO_NR(5, 2)
+#define RMII_PHY2_RESET IMX_GPIO_NR(5, 3)
+
 static void setup_iomux_fec(int fec_id)
 {
 	if (fec_id == 0)
@@ -179,6 +187,12 @@ static void setup_iomux_fec(int fec_id)
 	else
 		imx_iomux_v3_setup_multiple_pads(fec2_pads, ARRAY_SIZE(fec2_pads));
 }
+
+static void setup_iomux_fec_reset(void)
+{
+	imx_iomux_v3_setup_multiple_pads(fec_reset_pads, ARRAY_SIZE(fec_reset_pads));
+}
+
 #endif
 
 static void setup_iomux_uart(void)
@@ -430,6 +444,14 @@ int board_eth_init(bd_t *bis)
 	int ret;
 
 	setup_iomux_fec(CONFIG_FEC_ENET_DEV);
+
+	setup_iomux_fec_reset();
+
+	gpio_direction_output(RMII_PHY1_RESET, 0);
+	gpio_direction_output(RMII_PHY2_RESET, 0);
+	udelay(5000);
+	gpio_direction_output(RMII_PHY1_RESET, 1);
+	gpio_direction_output(RMII_PHY2_RESET, 1);
 
 	ret = fecmxc_initialize_multi(bis, CONFIG_FEC_ENET_DEV,
 		CONFIG_FEC_MXC_PHYADDR, IMX_FEC_BASE);
