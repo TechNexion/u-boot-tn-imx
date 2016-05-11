@@ -170,6 +170,20 @@ static void setup_iomux_som_detection(void)
 	SETUP_IOMUX_PADS(som_detection_pads);
 }
 
+static bool cpu_is_pop(void)
+{
+	u32 soc_sbmr = readl(SRC_BASE_ADDR + 0x4);
+	u32 ddr_map;
+
+	/* BOOT_CFG3[4] and BOOT_CFG3[5] */
+	ddr_map = (soc_sbmr >> 20) & 0x3;
+
+	if (ddr_map == 0x2)
+		return true;
+	else
+		return false;
+}
+
 static struct fsl_esdhc_cfg usdhc_cfg[2] = {
 	{USDHC3_BASE_ADDR},
 	{USDHC1_BASE_ADDR},
@@ -663,7 +677,10 @@ int board_init(void)
 
 int checkboard(void)
 {
-	puts("Board: pico-imx6\n");
+	if (cpu_is_pop())
+		printf("Board: pico-imx6-pop\n");
+	else
+		printf("Board: pico-imx6\n");
 
 	return 0;
 }

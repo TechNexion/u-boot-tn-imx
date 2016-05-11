@@ -519,7 +519,19 @@ static void spl_dram_init_lpddr2(void)
 	writel(0x00000000, MMDC_P1_BASE_ADDR + 0x01c);
 }
 
+static bool cpu_is_pop(void)
+{
+	u32 soc_sbmr = readl(SRC_BASE_ADDR + 0x4);
+	u32 ddr_map;
 
+	/* BOOT_CFG3[4] and BOOT_CFG3[5] */
+	ddr_map = (soc_sbmr >> 20) & 0x3;
+
+	if (ddr_map == 0x2)
+		return true;
+	else
+		return false;
+}
 
 static void spl_dram_init(void)
 {
@@ -534,7 +546,12 @@ static void spl_dram_init(void)
 		break;
 	case MXC_CPU_MX6D:
 	case MXC_CPU_MX6Q:
-		spl_dram_init_lpddr2();
+		if (cpu_is_pop()) {
+			spl_dram_init_lpddr2();
+		} else {
+			mx6dq_dram_iocfg(32, &mx6dq_ddr_ioregs, &mx6dq_grp_ioregs);
+			mx6_dram_cfg(&mem_s, &mx6q_2g_mmdc_calib, &h5t04g63afr_800mhz);
+		}
 		break;
 	}
 
