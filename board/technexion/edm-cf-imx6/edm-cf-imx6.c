@@ -220,6 +220,7 @@ int board_mmc_init(bd_t *bis)
 			usdhc_cfg[1].sdhc_clk = mxc_get_clock(MXC_ESDHC3_CLK);
 			usdhc_cfg[1].max_bus_width = 4;
 			break;
+		case MMC3_BOOT:
 		case SD3_BOOT:
 		default:
 			usdhc_cfg[0].esdhc_base = USDHC3_BASE_ADDR;
@@ -687,11 +688,16 @@ int board_late_init(void)
 				setenv("fdtfile", "imx6q-edm1-cf-mimas.dtb");
 				break;
 			case WANDBOARD_B1_SOM:
+				if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
+					setenv("fdtfile", "imx6q-wandboard-revb1.dtb");
+				else
+					setenv("fdtfile", "imx6dl-wandboard-revb1.dtb");
+				break;
 			case WANDBOARD_C1_SOM:
 				if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
-					setenv("fdtfile", "imx6q-wandboard.dtb");
+					setenv("fdtfile", "imx6q-wandboard-revc1.dtb");
 				else
-					setenv("fdtfile", "imx6dl-wandboard.dtb");
+					setenv("fdtfile", "imx6dl-wandboard-revc1.dtb");
 				break;
 			}
 		}
@@ -701,6 +707,7 @@ int board_late_init(void)
 		if (strncmp (s, "off", 3) != 0) {
 			switch (get_boot_device()) {
 			case MMC3_BOOT:
+			case SD3_BOOT:
 				setenv("bootdev", "MMC3");
 				setenv("bootmedia", "mmc");
 				break;
