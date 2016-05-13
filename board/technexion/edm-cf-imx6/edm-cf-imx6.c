@@ -58,7 +58,6 @@ DECLARE_GLOBAL_DATA_PTR;
 #define EDM_SOM_DET_R170	IMX_GPIO_NR(3, 12)
 #define EDM_SOM_DET_R173	IMX_GPIO_NR(3, 5)
 
-#define TEK3_PMIC_I2C_BUS 2
 #define PMIC_I2C_ADDR 0x08
 
 #define TLV32_AUD_CODEC_I2C_BUS 1
@@ -67,13 +66,14 @@ DECLARE_GLOBAL_DATA_PTR;
 
 static int board_type = -1;
 
+static bool with_pmic = false;
+
 enum edm_som_type {
 	EDM1_CF_IMX6_SOM,
 	EDM1_CF_IMX6_MIMAS,
 	EDM2_CF_IMX6_SOM,
 	WANDBOARD_B1_SOM,
 	WANDBOARD_C1_SOM,
-	TEK3_IMX6,
 };
 
 int dram_init(void)
@@ -421,15 +421,6 @@ static void setup_iomux_i2c(void)
 
 static enum edm_som_type som_detection(void)
 {
-	/*
-	 * TEK3-imx6 board has Pfuze100 PMIC on I2C bus 3
-	 * EDM boards don't have PMIC, except EDM-imx6qp(PMIC is on I2C bus 2)
-	 */
-
-	if ((0 == i2c_set_bus_num(TEK3_PMIC_I2C_BUS)) && (0 == i2c_probe(PMIC_I2C_ADDR))) {
-		return TEK3_IMX6;
-	}
-
 	if ((0 == i2c_set_bus_num(TLV32_AUD_CODEC_I2C_BUS)) && (0 == i2c_probe(TLV32_AUD_CODEC_I2C_SLAVE_ADDR))) {
 		return EDM1_CF_IMX6_MIMAS;
 	}
@@ -461,20 +452,19 @@ int power_init_board(void)
 	struct pmic *p;
 	u32 reg;
 
-	if (board_type == TEK3_IMX6) {
 	/* configure PFUZE100 PMIC */
-		power_pfuze100_init(CONFIG_I2C_PMIC);
-		p = pmic_get("PFUZE100");
-		if (p && !pmic_probe(p)) {
-			pmic_reg_read(p, PFUZE100_DEVICEID, &reg);
-			printf("PMIC:  PFUZE100 ID=0x%02x\n", reg);
+	power_pfuze100_init(CONFIG_I2C_PMIC);
+	p = pmic_get("PFUZE100");
+	if (p && !pmic_probe(p)) {
+		pmic_reg_read(p, PFUZE100_DEVICEID, &reg);
+		printf("PMIC:  PFUZE100 ID=0x%02x\n", reg);
+		with_pmic = true;
 
-			/* Set VGEN2 to 1.5V and enable */
-			pmic_reg_read(p, PFUZE100_VGEN2VOL, &reg);
-			reg &= ~(LDO_VOL_MASK);
-			reg |= (LDOA_1_50V | (1 << (LDO_EN)));
-			pmic_reg_write(p, PFUZE100_VGEN2VOL, reg);
-		}
+		/* Set VGEN2 to 1.5V and enable */
+		pmic_reg_read(p, PFUZE100_VGEN2VOL, &reg);
+		reg &= ~(LDO_VOL_MASK);
+		reg |= (LDOA_1_50V | (1 << (LDO_EN)));
+		pmic_reg_write(p, PFUZE100_VGEN2VOL, reg);
 	}
 
 	return 0;
@@ -681,10 +671,17 @@ int board_late_init(void)
 			switch (board_type) {
 			case EDM1_CF_IMX6_SOM:
 			case EDM2_CF_IMX6_SOM:
-				if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
-					setenv("fdtfile", "imx6q-edm1-cf.dtb");
-				else
-					setenv("fdtfile", "imx6dl-edm1-cf.dtb");
+				if (with_pmic) {
+					if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
+						setenv("fdtfile", "imx6q-edm1-cf-pmic_fairy.dtb");
+					else
+						setenv("fdtfile", "imx6dl-edm1-cf-pmic_fairy.dtb");
+				} else {
+					if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
+						setenv("fdtfile", "imx6q-edm1-cf.dtb");
+					else
+						setenv("fdtfile", "imx6dl-edm1-cf.dtb");
+				}
 				break;
 			case EDM1_CF_IMX6_MIMAS:
 				setenv("fdtfile", "imx6q-edm1-cf-mimas.dtb");
@@ -695,12 +692,6 @@ int board_late_init(void)
 					setenv("fdtfile", "imx6q-wandboard.dtb");
 				else
 					setenv("fdtfile", "imx6dl-wandboard.dtb");
-				break;
-			case TEK3_IMX6:
-				if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
-					setenv("fdtfile", "imx6q-tek3.dtb");
-				else
-					setenv("fdtfile", "imx6dl-tek3.dtb");
 				break;
 			}
 		}
@@ -762,9 +753,6 @@ int checkboard(void)
 		break;
 	case WANDBOARD_C1_SOM:
 		puts("Board: wandboard rev.C1\n");
-		break;
-	case TEK3_IMX6:
-		puts("Board: tek3-imx6\n");
 		break;
 	}
 
