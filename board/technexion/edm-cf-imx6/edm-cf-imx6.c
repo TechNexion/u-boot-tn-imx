@@ -679,9 +679,9 @@ int board_late_init(void)
 						setenv("fdtfile", "imx6dl-edm1-cf-pmic_fairy.dtb");
 				} else {
 					if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
-						setenv("fdtfile", "imx6q-edm1-cf.dtb");
+						setenv("fdtfile", "imx6q-edm1-cf_fairy.dtb");
 					else
-						setenv("fdtfile", "imx6dl-edm1-cf.dtb");
+						setenv("fdtfile", "imx6dl-edm1-cf_fairy.dtb");
 				}
 				break;
 			case EDM1_CF_IMX6_MIMAS:
