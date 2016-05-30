@@ -380,6 +380,8 @@
 #define PWM8_BASE_ADDR              (AIPS3_ARB_BASE_ADDR + 0xB0000)
 #endif
 
+#define NOC_DDR_BASE_ADDR           (GPV0_BASE_ADDR + 0xB0000)
+
 #define CHIP_REV_1_0                 0x10
 #define CHIP_REV_1_1                 0x11
 #define CHIP_REV_1_2                 0x12
