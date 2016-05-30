@@ -673,7 +673,9 @@ int board_late_init(void)
 			case EDM1_CF_IMX6_SOM:
 			case EDM2_CF_IMX6_SOM:
 				if (with_pmic) {
-					if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
+					if (is_mx6dqp())
+						setenv("fdtfile", "imx6qp-edm1-cf-pmic_fairy.dtb");
+					else if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
 						setenv("fdtfile", "imx6q-edm1-cf-pmic_fairy.dtb");
 					else
 						setenv("fdtfile", "imx6dl-edm1-cf-pmic_fairy.dtb");
