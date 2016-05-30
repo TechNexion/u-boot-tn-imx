@@ -63,11 +63,27 @@ void setup_gpmi_io_clk(u32 cfg)
 
 	clrbits_le32(&imx_ccm->CCGR2, MXC_CCM_CCGR2_IOMUX_IPT_CLK_IO_MASK);
 
+#if defined(CONFIG_MX6QDL)
+	if (is_mx6dqp()) {
+		clrsetbits_le32(&imx_ccm->cs2cdr,
+				MXC_CCM_CS2CDR_ENFC_CLK_PODF_MASK |
+				MXC_CCM_CS2CDR_ENFC_CLK_PRED_MASK |
+				MXC_CCM_CS2CDR_ENFC_CLK_SEL_MASK_MX6QP,
+				cfg);
+	} else {
+		clrsetbits_le32(&imx_ccm->cs2cdr,
+				MXC_CCM_CS2CDR_ENFC_CLK_PODF_MASK |
+				MXC_CCM_CS2CDR_ENFC_CLK_PRED_MASK |
+				MXC_CCM_CS2CDR_ENFC_CLK_SEL_MASK,
+				cfg);
+	}
+#else
 	clrsetbits_le32(&imx_ccm->cs2cdr,
 			MXC_CCM_CS2CDR_ENFC_CLK_PODF_MASK |
 			MXC_CCM_CS2CDR_ENFC_CLK_PRED_MASK |
 			MXC_CCM_CS2CDR_ENFC_CLK_SEL_MASK,
 			cfg);
+#endif
 
 	setbits_le32(&imx_ccm->CCGR2, MXC_CCM_CCGR2_IOMUX_IPT_CLK_IO_MASK);
 #endif
@@ -404,6 +420,14 @@ static u32 get_ipg_per_clk(void)
 	if (reg & MXC_CCM_CSCMR1_PER_CLK_SEL_MASK)
 		return MXC_HCLK; /* OSC 24Mhz */
 #endif
+
+#ifdef CONFIG_MX6QDL
+	if (is_mx6dqp()) {
+		if (reg & MXC_CCM_CSCMR1_PER_CLK_SEL_MASK)
+		return MXC_HCLK; /* OSC 24Mhz */
+	}
+#endif
+
 	perclk_podf = reg & MXC_CCM_CSCMR1_PERCLK_PODF_MASK;
 
 	return get_ipg_clk() / (perclk_podf + 1);
@@ -418,6 +442,13 @@ static u32 get_uart_clk(void)
 	defined(CONFIG_MX6QP) || defined(CONFIG_MX6UL))
 	if (reg & MXC_CCM_CSCDR1_UART_CLK_SEL)
 		freq = MXC_HCLK;
+#endif
+
+#ifdef CONFIG_MX6QDL
+	if (is_mx6dqp()) {
+		if (reg & MXC_CCM_CSCDR1_UART_CLK_SEL)
+			freq = MXC_HCLK;
+	}
 #endif
 	reg &= MXC_CCM_CSCDR1_UART_CLK_PODF_MASK;
 	uart_podf = reg >> MXC_CCM_CSCDR1_UART_CLK_PODF_OFFSET;
@@ -437,6 +468,13 @@ static u32 get_cspi_clk(void)
 	defined(CONFIG_MX6QP) || defined(CONFIG_MX6UL))
 	if (reg & MXC_CCM_CSCDR2_ECSPI_CLK_SEL_MASK)
 		return MXC_HCLK / (cspi_podf + 1);
+#endif
+
+#ifdef CONFIG_MX6QDL
+	if (is_mx6dqp()) {
+		if (reg & MXC_CCM_CSCDR2_ECSPI_CLK_SEL_MASK)
+		return MXC_HCLK / (cspi_podf + 1);
+	}
 #endif
 
 	return	decode_pll(PLL_USBOTG, MXC_HCLK) / (8 * (cspi_podf + 1));
@@ -1293,7 +1331,7 @@ int do_mx6_showclocks(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 }
 
 #if !defined(CONFIG_MX6SX) && !defined(CONFIG_MX6UL)
-#ifdef CONFIG_MX6QP
+#if defined(CONFIG_MX6QP) || defined(CONFIG_MX6QDL)
 static void pre_misc_setting(void)
 {
 	/* Bypass IPU1 QoS generator */
@@ -1327,21 +1365,23 @@ void enable_ipu_clock(void)
 	reg |= MXC_CCM_CCGR3_IPU1_IPU_MASK;
 	writel(reg, &mxc_ccm->CCGR3);
 
-#ifdef CONFIG_MX6QP
-	reg = readl(&mxc_ccm->CCGR6);
-	reg |= MXC_CCM_CCGR6_PRG_CLK0_MASK;
-	writel(reg, &mxc_ccm->CCGR6);
+#if defined(CONFIG_MX6QP) || defined(CONFIG_MX6QDL)
+	if (is_mx6dqp()) {
+		reg = readl(&mxc_ccm->CCGR6);
+		reg |= MXC_CCM_CCGR6_PRG_CLK0_MASK;
+		writel(reg, &mxc_ccm->CCGR6);
 
-	reg = readl(&mxc_ccm->CCGR3);
-	reg |= MXC_CCM_CCGR3_IPU2_IPU_MASK;
-	writel(reg, &mxc_ccm->CCGR3);
+		reg = readl(&mxc_ccm->CCGR3);
+		reg |= MXC_CCM_CCGR3_IPU2_IPU_MASK;
+		writel(reg, &mxc_ccm->CCGR3);
 
-	/*
-	 * Since CONFIG_VIDEO_IPUV3 is always set in mx6sabre_common.h and
-	 * this misc setting is a must for mx6qp, this position is ok
-	 * to do such settings.
-	 */
-	pre_misc_setting();
+		/*
+		* Since CONFIG_VIDEO_IPUV3 is always set in mx6sabre_common.h and
+		* this misc setting is a must for mx6qp, this position is ok
+		* to do such settings.
+		*/
+		pre_misc_setting();
+	}
 #endif
 }
 

@@ -368,7 +368,8 @@ struct mxc_ccm_reg {
 #define MXC_CCM_CSCMR1_QSPI1_CLK_SEL_OFFSET		7
 #endif
 #if (defined(CONFIG_MX6SL) || defined(CONFIG_MX6SX) || \
-	defined(CONFIG_MX6QP) || defined(CONFIG_MX6UL))
+	defined(CONFIG_MX6QP) || defined(CONFIG_MX6UL)) || \
+	defined(CONFIG_MX6QDL)
 #define MXC_CCM_CSCMR1_PER_CLK_SEL_MASK			(1 << 6)
 #define MXC_CCM_CSCMR1_PER_CLK_SEL_OFFSET		6
 #endif
@@ -423,7 +424,8 @@ struct mxc_ccm_reg {
 #define MXC_CCM_CSCDR1_USBOH3_CLK_PODF_MASK		(0x3 << 6)
 #endif
 #if (defined(CONFIG_MX6SL) || defined(CONFIG_MX6SX) || \
-	defined(CONFIG_MX6QP) || defined(CONFIG_MX6UL))
+	defined(CONFIG_MX6QP) || defined(CONFIG_MX6UL)) || \
+	defined(CONFIG_MX6QDL)
 #define MXC_CCM_CSCDR1_UART_CLK_SEL			(1 << 6)
 #endif
 #define MXC_CCM_CSCDR1_UART_CLK_PODF_MASK		0x3F
@@ -482,6 +484,13 @@ struct mxc_ccm_reg {
 #define MXC_CCM_CS2CDR_ENFC_CLK_SEL_OFFSET		16
 #define MXC_CCM_CS2CDR_ENFC_CLK_SEL(v)			(((v) & 0x3) << 16)
 #endif
+
+#if defined(CONFIG_MX6QDL)
+#define MXC_CCM_CS2CDR_ENFC_CLK_SEL_MASK_MX6QP		(0x7 << 15)
+#define MXC_CCM_CS2CDR_ENFC_CLK_SEL_OFFSET_MX6QP	15
+#define MXC_CCM_CS2CDR_ENFC_CLK_SEL_MX6QP(v)		(((v) & 0x7) << 15)
+#endif
+
 #endif
 #define MXC_CCM_CS2CDR_LDB_DI1_CLK_SEL_MASK		(0x7 << 12)
 #define MXC_CCM_CS2CDR_LDB_DI1_CLK_SEL_OFFSET		12
@@ -573,7 +582,8 @@ struct mxc_ccm_reg {
 #define MXC_CCM_CSCDR2_ECSPI_CLK_PODF_MASK		(0x3F << 19)
 #define MXC_CCM_CSCDR2_ECSPI_CLK_PODF_OFFSET		19
 #if defined(CONFIG_MX6QP) || defined(CONFIG_MX6SX) || \
-	defined(CONFIG_MX6SL) || defined(CONFIG_MX6UL)
+	defined(CONFIG_MX6SL) || defined(CONFIG_MX6UL) || \
+	defined(CONFIG_MX6QDL)
 #define MXC_CCM_CSCDR2_ECSPI_CLK_SEL_MASK		(0x1 << 18)
 #define MXC_CCM_CSCDR2_ECSPI_CLK_SEL_OFFSET		18
 #endif
@@ -1124,13 +1134,14 @@ struct mxc_ccm_reg {
 #else
 #define MXC_CCM_CCGR6_VDOAXICLK_OFFSET		12
 #define MXC_CCM_CCGR6_VDOAXICLK_MASK		(3 << MXC_CCM_CCGR6_VDOAXICLK_OFFSET)
-#ifdef CONFIG_MX6QP
+#if defined(CONFIG_MX6QP) || defined(CONFIG_MX6QDL)
 #define MXC_CCM_CCGR6_VPUCLK_OFFSET		14
 #define MXC_CCM_CCGR6_VPUCLK_MASK		(3 << MXC_CCM_CCGR6_VPUCLK_OFFSET)
 #define MXC_CCM_CCGR6_PRE_CLK0_OFFSET		16
 #define MXC_CCM_CCGR6_PRE_CLK0_MASK		(3 << MXC_CCM_CCGR6_PRE_CLK0_OFFSET)
 #define MXC_CCM_CCGR6_PRE_CLK1_OFFSET		18
 #define MXC_CCM_CCGR6_PRE_CLK1_MASK		(3 << MXC_CCM_CCGR6_PRE_CLK1_OFFSET)
+#endif
 #define MXC_CCM_CCGR6_PRE_CLK2_OFFSET		20
 #define MXC_CCM_CCGR6_PRE_CLK2_MASK		(3 << MXC_CCM_CCGR6_PRE_CLK2_OFFSET)
 #define MXC_CCM_CCGR6_PRE_CLK3_OFFSET		22
@@ -1139,7 +1150,6 @@ struct mxc_ccm_reg {
 #define MXC_CCM_CCGR6_PRG_CLK0_MASK		(3 << MXC_CCM_CCGR6_PRG_CLK0_OFFSET)
 #define MXC_CCM_CCGR6_PRG_CLK1_OFFSET		26
 #define MXC_CCM_CCGR6_PRG_CLK1_MASK		(3 << MXC_CCM_CCGR6_PRG_CLK1_OFFSET)
-#endif
 #endif
 
 #define BM_ANADIG_PLL_SYS_LOCK 0x80000000
