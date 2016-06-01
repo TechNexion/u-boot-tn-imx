@@ -54,6 +54,7 @@ DECLARE_GLOBAL_DATA_PTR;
 #define USDHC1_CD_GPIO		IMX_GPIO_NR(1, 2)
 #define USDHC3_CD_GPIO		IMX_GPIO_NR(3, 9)
 #define ETH_PHY_RESET		IMX_GPIO_NR(3, 29)
+#define ETH_PHY_AR8035_POWER	IMX_GPIO_NR(7, 13)
 #define EDM_SOM_DET_R149	IMX_GPIO_NR(2, 28)
 #define EDM_SOM_DET_R170	IMX_GPIO_NR(3, 12)
 #define EDM_SOM_DET_R173	IMX_GPIO_NR(3, 5)
@@ -131,8 +132,13 @@ static iomux_v3_cfg_t const enet_pads[] = {
 	IOMUX_PADS(PAD_RGMII_RD2__RGMII_RD2  | MUX_PAD_CTRL(ENET_PAD_CTRL)),
 	IOMUX_PADS(PAD_RGMII_RD3__RGMII_RD3  | MUX_PAD_CTRL(ENET_PAD_CTRL)),
 	IOMUX_PADS(PAD_RGMII_RX_CTL__RGMII_RX_CTL | MUX_PAD_CTRL(ENET_PAD_CTRL)),
-	/* AR8031 PHY Reset */
+	/* AR8031/AR8035 PHY Reset */
 	IOMUX_PADS(PAD_EIM_D29__GPIO3_IO29    | MUX_PAD_CTRL(NO_PAD_CTRL)),
+};
+
+static iomux_v3_cfg_t const enet_ar8035_power_pads[] = {
+	/* AR8035 POWER */
+	IOMUX_PADS(PAD_GPIO_18__GPIO7_IO13    | MUX_PAD_CTRL(NO_PAD_CTRL)),
 };
 
 static iomux_v3_cfg_t const som_detection_pads[] = {
@@ -157,7 +163,13 @@ static void setup_iomux_enet(void)
 {
 	SETUP_IOMUX_PADS(enet_pads);
 
-	/* Reset AR8031 PHY */
+	if (with_pmic) {
+		SETUP_IOMUX_PADS(enet_ar8035_power_pads);
+		/* enable AR8035 POWER */
+		gpio_direction_output(ETH_PHY_AR8035_POWER, 0);
+	}
+
+	/* Reset AR8031/AR8035 PHY */
 	gpio_direction_output(ETH_PHY_RESET, 0);
 	udelay(500);
 	gpio_set_value(ETH_PHY_RESET, 1);
@@ -245,14 +257,21 @@ static int mx6_rgmii_rework(struct phy_device *phydev)
 {
 	unsigned short val;
 
-	/* To enable AR8031 ouput a 125MHz clk from CLK_25M */
+	/* To enable AR8031/AR8035 ouput a 125MHz clk from CLK_25M */
 	phy_write(phydev, MDIO_DEVAD_NONE, 0xd, 0x7);
 	phy_write(phydev, MDIO_DEVAD_NONE, 0xe, 0x8016);
 	phy_write(phydev, MDIO_DEVAD_NONE, 0xd, 0x4007);
 
 	val = phy_read(phydev, MDIO_DEVAD_NONE, 0xe);
-	val &= 0xffe3;
-	val |= 0x18;
+	if (with_pmic) {
+		/* AR8035 */
+		val &= 0xffe7;
+		val |= 0x18;
+	} else {
+		/* AR8031 */
+		val &= 0xffe3;
+		val |= 0x18;
+	}
 	phy_write(phydev, MDIO_DEVAD_NONE, 0xe, val);
 
 	/* introduce tx clock delay */
