@@ -170,6 +170,8 @@
 	"image=zImage\0" \
 	"console=" __stringify(CONFIG_DEBUG_TTY)"\0" \
 	"splashpos=m,m\0" \
+	"som=autodetect\0" \
+	"baseboard=fairy\0" \
 	"fdtfile=undefined\0" \
 	"fdt_high=0xffffffff\0" \
 	"initrd_high=0xffffffff\0" \
@@ -227,10 +229,13 @@
 	"bootscript=echo Running bootscript from ${bootmedia} ...; " \
 		"source\0" \
 	"loadimage=fatload ${bootmedia} ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
+	"setfdt=setenv fdtfile ${som}_${baseboard}.dtb\0" \
 	"loadfdt=fatload ${bootmedia} ${mmcdev}:${mmcpart} ${fdt_addr} ${fdtfile}\0" \
 	"mmcboot=echo Booting from ${bootmedia} ...; " \
 		"run searchbootdev; " \
 		"run mmcargs; " \
+		"echo baseboard is ${baseboard}; " \
+		"run setfdt; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
 			"if run loadfdt; then " \
 				"bootz ${loadaddr} - ${fdt_addr}; " \

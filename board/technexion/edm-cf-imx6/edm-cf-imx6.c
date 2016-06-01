@@ -60,21 +60,19 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #define PMIC_I2C_ADDR 0x08
 
-#define TLV32_AUD_CODEC_I2C_BUS 1
-#define TLV32_AUD_CODEC_I2C_SLAVE_ADDR 0x1b
+#define STRING(s) #s
 
+#define RETURN_SOM_TYPE(def)						\
+if (is_mx6dqp()) {							\
+	return STRING(imx6qp-def);					\
+} else if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D)) {	\
+	return STRING(imx6q-def);					\
+} else {								\
+	return STRING(imx6dl-def);					\
+}
 
-static int board_type = -1;
 
 static bool with_pmic = false;
-
-enum edm_som_type {
-	EDM1_CF_IMX6_SOM,
-	EDM1_CF_IMX6_MIMAS,
-	EDM2_CF_IMX6_SOM,
-	WANDBOARD_B1_SOM,
-	WANDBOARD_C1_SOM,
-};
 
 int dram_init(void)
 {
@@ -420,12 +418,8 @@ static void setup_iomux_i2c(void)
 	}
 }
 
-static enum edm_som_type som_detection(void)
+static const char* som_type(void)
 {
-	if ((0 == i2c_set_bus_num(TLV32_AUD_CODEC_I2C_BUS)) && (0 == i2c_probe(TLV32_AUD_CODEC_I2C_SLAVE_ADDR))) {
-		return EDM1_CF_IMX6_MIMAS;
-	}
-
 	/*
 	 * Wandboard boots from SD3
 	 * EDM boots from i-NAND or SD1
@@ -435,15 +429,25 @@ static enum edm_som_type som_detection(void)
 	gpio_direction_input(EDM_SOM_DET_R173);
 
 	if (!gpio_get_value(EDM_SOM_DET_R173) && gpio_get_value(EDM_SOM_DET_R170)) {
-		if (!gpio_get_value(EDM_SOM_DET_R149))
-			return WANDBOARD_B1_SOM;
-		else
-			return WANDBOARD_C1_SOM;
+		if (!gpio_get_value(EDM_SOM_DET_R149)) {
+			RETURN_SOM_TYPE(wandboard-revb1)
+		}else {
+			RETURN_SOM_TYPE(wandboard-revc1)
+		}
 	} else {
-		if (!gpio_get_value(EDM_SOM_DET_R149))
-			return EDM1_CF_IMX6_SOM;
-		else
-			return EDM2_CF_IMX6_SOM;
+		if (!gpio_get_value(EDM_SOM_DET_R149)) {
+			if (with_pmic) {
+				RETURN_SOM_TYPE(edm1-cf-pmic)
+			} else {
+				RETURN_SOM_TYPE(edm1-cf)
+			}
+		} else {
+			if (with_pmic) {
+				RETURN_SOM_TYPE(edm2-cf-pmic)
+			} else {
+				RETURN_SOM_TYPE(edm2-cf)
+			}
+		}
 	}
 }
 
@@ -658,6 +662,10 @@ static const struct boot_mode board_boot_modes[] = {
 };
 #endif
 
+#define SETUP_FDT_FILE
+
+
+
 int board_late_init(void)
 {
 #ifdef CONFIG_CMD_BMODE
@@ -669,39 +677,7 @@ int board_late_init(void)
 
 	if ((s = getenv ("fdtfile_autodetect")) != NULL) {
 		if (strncmp (s, "off", 3) != 0) {
-			switch (board_type) {
-			case EDM1_CF_IMX6_SOM:
-			case EDM2_CF_IMX6_SOM:
-				if (with_pmic) {
-					if (is_mx6dqp())
-						setenv("fdtfile", "imx6qp-edm1-cf-pmic_fairy.dtb");
-					else if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
-						setenv("fdtfile", "imx6q-edm1-cf-pmic_fairy.dtb");
-					else
-						setenv("fdtfile", "imx6dl-edm1-cf-pmic_fairy.dtb");
-				} else {
-					if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
-						setenv("fdtfile", "imx6q-edm1-cf_fairy.dtb");
-					else
-						setenv("fdtfile", "imx6dl-edm1-cf_fairy.dtb");
-				}
-				break;
-			case EDM1_CF_IMX6_MIMAS:
-				setenv("fdtfile", "imx6q-edm1-cf-mimas.dtb");
-				break;
-			case WANDBOARD_B1_SOM:
-				if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
-					setenv("fdtfile", "imx6q-wandboard-revb1.dtb");
-				else
-					setenv("fdtfile", "imx6dl-wandboard-revb1.dtb");
-				break;
-			case WANDBOARD_C1_SOM:
-				if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
-					setenv("fdtfile", "imx6q-wandboard-revc1.dtb");
-				else
-					setenv("fdtfile", "imx6dl-wandboard-revc1.dtb");
-				break;
-			}
+			setenv("som", som_type());
 		}
 	}
 
@@ -737,7 +713,6 @@ int board_init(void)
 
 	setup_iomux_i2c();
 	setup_iomux_som_detection();
-	board_type = som_detection();
 #ifdef CONFIG_CMD_SATA
 	setup_sata();
 #endif
@@ -747,23 +722,8 @@ int board_init(void)
 
 int checkboard(void)
 {
-	switch (board_type) {
-	case EDM1_CF_IMX6_SOM:
-		puts("Board: edm1-cf-imx6\n");
-		break;
-	case EDM1_CF_IMX6_MIMAS:
-		puts("Board: edm1-cf-imx6-mimas\n");
-		break;
-	case EDM2_CF_IMX6_SOM:
-		puts("Board: edm2-cf-imx6\n");
-		break;
-	case WANDBOARD_B1_SOM:
-		puts("Board: wandboard rev.B1\n");
-		break;
-	case WANDBOARD_C1_SOM:
-		puts("Board: wandboard rev.C1\n");
-		break;
-	}
+	printf("SOM: %s\n", som_type());
+	printf("Available baseboard: fairy, mimas, tc0700\n");
 
 	return 0;
 }

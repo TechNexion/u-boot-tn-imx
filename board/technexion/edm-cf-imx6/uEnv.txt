@@ -1,4 +1,5 @@
 displayinfo=video=mxcfb0:dev=ldb,1024x600@60,if=RGB24,bpp=32
 mmcargs=setenv bootargs console=${console},${baudrate} root=${mmcroot} ${displayinfo}
+baseboard=fairy
 bootcmd_mmc=run loadimage;run mmcboot;
 uenvcmd=run bootcmd_mmc
