@@ -200,10 +200,10 @@
 			"echo Detecting monitor...;" \
 			"setenv nextcon 0; " \
 			"i2c dev 1; " \
-			"if i2c probe 0x10; then " \
+			"if i2c probe 0x38; then " \
 				"setenv bootargs ${bootargs} " \
 					"video=mxcfb${nextcon}:dev=lcd,800x480@60," \
-						"if=RGB666,bpp=32; " \
+						"if=RGB24; " \
 				"if test 0 -eq ${nextcon}; then " \
 					"setenv fbmem fbmem=10M; " \
 				"else " \
@@ -211,7 +211,7 @@
 				"fi; " \
 				"setexpr nextcon ${nextcon} + 1; " \
 			"else " \
-				"echo '- no FWBADAPT-7WVGA-LCD-F07A-0102 display';" \
+				"echo '- no FT5x06 touch display';" \
 			"fi; " \
 			"if hdmidet; then " \
 				"setenv bootargs ${bootargs} " \
