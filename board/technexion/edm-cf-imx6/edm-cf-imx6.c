@@ -396,7 +396,7 @@ struct i2c_pads_info mx6dl_i2c2_pad_info = {
 	}
 };
 
-static iomux_v3_cfg_t const fwadapt_7wvga_pads[] = {
+static iomux_v3_cfg_t const ft5x06_wvga_pads[] = {
 	IOMUX_PADS(PAD_DI0_DISP_CLK__IPU1_DI0_DISP_CLK),
 	IOMUX_PADS(PAD_DI0_PIN2__IPU1_DI0_PIN02), /* HSync */
 	IOMUX_PADS(PAD_DI0_PIN3__IPU1_DI0_PIN03), /* VSync */
@@ -420,6 +420,12 @@ static iomux_v3_cfg_t const fwadapt_7wvga_pads[] = {
 	IOMUX_PADS(PAD_DISP0_DAT15__IPU1_DISP0_DATA15),
 	IOMUX_PADS(PAD_DISP0_DAT16__IPU1_DISP0_DATA16),
 	IOMUX_PADS(PAD_DISP0_DAT17__IPU1_DISP0_DATA17),
+	IOMUX_PADS(PAD_DISP0_DAT18__IPU1_DISP0_DATA18),
+	IOMUX_PADS(PAD_DISP0_DAT19__IPU1_DISP0_DATA19),
+	IOMUX_PADS(PAD_DISP0_DAT20__IPU1_DISP0_DATA20),
+	IOMUX_PADS(PAD_DISP0_DAT21__IPU1_DISP0_DATA21),
+	IOMUX_PADS(PAD_DISP0_DAT22__IPU1_DISP0_DATA22),
+	IOMUX_PADS(PAD_DISP0_DAT23__IPU1_DISP0_DATA23),
 	IOMUX_PADS(PAD_SD4_DAT2__GPIO2_IO10 | MUX_PAD_CTRL(NO_PAD_CTRL)), /* DISP0_BKLEN */
 	IOMUX_PADS(PAD_SD4_DAT3__GPIO2_IO11 | MUX_PAD_CTRL(NO_PAD_CTRL)), /* DISP0_VDDEN */
 };
@@ -523,9 +529,9 @@ static void enable_lvds(struct display_info_t const *dev)
 	gpio_direction_output(IMX_GPIO_NR(2, 8), 1);
 }
 
-static void enable_fwadapt_7wvga(struct display_info_t const *dev)
+static void enable_ft5x06_wvga(struct display_info_t const *dev)
 {
-	SETUP_IOMUX_PADS(fwadapt_7wvga_pads);
+	SETUP_IOMUX_PADS(ft5x06_wvga_pads);
 
 	gpio_direction_output(IMX_GPIO_NR(2, 10), 1);
 	gpio_direction_output(IMX_GPIO_NR(2, 11), 1);
@@ -573,18 +579,18 @@ struct display_info_t const displays[] = {{
 		.vmode          = FB_VMODE_NONINTERLACED
 } }, {
 	.bus	= 1,
-	.addr	= 0x10,
-	.pixfmt	= IPU_PIX_FMT_RGB666,
+	.addr	= 0x38,
+	.pixfmt	= IPU_PIX_FMT_RGB24,
 	.detect	= detect_i2c,
-	.enable	= enable_fwadapt_7wvga,
+	.enable	= enable_ft5x06_wvga,
 	.mode	= {
-		.name           = "FWBADAPT-LCD-F07A-0102",
+		.name           = "FT5x06-WVGA",
 		.refresh        = 60,
 		.xres           = 800,
 		.yres           = 480,
-		.pixclock       = 33260,
-		.left_margin    = 128,
-		.right_margin   = 128,
+		.pixclock       = 30303,
+		.left_margin    = 45,
+		.right_margin   = 210,
 		.upper_margin   = 22,
 		.lower_margin   = 22,
 		.hsync_len      = 1,
