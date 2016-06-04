@@ -1,25 +1,23 @@
-U-Boot for tek3_imx6
+U-Boot for tek5_imx6
 --------------------
 
-The version of u-boot for tek3_imx6 with SPL.
+The version of u-boot for tek5_imx6 with SPL.
 
 The u-boot is suitable for i.mx6 solo, dual lite, quad.
 
 For more details, please refer to:
 http://www.technexion.com
 
-Building U-boot for tek3_imx6
+Building U-boot for tek5_imx6
 -----------------------------
 
 To build U-Boot for i.mx6 solo, dual lite, quad:
 
-$ make tek3-imx6_defconfig
+$ make tek5-imx6_defconfig
 $ make
 
 Flashing U-boot into the SD card
 --------------------------------
-
-- After the 'make' command completes, the generated 'SPL' and 'u-boot.bin' binary must be flashed into the SD card;
 
 $ sudo dd if=SPL of=/dev/$dev bs=512 seek=2; sync
 

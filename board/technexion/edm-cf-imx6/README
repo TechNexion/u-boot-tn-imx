@@ -19,8 +19,6 @@ $ make
 Flashing U-boot into the SD card
 --------------------------------
 
-- After the 'make' command completes, the generated 'SPL' and 'u-boot.bin' binary must be flashed into the SD card;
-
 $ sudo dd if=SPL of=/dev/$dev bs=512 seek=2; sync
 
 $ Copy u-boot.img into 1st FAT partition of SD card

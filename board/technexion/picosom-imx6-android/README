@@ -1,4 +1,4 @@
-U-Boot for picosom_imx6
+U-Boot for picosom_imx6_android
 --------------------
 
 The version of u-boot for picosom_imx6 with SPL.
@@ -13,16 +13,14 @@ Building U-boot for picosom_imx6
 
 To build U-Boot for i.mx6 solo, dual lite, quad:
 
-$ make picosom-imx6_defconfig
+$ make picosom-imx6-android_defconfig
 $ make
 
 Flashing U-boot into the SD card
 --------------------------------
 
-- After the 'make' command completes, the generated 'SPL' and 'u-boot.bin' binary must be flashed into the SD card;
-
 $ sudo dd if=SPL of=/dev/$dev bs=512 seek=2; sync
 
-$ Copy u-boot.img into /boot under 1st fat partition of SD card
+$ Copy u-boot.img into 1st FAT partition of SD card
 
 - Power up the board and U-boot messages will appear in the serial console.
