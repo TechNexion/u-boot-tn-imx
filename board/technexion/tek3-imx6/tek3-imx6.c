@@ -55,9 +55,8 @@ DECLARE_GLOBAL_DATA_PTR;
 #define USDHC3_CD_GPIO		IMX_GPIO_NR(3, 9)
 #define ETH_PHY_RESET		IMX_GPIO_NR(3, 29)
 #define ETH_PHY_POWER		IMX_GPIO_NR(7, 13)
-#define EDM_SOM_DET_R149	IMX_GPIO_NR(2, 28)
-#define EDM_SOM_DET_R170	IMX_GPIO_NR(3, 12)
-#define EDM_SOM_DET_R173	IMX_GPIO_NR(3, 5)
+#define VERSION_DET_R1310	IMX_GPIO_NR(5, 31)
+#define VERSION_DET_R1311	IMX_GPIO_NR(6, 0)
 
 int dram_init(void)
 {
@@ -122,13 +121,11 @@ static iomux_v3_cfg_t const enet_pads[] = {
 	IOMUX_PADS(PAD_GPIO_18__GPIO7_IO13    | MUX_PAD_CTRL(NO_PAD_CTRL)),
 };
 
-static iomux_v3_cfg_t const som_detection_pads[] = {
-	/* R149 */
-	IOMUX_PADS(PAD_EIM_EB0__GPIO2_IO28  | MUX_PAD_CTRL(NO_PAD_CTRL)),
-	/* R170 */
-	IOMUX_PADS(PAD_EIM_DA12__GPIO3_IO12  | MUX_PAD_CTRL(NO_PAD_CTRL)),
-	/* R173 */
-	IOMUX_PADS(PAD_EIM_DA5__GPIO3_IO05  | MUX_PAD_CTRL(NO_PAD_CTRL)),
+static iomux_v3_cfg_t const version_detection_pads[] = {
+	/* R1310 */
+	IOMUX_PADS(PAD_CSI0_DAT13__GPIO5_IO31  | MUX_PAD_CTRL(NO_PAD_CTRL)),
+	/* R1311 */
+	IOMUX_PADS(PAD_CSI0_DAT14__GPIO6_IO00  | MUX_PAD_CTRL(NO_PAD_CTRL)),
 };
 
 static void setup_iomux_uart(void)
@@ -151,6 +148,11 @@ static void setup_iomux_enet(void)
 	gpio_direction_output(ETH_PHY_RESET, 0);
 	udelay(500);
 	gpio_set_value(ETH_PHY_RESET, 1);
+}
+
+static void setup_iomux_version_detection(void)
+{
+	SETUP_IOMUX_PADS(version_detection_pads);
 }
 
 static struct fsl_esdhc_cfg usdhc_cfg[2] = {
@@ -402,6 +404,23 @@ static void setup_iomux_i2c(void)
 	}
 }
 
+static const char* sbc_type(void)
+{
+	gpio_direction_input(VERSION_DET_R1310);
+	gpio_direction_input(VERSION_DET_R1311);
+
+	/* Detection for TEK series
+		   VERSION_DET_R1310 VERSION_DET_R1311
+	   TEK3            0                 0
+	   TEK5            1                 1
+	*/
+	if (gpio_get_value(VERSION_DET_R1310) && gpio_get_value(VERSION_DET_R1310))
+		return "tek5";
+	else
+		return "tek3";
+
+}
+
 /* setup board specific PMIC */
 int power_init_board(void)
 {
@@ -620,14 +639,18 @@ int board_late_init(void)
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	char *s;
+	char fdt_name[24];
 
 	if ((s = getenv ("fdtfile_autodetect")) != NULL) {
 		if (strncmp (s, "off", 3) != 0) {
-			if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
-				setenv("fdtfile", "imx6q-tek3.dtb");
+			if (is_mx6dqp())
+				sprintf(fdt_name, "imx6qp-%s.dtb", sbc_type());
+			else if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
+				sprintf(fdt_name, "imx6q-%s.dtb", sbc_type());
 			else
-				setenv("fdtfile", "imx6dl-tek3.dtb");
+				sprintf(fdt_name, "imx6dl-%s.dtb", sbc_type());
 		}
+		setenv("fdtfile", fdt_name);
 	}
 
 	if ((s = getenv ("bootdev_autodetect")) != NULL) {
@@ -661,6 +684,8 @@ int board_init(void)
 
 	setup_iomux_i2c();
 
+	setup_iomux_version_detection();
+
 #ifdef CONFIG_CMD_SATA
 	setup_sata();
 #endif
@@ -670,7 +695,7 @@ int board_init(void)
 
 int checkboard(void)
 {
-	puts("Board: tek3-imx6\n");
+	printf("Board: %s-imx6\n", sbc_type());
 
 	return 0;
 }
