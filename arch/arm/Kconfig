@@ -502,13 +502,8 @@ config TARGET_PICOSOM_IMX6_ANDROID
 	select CPU_V7
 	select SUPPORT_SPL
 
-config TARGET_TEK3_IMX6
-	bool "Support tek3-imx6"
-	select CPU_V7
-	select SUPPORT_SPL
-
-config TARGET_TEK5_IMX6
-	bool "Support tek5-imx6"
+config TARGET_TEK_IMX6
+	bool "Support tek-imx6"
 	select CPU_V7
 	select SUPPORT_SPL
 
@@ -986,8 +981,7 @@ source "board/technexion/edm-cf-imx6/Kconfig"
 source "board/technexion/edm1-cf-imx6sx/Kconfig"
 source "board/technexion/pico-imx6/Kconfig"
 source "board/technexion/picosom-imx6-android/Kconfig"
-source "board/technexion/tek3-imx6/Kconfig"
-source "board/technexion/tek5-imx6/Kconfig"
+source "board/technexion/tek-imx6/Kconfig"
 source "board/warp/Kconfig"
 source "board/woodburn/Kconfig"
 source "board/work-microwave/work_92105/Kconfig"

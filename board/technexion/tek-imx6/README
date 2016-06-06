@@ -1,19 +1,19 @@
-U-Boot for tek5_imx6
+U-Boot for tek_imx6
 --------------------
 
-The version of u-boot for tek5_imx6 with SPL.
+tek_imx6 is used for Technexion TEK series single board computer(SBC), including TEK3, TEK5.
 
-The u-boot is suitable for i.mx6 solo, dual lite, quad.
+With SPL support, it can boot for i.mx6 solo, dual lite, quad, quad plus.
 
 For more details, please refer to:
 http://www.technexion.com
 
-Building U-boot for tek5_imx6
+Building U-boot for tek_imx6
 -----------------------------
 
-To build U-Boot for i.mx6 solo, dual lite, quad:
+To build U-Boot:
 
-$ make tek5-imx6_defconfig
+$ make tek-imx6_defconfig
 $ make
 
 Flashing U-boot into the SD card

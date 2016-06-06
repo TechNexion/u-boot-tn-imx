@@ -1,7 +1,7 @@
-if TARGET_TEK3_IMX6
+if TARGET_TEK_IMX6
 
 config SYS_BOARD
-	default "tek3-imx6"
+	default "tek-imx6"
 
 config SYS_VENDOR
 	string
@@ -11,6 +11,6 @@ config SYS_SOC
 	default "mx6"
 
 config SYS_CONFIG_NAME
-	default "tek3-imx6"
+	default "tek-imx6"
 
 endif

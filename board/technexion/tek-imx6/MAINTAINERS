@@ -1,0 +1,6 @@
+Technexion TEK-IMX6 board
+M:	Richard Hu <richard.hu@technexion.com>
+S:	Maintained
+F:	board/tek-imx6/
+F:	include/configs/tek-imx6.h
+F:	configs/tek-imx6_defconfig
