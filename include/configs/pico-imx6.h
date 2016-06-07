@@ -140,6 +140,8 @@
 	"image=zImage\0" \
 	"console=ttymxc0\0" \
 	"splashpos=m,m\0" \
+	"som=autodetect\0" \
+	"baseboard=dwarf\0" \
 	"fdtfile=undefined\0" \
 	"fdt_high=0xffffffff\0" \
 	"initrd_high=0xffffffff\0" \
@@ -195,10 +197,13 @@
 	"bootscript=echo Running bootscript from mmc ...; " \
 		"source\0" \
 	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
+	"setfdt=setenv fdtfile ${som}_${baseboard}.dtb\0" \
 	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdtfile}\0" \
 	"mmcboot=echo Booting from mmc ...; " \
 		"run searchbootdev; " \
 		"run mmcargs; " \
+		"echo baseboard is ${baseboard}; " \
+		"run setfdt; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
 			"if run loadfdt; then " \
 				"bootz ${loadaddr} - ${fdt_addr}; " \

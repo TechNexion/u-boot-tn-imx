@@ -380,12 +380,6 @@ static iomux_v3_cfg_t const fwadapt_7wvga_pads[] = {
 	IOMUX_PADS(PAD_SD4_DAT3__GPIO2_IO11 | MUX_PAD_CTRL(NO_PAD_CTRL)), /* DISP0_VDDEN */
 };
 
-
-
-
-
-
-
 static void do_enable_hdmi(struct display_info_t const *dev)
 {
 	imx_enable_hdmi_phy();
@@ -630,9 +624,9 @@ int board_late_init(void)
 	if ((s = getenv ("fdtfile_autodetect")) != NULL) {
 		if (strncmp (s, "off", 3) != 0) {
 			if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
-				setenv("fdtfile", "imx6q-pico.dtb");
+				setenv("som", "imx6q-pico");
 			else
-				setenv("fdtfile", "imx6dl-pico.dtb");
+				setenv("som", "imx6dl-pico");
 		}
 	}
 
@@ -681,6 +675,8 @@ int checkboard(void)
 		printf("Board: pico-imx6-pop\n");
 	else
 		printf("Board: pico-imx6\n");
+
+	printf("Available baseboard: dwarf, hobbit, nymph\n");
 
 	return 0;
 }
