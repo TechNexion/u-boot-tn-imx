@@ -1,7 +1,7 @@
 U-Boot for tek_imx6
 --------------------
 
-tek_imx6 is used for Technexion TEK series single board computer(SBC), including TEK3, TEK5.
+tek_imx6 is used for Technexion TEK and TEP series single board computer(SBC), including TEK3, TEP5.
 
 With SPL support, it can boot for i.mx6 solo, dual lite, quad, quad plus.
 

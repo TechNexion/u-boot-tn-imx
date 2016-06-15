@@ -415,7 +415,7 @@ static const char* sbc_type(void)
 	   TEK5            1                 1
 	*/
 	if (gpio_get_value(VERSION_DET_R1310) && gpio_get_value(VERSION_DET_R1310))
-		return "tek5";
+		return "tep5";
 	else
 		return "tek3";
 
