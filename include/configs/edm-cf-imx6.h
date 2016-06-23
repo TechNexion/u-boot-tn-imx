@@ -172,6 +172,7 @@
 	"splashpos=m,m\0" \
 	"som=autodetect\0" \
 	"baseboard=fairy\0" \
+	"default_baseboard=fairy\0" \
 	"fdtfile=undefined\0" \
 	"fdt_high=0xffffffff\0" \
 	"initrd_high=0xffffffff\0" \
@@ -241,7 +242,12 @@
 				"bootz ${loadaddr} - ${fdt_addr}; " \
 			"else " \
 				"if test ${boot_fdt} = try; then " \
-					"bootz; " \
+					"echo WARN: Cannot load the DT; " \
+					"echo fall back to load the default DT; " \
+					"setenv baseboard ${default_baseboard}; " \
+					"run setfdt; " \
+					"run loadfdt; " \
+					"bootz ${loadaddr} - ${fdt_addr}; " \
 				"else " \
 					"echo WARN: Cannot load the DT; " \
 				"fi; " \
