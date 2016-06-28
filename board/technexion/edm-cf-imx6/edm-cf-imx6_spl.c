@@ -36,7 +36,7 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #define IMX6DQ_DRIVE_STRENGTH		0x30
 #define IMX6SDL_DRIVE_STRENGTH		0x28
-#define IMX6QP_DRIVE_STRENGTH		0x30
+#define IMX6QP_DRIVE_STRENGTH		0x28
 
 /* configure MX6Q/DUAL mmdc DDR io registers */
 static struct mx6dq_iomux_ddr_regs mx6dq_ddr_ioregs = {
@@ -367,26 +367,30 @@ static void spl_dram_init_imx6qp_lpddr3(void)
 	writel(IMX6QP_DRIVE_STRENGTH, IOMUXC_BASE_ADDR + 0x5bc);
 	writel(IMX6QP_DRIVE_STRENGTH, IOMUXC_BASE_ADDR + 0x5c4);
 
+	/* MMDC0_MDSCR
+	   set the Configuration request bit during MMDC set up */
+	writel(0x00008000, MMDC_P0_BASE_ADDR + 0x01c);
+
 	/* Calibrations */
 	/* ZQ */
 	writel(0xa1390003, MMDC_P0_BASE_ADDR + 0x800);
 	/* write leveling */
-	writel(0x001b001e, MMDC_P0_BASE_ADDR + 0x80c);
-	writel(0x002e0029, MMDC_P0_BASE_ADDR + 0x810);
-	writel(0x001b002a, MMDC_P1_BASE_ADDR + 0x80c);
-	writel(0x0019002c, MMDC_P1_BASE_ADDR + 0x810);
+	writel(0x00060004, MMDC_P0_BASE_ADDR + 0x80c);
+	writel(0x000B0004, MMDC_P0_BASE_ADDR + 0x810);
+	writel(0x00000004, MMDC_P1_BASE_ADDR + 0x80c);
+	writel(0x00000000, MMDC_P1_BASE_ADDR + 0x810);
 	/* DQS gating, read delay, write delay calibration values
 	 based on calibration compare of 0x00ffff00  */
-	writel(0x43240334, MMDC_P0_BASE_ADDR + 0x83c);
-	writel(0x0324031a, MMDC_P0_BASE_ADDR + 0x840);
-	writel(0x43340344, MMDC_P1_BASE_ADDR + 0x83c);
-	writel(0x03280276, MMDC_P1_BASE_ADDR + 0x840);
+	writel(0x03040314, MMDC_P0_BASE_ADDR + 0x83c);
+	writel(0x03080300, MMDC_P0_BASE_ADDR + 0x840);
+	writel(0x03000310, MMDC_P1_BASE_ADDR + 0x83c);
+	writel(0x0268023C, MMDC_P1_BASE_ADDR + 0x840);
 
-	writel(0x44383A3E, MMDC_P0_BASE_ADDR + 0x848);
-	writel(0x3C3C3846, MMDC_P1_BASE_ADDR + 0x848);
+	writel(0x4034363A, MMDC_P0_BASE_ADDR + 0x848);
+	writel(0x36302C3C, MMDC_P1_BASE_ADDR + 0x848);
 
-	writel(0x2e303230, MMDC_P0_BASE_ADDR + 0x850);
-	writel(0x38283E34, MMDC_P1_BASE_ADDR + 0x850);
+	writel(0x3E3E4046, MMDC_P0_BASE_ADDR + 0x850);
+	writel(0x483A4844, MMDC_P1_BASE_ADDR + 0x850);
 
 	writel(0x33333333, MMDC_P0_BASE_ADDR + 0x81c);
 	writel(0x33333333, MMDC_P0_BASE_ADDR + 0x820);
@@ -397,8 +401,8 @@ static void spl_dram_init_imx6qp_lpddr3(void)
 	writel(0x33333333, MMDC_P1_BASE_ADDR + 0x824);
 	writel(0x33333333, MMDC_P1_BASE_ADDR + 0x828);
 
-	writel(0x24912492, MMDC_P0_BASE_ADDR + 0x8c0);
-	writel(0x24912492, MMDC_P1_BASE_ADDR + 0x8c0);
+	writel(0x24912489, MMDC_P0_BASE_ADDR + 0x8c0);
+	writel(0x24914452, MMDC_P1_BASE_ADDR + 0x8c0);
 
 	writel(0x00000800, MMDC_P0_BASE_ADDR + 0x8b8);
 	writel(0x00000800, MMDC_P1_BASE_ADDR + 0x8b8);
@@ -406,38 +410,37 @@ static void spl_dram_init_imx6qp_lpddr3(void)
 	  in DDR3, 64-bit mode, only MMDC0 is initiated: */
 	writel(0x00020036, MMDC_P0_BASE_ADDR + 0x004);
 	writel(0x09444040, MMDC_P0_BASE_ADDR + 0x008);
-	writel(0x898E7955, MMDC_P0_BASE_ADDR + 0x00c);
-	writel(0xFF328F64, MMDC_P0_BASE_ADDR + 0x010);
-	writel(0x01FF00DB, MMDC_P0_BASE_ADDR + 0x014);
-	writel(0x00011740, MMDC_P0_BASE_ADDR + 0x018);
+	writel(0x898E79A4, MMDC_P0_BASE_ADDR + 0x00c);
+	writel(0xDB538F64, MMDC_P0_BASE_ADDR + 0x010);
+	writel(0x01FF00DD, MMDC_P0_BASE_ADDR + 0x014);
 
+	writel(0x00011740, MMDC_P0_BASE_ADDR + 0x018);
 	writel(0x00008000, MMDC_P0_BASE_ADDR + 0x01c);
 	writel(0x000026D2, MMDC_P0_BASE_ADDR + 0x02c);
 	writel(0x008E1023, MMDC_P0_BASE_ADDR + 0x030);
-
-	/* 2G */
 	writel(0x00000047, MMDC_P0_BASE_ADDR + 0x040);
+
 	writel(0x14420000, MMDC_P0_BASE_ADDR + 0x400);
 	writel(0x841A0000, MMDC_P0_BASE_ADDR + 0x000);
+	writel(0x00400c58, MMDC_P0_BASE_ADDR + 0x890);
 
 	/* add noc DDR configuration */
-
 	writel(0x00000000, NOC_DDR_BASE_ADDR + 0x008);
-	writel(0x2891E41A, NOC_DDR_BASE_ADDR + 0x00c);
-	writel(0x00000564, NOC_DDR_BASE_ADDR + 0x038);
+	writel(0x2871C39B, NOC_DDR_BASE_ADDR + 0x00c);
+	writel(0x000005B4, NOC_DDR_BASE_ADDR + 0x038);
 	writel(0x00000040, NOC_DDR_BASE_ADDR + 0x014);
 	writel(0x00000020, NOC_DDR_BASE_ADDR + 0x028);
 	writel(0x00000020, NOC_DDR_BASE_ADDR + 0x02c);
 
-	writel(0x04088032, MMDC_P0_BASE_ADDR + 0x01c);
+	writel(0x02088032, MMDC_P0_BASE_ADDR + 0x01c);
 	writel(0x00008033, MMDC_P0_BASE_ADDR + 0x01c);
 	writel(0x00048031, MMDC_P0_BASE_ADDR + 0x01c);
-	writel(0x09408030, MMDC_P0_BASE_ADDR + 0x01c);
+	writel(0x19308030, MMDC_P0_BASE_ADDR + 0x01c);
 	writel(0x04008040, MMDC_P0_BASE_ADDR + 0x01c);
 
-	writel(0x00005800, MMDC_P0_BASE_ADDR + 0x020);
-	writel(0x00011117, MMDC_P0_BASE_ADDR + 0x818);
-	writel(0x00011117, MMDC_P1_BASE_ADDR + 0x818);
+	writel(0x00007800, MMDC_P0_BASE_ADDR + 0x020);
+	writel(0x00022227, MMDC_P0_BASE_ADDR + 0x818);
+	writel(0x00022227, MMDC_P1_BASE_ADDR + 0x818);
 	writel(0x00025576, MMDC_P0_BASE_ADDR + 0x004);
 	writel(0x00011006, MMDC_P0_BASE_ADDR + 0x404);
 	writel(0x00000000, MMDC_P0_BASE_ADDR + 0x01c);
