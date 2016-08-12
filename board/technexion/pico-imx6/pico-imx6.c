@@ -583,23 +583,19 @@ int board_init_pmic(void) {
 	unsigned int reg;
 	int ret = power_pfuze100_init(1);
 
-	if (ret)
-		return ret;
-
+	/* configure PFUZE100 PMIC */
+	power_pfuze100_init(CONFIG_I2C_PMIC);
 	p = pmic_get("PFUZE100");
+	if (p && !pmic_probe(p)) {
+		pmic_reg_read(p, PFUZE100_DEVICEID, &reg);
+		printf("PMIC:  PFUZE100 ID=0x%02x\n", reg);
 
-        ret = pmic_probe(p);
-	if (ret)
-		return ret;
-
-	pmic_reg_read(p, PFUZE100_DEVICEID, &reg);
-	printf("PMIC:  PFUZE100 ID=0x%02x\n", reg);
-
-	/* Increase VGEN2 to 1.5V to enable ethernet */
-	pmic_reg_read(p, PFUZE100_VGEN2VOL, &reg);
-	reg &= ~0xf;
-	reg |= 0xe;
-	pmic_reg_write(p, PFUZE100_VGEN2VOL, reg);
+		/* Set VGEN2 to 1.5V and enable */
+		pmic_reg_read(p, PFUZE100_VGEN2VOL, &reg);
+		reg &= ~(LDO_VOL_MASK);
+		reg |= (LDOA_1_50V | (1 << (LDO_EN)));
+		pmic_reg_write(p, PFUZE100_VGEN2VOL, reg);
+	}
 
 	return 0;
 }
