@@ -66,7 +66,7 @@
 #define CONFIG_SYS_I2C
 #define CONFIG_SYS_I2C_MXC
 #define CONFIG_SYS_I2C_SPEED		100000
-#define CONFIG_I2C_PMIC			2
+#define CONFIG_I2C_PMIC			1
 
 /* PMIC */
 #define CONFIG_POWER
