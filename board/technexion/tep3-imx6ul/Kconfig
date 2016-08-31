@@ -1,0 +1,16 @@
+if TARGET_TEP3_IMX6UL
+
+config SYS_BOARD
+	default "tep3-imx6ul"
+
+config SYS_VENDOR
+	string
+	default "technexion"
+
+config SYS_SOC
+	default "mx6"
+
+config SYS_CONFIG_NAME
+	default "tep3-imx6ul"
+
+endif
