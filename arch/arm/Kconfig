@@ -614,6 +614,10 @@ config TARGET_TEK3_IMX6UL
 	bool "Support tek3-imx6ul"
 	select CPU_V7
 
+config TARGET_TEP3_IMX6UL
+	bool "Support tep3-imx6ul"
+	select CPU_V7
+
 config TARGET_GW_VENTANA
 	bool "Support gw_ventana"
 	select CPU_V7
@@ -921,6 +925,7 @@ source "board/freescale/mx6ul_14x14_ddr3_arm2/Kconfig"
 source "board/freescale/mx6ul_14x14_lpddr2_arm2/Kconfig"
 source "board/technexion/picosom-imx6ul/Kconfig"
 source "board/technexion/tek3-imx6ul/Kconfig"
+source "board/technexion/tep3-imx6ul/Kconfig"
 source "board/freescale/vf610twr/Kconfig"
 source "board/gateworks/gw_ventana/Kconfig"
 source "board/genesi/mx51_efikamx/Kconfig"

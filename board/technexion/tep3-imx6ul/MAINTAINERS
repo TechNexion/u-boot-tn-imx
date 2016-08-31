@@ -1,0 +1,6 @@
+Technexion TEP3-IMX6UL board
+M:	Richard Hu <richard.hu@technexion.com>
+S:	Maintained
+F:	board/tep3-imx6ul/
+F:	include/configs/tep3-imx6ul.h
+F:	configs/tep3-imx6ul_defconfig
