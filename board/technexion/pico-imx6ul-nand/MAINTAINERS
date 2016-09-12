@@ -1,0 +1,6 @@
+Technexion PICO-IMX6UL-NAND board
+M:	Richard Hu <richard.hu@technexion.com>
+S:	Maintained
+F:	board/technexion/pico-imx6ul-nand
+F:	include/configs/pico-imx6ul.h
+F:	configs/pico-imx6ul-nand_defconfig
