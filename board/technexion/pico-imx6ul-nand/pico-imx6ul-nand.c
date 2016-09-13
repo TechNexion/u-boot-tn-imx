@@ -706,7 +706,7 @@ u32 get_board_rev(void)
 
 int checkboard(void)
 {
-    puts("Board: PicoSOM i.mx6UL NAND\n");
+    puts("Board: PICO-IMX6UL-NAND\n");
 
 	return 0;
 }
