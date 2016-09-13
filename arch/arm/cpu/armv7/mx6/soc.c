@@ -694,7 +694,6 @@ enum boot_device get_boot_device(void)
 {
 	enum boot_device boot_dev = UNKNOWN_BOOT;
 	uint soc_sbmr = readl(SRC_BASE_ADDR + 0x4);
-#if defined(CONFIG_MX6QDL) || defined(CONFIG_MX6Q) || defined(CONFIG_MX6D) || defined(CONFIG_MX6DL) || defined(CONFIG_MX6S)
 	uint bt_mem_ctl = (soc_sbmr & 0x000000FF) >> 4 ;
 	uint bt_mem_type = (soc_sbmr & 0x00000008) >> 3;
 	uint bt_dev_port = (soc_sbmr & 0x00001800) >> 11;
@@ -730,27 +729,7 @@ enum boot_device get_boot_device(void)
 		boot_dev = UNKNOWN_BOOT;
 		break;
 	}
-#elif defined(CONFIG_MX6SX)
-	uint bootsel = (soc_sbmr & 0x000000FF) >> 6 ;
-	/* If not boot from sd/mmc, use default value */
-	if (bootsel != 1)
-		boot_dev = UNKNOWN_BOOT;
 
-	/* BOOT_CFG2[3] and BOOT_CFG2[4] */
-	uint bt_mem_ctl = (soc_sbmr & 0x00001800) >> 11;
-
-	switch (bt_mem_ctl) {
-	case 0x02:
-		boot_dev = SD3_BOOT;
-		break;
-	case 0x03:
-		boot_dev = SD4_BOOT;
-		break;
-	default:
-		boot_dev = UNKNOWN_BOOT;
-		break;
-	}
-#endif
     return boot_dev;
 }
 
