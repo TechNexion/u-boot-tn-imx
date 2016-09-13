@@ -387,7 +387,7 @@ static iomux_v3_cfg_t const lcd_pads[] = {
 	/*
 	 * LCD_BLT_CTRL.  GPIO for Brightness adjustment, duty cycle = period.
 	 */
-	MX6_PAD_NAND_ALE__GPIO4_IO10 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	MX6_PAD_NAND_DQS__GPIO4_IO16 | MUX_PAD_CTRL(NO_PAD_CTRL),
 
 	/*
 	 * LCD_VDD_EN.
@@ -409,7 +409,7 @@ void do_enable_parallel_lcd(struct lcd_panel_info_t const *dev)
 	imx_iomux_v3_setup_multiple_pads(lcd_pads, ARRAY_SIZE(lcd_pads));
 
 	/* Set Brightness to high */
-	gpio_direction_output(IMX_GPIO_NR(4, 10) , 1);
+	gpio_direction_output(IMX_GPIO_NR(4, 16) , 1);
 	/* Set LCD enable to high */
 	gpio_direction_output(IMX_GPIO_NR(1, 11) , 1);
 }
