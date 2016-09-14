@@ -651,6 +651,32 @@ void ldo_mode_set(int ldo_bypass)
 #endif
 #endif
 
+#ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
+static void detect_boot_device(void)
+{
+	char *s;
+
+	if ((s = getenv ("bootdev_autodetect")) != NULL) {
+		printf("Boot Device: ");
+		if (strncmp (s, "off", 3) != 0) {
+			switch (get_boot_device()) {
+			case SD1_BOOT:
+				setenv("bootdev", "SD1");
+				printf("SD1\n");
+				break;
+			case NAND_BOOT:
+				setenv("bootdev", "NAND");
+				printf("NAND\n");
+				break;
+			default:
+				printf("Wrong boot device!\r\n");
+			}
+		}
+	}
+}
+#endif
+
+
 int board_init(void)
 {
 	/* Address of boot parameters */
@@ -684,6 +710,7 @@ static const struct boot_mode board_boot_modes[] = {
 };
 #endif
 
+
 int board_late_init(void)
 {
 #ifdef CONFIG_CMD_BMODE
@@ -693,7 +720,9 @@ int board_late_init(void)
 #ifdef CONFIG_ENV_IS_IN_MMC
 	board_late_mmc_init();
 #endif
-
+#ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
+	detect_boot_device();
+#endif
 	set_wdog_reset((struct wdog_regs *)WDOG1_BASE_ADDR);
 
 	return 0;
