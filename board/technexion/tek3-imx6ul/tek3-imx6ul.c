@@ -132,10 +132,6 @@ static iomux_v3_cfg_t const usdhc2_emmc_pads[] = {
 	MX6_PAD_NAND_DATA05__USDHC2_DATA5 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_NAND_DATA06__USDHC2_DATA6 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_NAND_DATA07__USDHC2_DATA7 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	/*
-	 * RST_B
-	 */
-	MX6_PAD_NAND_ALE__GPIO4_IO10 | MUX_PAD_CTRL(NO_PAD_CTRL),
 };
 
 
@@ -372,14 +368,6 @@ void do_enable_parallel_lcd(struct lcd_panel_info_t const *dev)
 	enable_lcdif_clock(dev->lcdif_base_addr);
 
 	imx_iomux_v3_setup_multiple_pads(lcd_pads, ARRAY_SIZE(lcd_pads));
-
-	/* Reset the LCD */
-	gpio_direction_output(IMX_GPIO_NR(5, 9) , 0);
-	udelay(500);
-	gpio_direction_output(IMX_GPIO_NR(5, 9) , 1);
-
-	/* Set Brightness to high */
-	gpio_direction_output(IMX_GPIO_NR(1, 8) , 1);
 }
 
 static struct lcd_panel_info_t const displays[] = {{
