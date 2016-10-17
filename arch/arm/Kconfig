@@ -609,6 +609,7 @@ config TARGET_MX6UL_14X14_LPDDR2_ARM2
 config TARGET_PICOSOM_IMX6UL
         bool "Support picosom-imx6ul"
         select CPU_V7
+        select SUPPORT_SPL
 
 config TARGET_PICO_IMX6UL_NAND
         bool "Support pico-imx6ul-nand"

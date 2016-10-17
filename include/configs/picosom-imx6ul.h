@@ -30,6 +30,13 @@
 #endif
 #endif
 
+#ifdef CONFIG_SPL
+#define CONFIG_SPL_LIBCOMMON_SUPPORT
+#define CONFIG_SPL_MMC_SUPPORT
+#define CONFIG_SPL_FAT_SUPPORT
+#include "imx6_spl.h"
+#endif
+
 #define CONFIG_CMDLINE_TAG
 #define CONFIG_SETUP_MEMORY_TAGS
 #define CONFIG_INITRD_TAG
@@ -121,7 +128,6 @@
 
 
 #define CONFIG_DEFAULT_FDT_FILE "imx6ul-pico-hobbit.dtb"
-#define PHYS_SDRAM_SIZE                        SZ_256M
 #define CONFIG_BOOTARGS_CMA_SIZE   "cma=96M "
 
 /* PMIC */
@@ -144,11 +150,6 @@
 #define CONFIG_SYS_TEXT_BASE		0x87800000
 
 #define CONFIG_SYS_MMC_IMG_LOAD_PART	1
-#ifdef CONFIG_SYS_BOOT_NAND
-#define CONFIG_MFG_NAND_PARTITION "mtdparts=gpmi-nand:64m(boot),16m(kernel),16m(dtb),-(rootfs) "
-#else
-#define CONFIG_MFG_NAND_PARTITION ""
-#endif
 
 #ifdef CONFIG_VIDEO
 #define CONFIG_VIDEO_MODE \
@@ -161,22 +162,8 @@
 	"bootcmd_mfg=bootz 0x87860000\0" \
 	"bootdelay=1\0" \
 
-#if defined(CONFIG_SYS_BOOT_NAND)
-#define CONFIG_EXTRA_ENV_SETTINGS \
-	CONFIG_MFG_ENV_SETTINGS \
-	CONFIG_VIDEO_MODE \
-	"fdt_addr=0x83000000\0" \
-	"fdt_high=0xffffffff\0"	  \
-	"console=ttymxc5\0" \
-	"bootargs=console=ttymxc5,115200 ubi.mtd=3 "  \
-		"root=ubi0:rootfs rootfstype=ubifs "		     \
-		CONFIG_BOOTARGS_CMA_SIZE \
-		"mtdparts=gpmi-nand:64m(boot),16m(kernel),16m(dtb),-(rootfs)\0"\
-	"bootcmd=nand read ${loadaddr} 0x4000000 0x800000;"\
-		"nand read ${fdt_addr} 0x5000000 0x100000;"\
-		"bootz ${loadaddr} - ${fdt_addr}\0"
+#define CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 
-#else
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	CONFIG_MFG_ENV_SETTINGS \
 	CONFIG_VIDEO_MODE \
@@ -189,12 +176,18 @@
 	"fdt_file=" CONFIG_DEFAULT_FDT_FILE "\0" \
 	"fdt_addr=0x83000000\0" \
 	"boot_fdt=try\0" \
+	"detectmem=" \
+		"if test ${memdet} = 512MB; then " \
+			"setenv memsize cma=128M; " \
+		"else " \
+			"setenv memsize cma=96M; " \
+		"fi\0" \
 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
 	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
 	"mmcroot=" CONFIG_MMCROOT " rootwait rw\0" \
 	"mmcautodetect=yes\0" \
 	"mmcargs=setenv bootargs console=${console},${baudrate} " \
-	    CONFIG_BOOTARGS_CMA_SIZE \
+		"${memsize} "\
 		"root=${mmcroot}\0" \
 	"loadbootscript=" \
 		"fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${script};\0" \
@@ -203,6 +196,7 @@
 	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
 	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
 	"mmcboot=echo Booting from mmc ...; " \
+		"run detectmem; " \
 		"run mmcargs; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
 			"if run loadfdt; then " \
@@ -230,7 +224,6 @@
 			   "fi; " \
 		   "fi; " \
 	   "else run netboot; fi"
-#endif
 
 /* Miscellaneous configurable options */
 #define CONFIG_SYS_LONGHELP
@@ -246,7 +239,7 @@
 
 #define CONFIG_CMD_MEMTEST
 #define CONFIG_SYS_MEMTEST_START	0x80000000
-#define CONFIG_SYS_MEMTEST_END		(CONFIG_SYS_MEMTEST_START + (PHYS_SDRAM_SIZE >> 1))
+#define CONFIG_SYS_MEMTEST_END		(CONFIG_SYS_MEMTEST_START + 256 * SZ_1M)
 
 #define CONFIG_SYS_LOAD_ADDR		CONFIG_LOADADDR
 #define CONFIG_SYS_HZ			1000
@@ -275,9 +268,6 @@
 #ifdef CONFIG_SYS_BOOT_QSPI
 #define CONFIG_FSL_QSPI
 #define CONFIG_ENV_IS_IN_SPI_FLASH
-#elif defined CONFIG_SYS_BOOT_NAND
-#define CONFIG_SYS_USE_NAND
-#define CONFIG_ENV_IS_IN_NAND
 #else
 #define CONFIG_FSL_QSPI
 #define CONFIG_ENV_IS_IN_MMC
