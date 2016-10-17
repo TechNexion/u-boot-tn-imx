@@ -72,7 +72,6 @@
 #define CONFIG_GENERIC_MMC
 #define CONFIG_CMD_FAT
 #define CONFIG_DOS_PARTITION
-#define CONFIG_SUPPORT_EMMC_BOOT /* eMMC specific */
 #endif
 
 #undef CONFIG_BOOTM_NETBSD
