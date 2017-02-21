@@ -177,6 +177,10 @@ config TARGET_PICOSOM_IMX6UL
 	select DM
 	select DM_THERMAL
 
+config TARGET_MX6UL_AQUILA
+        bool "Support mx6ul_aquila"
+	select MX6UL
+
 config TARGET_NITROGEN6X
 	bool "nitrogen6x"
 
@@ -279,6 +283,7 @@ source "board/seco/Kconfig"
 source "board/solidrun/mx6cuboxi/Kconfig"
 source "board/tbs/tbs2910/Kconfig"
 source "board/freescale/picosom-imx6ul/Kconfig"
+source "board/freescale/mx6ul_aquila/Kconfig"
 source "board/tqc/tqma6/Kconfig"
 source "board/udoo/Kconfig"
 source "board/wandboard/Kconfig"
