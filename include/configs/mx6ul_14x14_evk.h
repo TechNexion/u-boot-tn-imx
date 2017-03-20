@@ -373,4 +373,8 @@
 #include "mx6ul_14x14_evk_android.h"
 #endif
 
+#if defined(CONFIG_ANDROID_THINGS_SUPPORT)
+#include "mx6ul_14x14_evk_brillo.h"
+#endif
+
 #endif

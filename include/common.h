@@ -929,6 +929,10 @@ int cpu_disable(int nr);
 int cpu_release(int nr, int argc, char * const argv[]);
 #endif
 
+#ifdef CONFIG_CMD_READ
+int do_raw_read(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
+#endif
+
 #endif /* __ASSEMBLY__ */
 
 #ifdef CONFIG_PPC
