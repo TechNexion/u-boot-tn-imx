@@ -41,6 +41,7 @@
 #include <part.h>
 #include <sparse_format.h>
 #include <image-sparse.h>
+#include <asm/imx-common/boot_mode.h>
 #ifdef CONFIG_ANDROID_RECOVERY
 #include <recovery.h>
 #endif
@@ -174,46 +175,13 @@ static struct usb_gadget_strings *fastboot_strings[] = {
 #define MMC_SATA_BLOCK_SIZE 512
 #define FASTBOOT_FBPARTS_ENV_MAX_LEN 1024
 /* To support the Android-style naming of flash */
-#define MAX_PTN		    16
+#define MAX_PTN		    32
 
 
-/*pentry index internally*/
-#ifdef CONFIG_ANDROID_SUPPORT
 enum {
 	PTN_GPT_INDEX = 0,
-	PTN_BOOTLOADER_INDEX,
-	PTN_BOOT_INDEX,
-	PTN_RECOVERY_INDEX,
-	PTN_SYSTEM_INDEX,
-	PTN_CACHE_INDEX,
-	PTN_DEVICE_INDEX,
-	PTN_MISC_INDEX,
-	PTN_DATAFOOTER_INDEX,
-	PTN_VBMETA_INDEX,
-	PTN_PRESISTDATA_INDEX,
-	PTN_DATA_INDEX,
-	PTN_FBMISC_INDEX,
-	PTN_NUM
+	PTN_BOOTLOADER_INDEX
 };
-#else
-#ifdef CONFIG_ANDROID_THINGS_SUPPORT
-enum {
-	PTN_GPT_INDEX = 0,
-	PTN_BOOTLOADER_INDEX,
-	PTN_BOOT_A_INDEX,
-	PTN_BOOT_B_INDEX,
-	PTN_SYSTEM_A_INDEX,
-	PTN_SYSTEM_B_INDEX,
-	PTN_ODM_A_INDEX,
-	PTN_ODM_B_INDEX,
-	PTN_MISC_INDEX,
-	PTN_PRDATA_INDEX,
-	PTN_DATA_INDEX,
-	PTN_FBMISC_INDEX,
-	PTN_NUM
-};
-#endif /*CONFIG_ANDROID_THINGS_SUPPORT*/
-#endif /*CONFIG_ANDROID_SUPPORT*/
 static unsigned int download_bytes_unpadded;
 
 static struct cmd_fastboot_interface interface = {
@@ -1298,25 +1266,6 @@ static struct fastboot_ptentry g_ptable[MAX_PTN];
 static unsigned int g_pcount;
 struct fastboot_device_info fastboot_devinfo;
 
-/*
-   Get mmc control number from passed string, eg, "mmc1" mean device 1. Only
-   support "mmc0" to "mmc9" currently. It will be treated as device 0 for
-   other string.
-*/
-static int _fastboot_get_mmc_no(char *env_str)
-{
-	int digit = 0;
-	unsigned char a;
-
-	if (env_str && (strlen(env_str) >= 4) &&
-	    !strncmp(env_str, "mmc", 3)) {
-		a = env_str[3];
-		if (a >= '0' && a <= '9')
-			digit = a - '0';
-	}
-
-	return digit;
-}
 static int _fastboot_setup_dev(void)
 {
 	char *fastboot_env;
@@ -1331,8 +1280,7 @@ static int _fastboot_setup_dev(void)
 			fastboot_devinfo.dev_id = 0;
 		} else if (!strncmp(fastboot_env, "mmc", 3)) {
 			fastboot_devinfo.type = DEV_MMC;
-			fastboot_devinfo.dev_id = _fastboot_get_mmc_no(fastboot_env);
-			set_mmc_id(fastboot_devinfo.dev_id);
+			fastboot_devinfo.dev_id = mmc_get_env_dev();
 		}
 	} else {
 		return 1;
@@ -1359,8 +1307,6 @@ static int _fastboot_parts_add_ptable_entry(int ptable_index,
 
 	if (get_partition_info(dev_desc,
 			       mmc_dos_partition_index, &info)) {
-		printf("Bad partition index:%d for partition:%s\n",
-		       mmc_dos_partition_index, name);
 		return -1;
 	}
 	ptable[ptable_index].start = info.start;
@@ -1390,7 +1336,7 @@ static int _fastboot_parts_load_from_ptable(void)
 
 	struct mmc *mmc;
 	block_dev_desc_t *dev_desc;
-	struct fastboot_ptentry ptable[PTN_NUM];
+	struct fastboot_ptentry ptable[MAX_PTN];
 
 	/* sata case in env */
 	if (fastboot_devinfo.type == DEV_SATA) {
@@ -1437,7 +1383,7 @@ static int _fastboot_parts_load_from_ptable(void)
 	}
 
 	memset((char *)ptable, 0,
-		    sizeof(struct fastboot_ptentry) * (PTN_NUM));
+		    sizeof(struct fastboot_ptentry) * (MAX_PTN));
 	/* GPT */
 	strcpy(ptable[PTN_GPT_INDEX].name, FASTBOOT_PARTITION_GPT);
 	ptable[PTN_GPT_INDEX].start = ANDROID_GPT_OFFSET / dev_desc->blksz;
@@ -1454,7 +1400,7 @@ static int _fastboot_parts_load_from_ptable(void)
 	int tbl_idx;
 	int part_idx = 1;
 	int ret;
-	for (tbl_idx = 2; tbl_idx < PTN_NUM; tbl_idx++) {
+	for (tbl_idx = 2; tbl_idx < MAX_PTN; tbl_idx++) {
 		ret = _fastboot_parts_add_ptable_entry(tbl_idx,
 				part_idx++,
 				user_partition,
@@ -1463,7 +1409,7 @@ static int _fastboot_parts_load_from_ptable(void)
 		if (ret)
 			break;
 	}
-	for (i = 0; i <= PTN_NUM; i++)
+	for (i = 0; i < part_idx; i++)
 		fastboot_flash_add_ptn(&ptable[i]);
 
 	return 0;
@@ -1682,6 +1628,16 @@ struct fastboot_ptentry *fastboot_flash_find_ptn(const char *name)
 	return 0;
 }
 
+int fastboot_flash_find_index(const char *name)
+{
+	struct fastboot_ptentry *ptentry = fastboot_flash_find_ptn(name);
+	if (ptentry == NULL) {
+		printf("cannot get the partion info for %s\n",name);
+		return -1;
+	}
+	return ptentry->partition_index;
+}
+
 struct fastboot_ptentry *fastboot_flash_get_ptn(unsigned int n)
 {
 	if (n < g_pcount)
@@ -1695,17 +1651,94 @@ unsigned int fastboot_flash_get_ptn_count(void)
 	return g_pcount;
 }
 
-/*
- * CPU and board-specific fastboot initializations.  Aliased function
- * signals caller to move on
- */
-static void __def_fastboot_setup(void)
+#ifdef CONFIG_FSL_FASTBOOT
+void board_fastboot_setup(void)
 {
-	/*do nothing here*/
+#if defined(CONFIG_FASTBOOT_STORAGE_MMC)
+	static char boot_dev_part[32];
+	u32 dev_no;
+#endif
+	switch (get_boot_device()) {
+#if defined(CONFIG_FASTBOOT_STORAGE_MMC)
+	case SD1_BOOT:
+	case SD2_BOOT:
+	case SD3_BOOT:
+	case SD4_BOOT:
+	case MMC1_BOOT:
+	case MMC2_BOOT:
+	case MMC3_BOOT:
+	case MMC4_BOOT:
+		dev_no = mmc_get_env_dev();
+		sprintf(boot_dev_part,"mmc%d",dev_no);
+		if (!getenv("fastboot_dev"))
+			setenv("fastboot_dev", boot_dev_part);
+		sprintf(boot_dev_part, "boota mmc%d", dev_no);
+		if (!getenv("bootcmd"))
+			setenv("bootcmd", boot_dev_part);
+		break;
+#endif /*CONFIG_FASTBOOT_STORAGE_MMC*/
+#if defined(CONFIG_FASTBOOT_STORAGE_NAND)
+	case NAND_BOOT:
+		if (!getenv("fastboot_dev"))
+			setenv("fastboot_dev", "nand");
+		if (!getenv("fbparts"))
+			setenv("fbparts", ANDROID_FASTBOOT_NAND_PARTS);
+		if (!getenv("bootcmd"))
+			setenv("bootcmd",
+				"nand read ${loadaddr} ${boot_nand_offset} "
+				"${boot_nand_size};boota ${loadaddr}");
+		break;
+#endif /*CONFIG_FASTBOOT_STORAGE_NAND*/
+	default:
+		printf("unsupported boot devices\n");
+		break;
+	}
 }
-void board_fastboot_setup(void) \
-	__attribute__((weak, alias("__def_fastboot_setup")));
 
+
+#ifdef CONFIG_ANDROID_RECOVERY
+void board_recovery_setup(void)
+{
+#if defined(CONFIG_FASTBOOT_STORAGE_MMC)
+	static char boot_dev_part[32];
+	u32 dev_no;
+#endif
+	int bootdev = get_boot_device();
+	switch (bootdev) {
+#if defined(CONFIG_FASTBOOT_STORAGE_MMC)
+	case SD1_BOOT:
+	case SD2_BOOT:
+	case SD3_BOOT:
+	case SD4_BOOT:
+	case MMC1_BOOT:
+	case MMC2_BOOT:
+	case MMC3_BOOT:
+	case MMC4_BOOT:
+		dev_no = mmc_get_env_dev();
+		sprintf(boot_dev_part,"boota mmc%d recovery",dev_no);
+		if (!getenv("bootcmd_android_recovery"))
+			setenv("bootcmd_android_recovery", boot_dev_part);
+		break;
+#endif /*CONFIG_FASTBOOT_STORAGE_MMC*/
+#if defined(CONFIG_FASTBOOT_STORAGE_NAND)
+	case NAND_BOOT:
+		if (!getenv("bootcmd_android_recovery"))
+			setenv("bootcmd_android_recovery",
+				"nand read ${loadaddr} ${recovery_nand_offset} "
+				"${recovery_nand_size};boota ${loadaddr}");
+		break;
+#endif /*CONFIG_FASTBOOT_STORAGE_NAND*/
+	default:
+		printf("Unsupported bootup device for recovery: dev: %d\n",
+			bootdev);
+		return;
+	}
+
+	printf("setup env for recovery..\n");
+	setenv("bootcmd", "run bootcmd_android_recovery");
+}
+#endif /*CONFIG_ANDROID_RECOVERY*/
+#endif /*CONFIG_FSL_FASTBOOT*/
 
 void fastboot_setup(void)
 {

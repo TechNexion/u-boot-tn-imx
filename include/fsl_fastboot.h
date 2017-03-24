@@ -174,6 +174,7 @@ struct fastboot_ptentry *fastboot_flash_find_ptn(const char *name);
 struct fastboot_ptentry *fastboot_flash_get_ptn(unsigned n);
 unsigned int fastboot_flash_get_ptn_count(void);
 void fastboot_flash_dump_ptn(void);
+int fastboot_flash_find_index(const char *name);
 
 /* Make board into special boot mode  */
 void fastboot_run_bootmode(void);

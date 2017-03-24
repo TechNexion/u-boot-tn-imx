@@ -22,9 +22,9 @@ int bcb_read_command(char *command)
 	if (command == NULL)
 		return -1;
 
-	ret = rw_block(true, &p_block, &blk_size, NULL, MISC_COMMAND, 32);
+	ret = bcb_rw_block(true, &p_block, &blk_size, NULL, MISC_COMMAND, 32);
 	if (ret) {
-		printf("read_bootctl, rw_block read failed\n");
+		printf("read_bootctl, bcb_rw_block read failed\n");
 		return -1;
 	}
 
@@ -44,19 +44,19 @@ int bcb_write_command(char *bcb_command)
 		return -1;
 
 
-	ret = rw_block(true, &p_block, &blk_size, NULL,  MISC_COMMAND, 32);
+	ret = bcb_rw_block(true, &p_block, &blk_size, NULL,  MISC_COMMAND, 32);
 	if (ret) {
-		printf("write_bootctl, rw_block read failed\n");
+		printf("write_bootctl, bcb_rw_block read failed\n");
 		return -1;
 	}
 
 	offset_in_block = MISC_COMMAND%blk_size;
 	memcpy(p_block + offset_in_block, bcb_command, 32);
 
-	ret = rw_block(false, NULL, NULL, p_block, MISC_COMMAND, 32);
+	ret = bcb_rw_block(false, NULL, NULL, p_block, MISC_COMMAND, 32);
 	if (ret) {
 		free(p_block);
-		printf("write_bootctl, rw_block write failed\n");
+		printf("write_bootctl, bcb_rw_block write failed\n");
 		return -1;
 	}
 

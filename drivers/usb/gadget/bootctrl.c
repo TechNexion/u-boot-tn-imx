@@ -80,10 +80,10 @@ static int read_bootctl(struct boot_ctl *ptbootctl)
 
 	if (ptbootctl == NULL)
 		return -1;
-	ret = rw_block(true, &p_block, &blk_size, NULL,
+	ret = bcb_rw_block(true, &p_block, &blk_size, NULL,
 			BOOTCTRL_OFFSET, sizeof(struct boot_ctl));
 	if (ret) {
-		printf("read_bootctl, rw_block read failed\n");
+		printf("read_bootctl, bcb_rw_block read failed\n");
 		return -1;
 	}
 
@@ -132,20 +132,20 @@ static int write_bootctl(struct boot_ctl *ptbootctl)
 	ptbootctl->crc = crc32(0, (unsigned char *)ptbootctl + CRC_DATA_OFFSET,
 		sizeof(struct boot_ctl) - CRC_DATA_OFFSET);
 
-	ret = rw_block(true, &p_block, &blk_size, NULL,
+	ret = bcb_rw_block(true, &p_block, &blk_size, NULL,
 				BOOTCTRL_OFFSET, sizeof(struct boot_ctl));
 	if (ret) {
-		printf("write_bootctl, rw_block read failed\n");
+		printf("write_bootctl, bcb_rw_block read failed\n");
 		return -1;
 	}
 	offset_in_block = BOOTCTRL_OFFSET%blk_size;
 	memcpy(p_block + offset_in_block, ptbootctl, sizeof(struct boot_ctl));
 
-	ret = rw_block(false, NULL, NULL, p_block,
+	ret = bcb_rw_block(false, NULL, NULL, p_block,
 			BOOTCTRL_OFFSET, sizeof(struct boot_ctl));
 	if (ret) {
 		free(p_block);
-		printf("write_bootctl, rw_block write failed\n");
+		printf("write_bootctl, bcb_rw_block write failed\n");
 		return -1;
 	}
 	free(p_block);

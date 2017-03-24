@@ -49,10 +49,9 @@ struct bootloader_message_ab {
 	(u32)(&(((struct bootloader_message_ab *)0)->slot_suffix[BOOTCTRL_IDX]))
 #define MISC_COMMAND \
 	(u32)(&(((struct bootloader_message *)0)->command[MISC_COMMAND_IDX]))
-int rw_block(bool bread, char **ppblock,
+int bcb_rw_block(bool bread, char **ppblock,
 		uint *pblksize, char *pblock_write, uint offset, uint size);
 
-void set_mmc_id(unsigned int id);
 int bcb_write_command(char *bcb_command);
 int bcb_read_command(char *command);
 

@@ -5,22 +5,19 @@
  * SPDX-License-Identifier:     GPL-2.0+
  */
 
-#include "bcb.h"
-#include "bootctrl.h"
+#include <fsl_fastboot.h>
 #include <linux/stat.h>
 #include <linux/types.h>
 #include <common.h>
 #include <g_dnl.h>
-static unsigned int g_mmc_id;
-void set_mmc_id(unsigned int id)
-{
-	g_mmc_id = id;
-}
+#include <mmc.h>
+#include "bcb.h"
+#include "bootctrl.h"
 #define ALIGN_BYTES 64 /*armv7 cache line need 64 bytes aligned */
-static ulong get_block_size(char *ifname, int dev, int part)
+
+static ulong get_block_size(char *ifname, int dev)
 {
 	block_dev_desc_t *dev_desc = NULL;
-	disk_partition_t part_info;
 
 	dev_desc = get_dev(ifname, dev);
 	if (dev_desc == NULL) {
@@ -28,12 +25,7 @@ static ulong get_block_size(char *ifname, int dev, int part)
 		return 0;
 	}
 
-	if (get_partition_info(dev_desc, part, &part_info)) {
-		printf("Cannot find partition %d\n", part);
-		return 0;
-	}
-
-	return part_info.blksz;
+	return dev_desc->blksz;
 }
 
 static int do_write(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
@@ -104,7 +96,7 @@ U_BOOT_CMD(
 	"<interface> <dev[:part]> addr blk# cnt"
 );
 
-int rw_block(bool bread, char **ppblock,
+int bcb_rw_block(bool bread, char **ppblock,
 		uint *pblksize, char *pblock_write, uint offset, uint size)
 {
 	int ret;
@@ -118,6 +110,7 @@ int rw_block(bool bread, char **ppblock,
 	uint blk_end = 0;
 	uint block_cnt = 0;
 	char *p_block = NULL;
+	unsigned int mmc_id;
 
 	if (bread && ((ppblock == NULL) || (pblksize == NULL)))
 		return -1;
@@ -125,10 +118,10 @@ int rw_block(bool bread, char **ppblock,
 	if (!bread && (pblock_write == NULL))
 		return -1;
 
-	blk_size = get_block_size("mmc", g_mmc_id,
-		CONFIG_ANDROID_MISC_PARTITION_MMC);
+	mmc_id = mmc_get_env_dev();
+	blk_size = get_block_size("mmc", mmc_id);
 	if (blk_size == 0) {
-		printf("rw_block, get_block_size return 0\n");
+		printf("bcb_rw_block, get_block_size return 0\n");
 		return -1;
 	}
 
@@ -136,9 +129,8 @@ int rw_block(bool bread, char **ppblock,
 	blk_end = (offset + size)/blk_size;
 	block_cnt = 1 + (blk_end - blk_begin);
 
-
-	sprintf(devpart_str, "0x%x:0x%x", g_mmc_id,
-		CONFIG_ANDROID_MISC_PARTITION_MMC);
+	sprintf(devpart_str, "0x%x:0x%x", mmc_id,
+			fastboot_flash_find_index(FASTBOOT_PARTITION_MISC));
 	sprintf(block_begin_str, "0x%x", blk_begin);
 	sprintf(cnt_str, "0x%x", block_cnt);
 
@@ -152,7 +144,7 @@ int rw_block(bool bread, char **ppblock,
 	if (bread) {
 		p_block = (char *)memalign(ALIGN_BYTES, blk_size * block_cnt);
 		if (NULL == p_block) {
-			printf("rw_block, memalign %d bytes failed\n",
+			printf("bcb_rw_block, memalign %d bytes failed\n",
 			(int)(blk_size * block_cnt));
 			return -1;
 		}

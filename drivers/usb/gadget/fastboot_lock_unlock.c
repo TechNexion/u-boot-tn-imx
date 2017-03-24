@@ -35,6 +35,7 @@
 #include <mapmem.h>
 #include <linux/types.h>
 #include <part.h>
+#include <mmc.h>
 #include <ext_common.h>
 #include <stdio_dev.h>
 #include <stdlib.h>
@@ -201,20 +202,22 @@ int fastboot_set_lock_stat(unsigned char lock) {
 	block_dev_desc_t *fs_dev_desc;
 	disk_partition_t fs_partition;
 	unsigned char *bdata;
+	unsigned int mmc_id;
 
 	bdata = (unsigned char *)memalign(ALIGN_BYTES, SECTOR_SIZE);
 	memset(bdata, 0, SECTOR_SIZE);
 
 	int status;
+	mmc_id = fastboot_flash_find_index(FASTBOOT_PARTITION_FBMISC);
 	status = get_device_and_partition(FSL_FASTBOOT_FB_DEV,
-		get_mmc_part(FSL_FASTBOOT_FB_PART_NUM),
+		get_mmc_part(mmc_id),
 		&fs_dev_desc, &fs_partition, 1);
 	if (status < 0) {
 		printf("%s:error in getdevice partition.\n", __FUNCTION__);
 		return -1;
 	}
 	DEBUG("%s %s partition.start=%d, size=%d\n",FSL_FASTBOOT_FB_DEV,
-		get_mmc_part(FSL_FASTBOOT_FB_PART_NUM), fs_partition.start, fs_partition.size);
+		get_mmc_part(mmc_id), fs_partition.start, fs_partition.size);
 
 	status = encrypt_lock_store(lock, bdata);
 	if (status < 0)
@@ -236,12 +239,14 @@ unsigned char fastboot_get_lock_stat(void)
 	block_dev_desc_t *fs_dev_desc;
 	disk_partition_t fs_partition;
 	unsigned char *bdata;
+	unsigned int mmc_id;
 
 	bdata = (unsigned char *)memalign(ALIGN_BYTES, SECTOR_SIZE);
 
 	int status;
+	mmc_id = fastboot_flash_find_index(FASTBOOT_PARTITION_FBMISC);
 	status = get_device_and_partition(FSL_FASTBOOT_FB_DEV,
-		get_mmc_part(FSL_FASTBOOT_FB_PART_NUM),
+		get_mmc_part(mmc_id),
 		&fs_dev_desc, &fs_partition, 1);
 
 	if (status < 0) {
@@ -249,7 +254,7 @@ unsigned char fastboot_get_lock_stat(void)
 		return FASTBOOT_LOCK_ERROR;
 	}
 	DEBUG("%s %s partition.start=%d, size=%d\n",FSL_FASTBOOT_FB_DEV,
-		get_mmc_part(FSL_FASTBOOT_FB_PART_NUM), fs_partition.start, fs_partition.size);
+		get_mmc_part(mmc_id), fs_partition.start, fs_partition.size);
 
 	status = fs_dev_desc->block_read(fs_dev_desc, fs_partition.start, 1, bdata);
 	if (!status) {
@@ -276,12 +281,14 @@ unsigned char fastboot_lock_enable() {
 	block_dev_desc_t *fs_dev_desc;
 	disk_partition_t fs_partition;
 	unsigned char *bdata;
+	unsigned int mmc_id;
 
 	bdata = (unsigned char *)memalign(ALIGN_BYTES, SECTOR_SIZE);
 
 	int status;
+	mmc_id = fastboot_flash_find_index(FASTBOOT_PARTITION_PRDATA);
 	status = get_device_and_partition(FSL_FASTBOOT_FB_DEV,
-		get_mmc_part(FSL_FASTBOOT_PR_DATA_PART_NUM),
+		get_mmc_part(mmc_id),
 		&fs_dev_desc, &fs_partition, 1);
 	if (status < 0) {
 		printf("%s:error in getdevice partition.\n", __FUNCTION__);
@@ -347,8 +354,10 @@ int fastboot_wipe_data_partition(void)
 	block_dev_desc_t *fs_dev_desc;
 	disk_partition_t fs_partition;
 	int status;
+	unsigned int mmc_id;
+	mmc_id = fastboot_flash_find_index(FASTBOOT_PARTITION_DATA);
 	status = get_device_and_partition(FSL_FASTBOOT_FB_DEV,
-		get_mmc_part(FSL_FASTBOOT_DATA_PART_NUM), &fs_dev_desc, &fs_partition, 1);
+		get_mmc_part(mmc_id), &fs_dev_desc, &fs_partition, 1);
 	if (status < 0) {
 		printf("error in get device partition for wipe /data\n");
 		return -1;
