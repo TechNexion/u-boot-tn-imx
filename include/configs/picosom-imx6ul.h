@@ -24,7 +24,11 @@
 #endif
 
 /* Size of malloc() pool */
+#ifdef CONFIG_AVB_SUPPORT
+#define CONFIG_SYS_MALLOC_LEN          (32 * SZ_1M)
+#else
 #define CONFIG_SYS_MALLOC_LEN		(16 * SZ_1M)
+#endif
 #define CONFIG_EFI_PARTITION
 
 #define CONFIG_BOARD_EARLY_INIT_F
@@ -266,6 +270,9 @@
 #define CONFIG_MMCROOT			"/dev/mmcblk1p2"  /* USDHC2 */
 
 #define CONFIG_CMD_BMODE
+#ifdef CONFIG_AVB_SUPPORT
+#define CONFIG_PARTITION_UUIDS
+#endif
 
 #ifdef CONFIG_VIDEO
 #define	CONFIG_CFB_CONSOLE

@@ -56,16 +56,16 @@
 /*
  * This will return FASTBOOT_LOCK, FASTBOOT_UNLOCK or FASTBOOT_ERROR
  */
-inline unsigned char decrypt_lock_store(unsigned char* bdata) {
+static inline unsigned char decrypt_lock_store(unsigned char* bdata) {
 	return *bdata;
 }
 
-inline void encrypt_lock_store(unsigned char lock, unsigned char* bdata) {
+static inline void encrypt_lock_store(FbLockState lock, unsigned char* bdata) {
 	*bdata  = lock;
 }
 #else
 
-int sha1sum(unsigned char* data, int len, unsigned char* output) {
+static int sha1sum(unsigned char* data, int len, unsigned char* output) {
 	struct hash_algo *algo;
 	void *buf;
 	if (hash_lookup_algo("sha1", &algo)) {
@@ -80,13 +80,13 @@ int sha1sum(unsigned char* data, int len, unsigned char* output) {
 
 }
 
-int generate_salt(unsigned char* salt) {
+static int generate_salt(unsigned char* salt) {
 	unsigned long time = get_timer(0);
 	return sha1sum((unsigned char *)&time, sizeof(unsigned long), salt);
 
 }
 
-unsigned char decrypt_lock_store(unsigned char *bdata) {
+static unsigned char decrypt_lock_store(unsigned char *bdata) {
 	unsigned char plain_data[ENDATA_LEN];
 	int p = 0, ret;
 
@@ -127,10 +127,13 @@ unsigned char decrypt_lock_store(unsigned char *bdata) {
 		}
 	}
 
-	return plain_data[ENDATA_LEN-1];
+	if (plain_data[ENDATA_LEN - 1] >= FASTBOOT_LOCK_NUM)
+		return FASTBOOT_LOCK_ERROR;
+	else
+		return plain_data[ENDATA_LEN-1];
 }
 
-int encrypt_lock_store(unsigned char lock, unsigned char* bdata) {
+static int encrypt_lock_store(FbLockState lock, unsigned char* bdata) {
 	unsigned int p = 0;
 	int ret;
 	int salt_len = generate_salt(bdata);
@@ -179,7 +182,7 @@ int encrypt_lock_store(unsigned char lock, unsigned char* bdata) {
 #endif
 
 static char mmc_dev_part[16];
-char* get_mmc_part(int part) {
+static char* get_mmc_part(int part) {
 	u32 dev_no = mmc_get_env_dev();
 	sprintf(mmc_dev_part,"%x:%x",dev_no, part);
 	return mmc_dev_part;
@@ -188,60 +191,73 @@ char* get_mmc_part(int part) {
 /*
  * The enabling value is stored in the last byte of target partition.
  */
-inline unsigned char lock_enable_parse(unsigned char* bdata) {
+static inline unsigned char lock_enable_parse(unsigned char* bdata) {
 	DEBUG("lock_enable_parse: 0x%x\n", *(bdata + SECTOR_SIZE -1));
-	return *(bdata + SECTOR_SIZE -1);
+	if (*(bdata + SECTOR_SIZE -1) >= FASTBOOT_UL_NUM)
+		return FASTBOOT_UL_ERROR;
+	else
+		return *(bdata + SECTOR_SIZE -1);
 }
 
+static FbLockState g_lockstat = FASTBOOT_UNLOCK;
 /*
  * Set status of the lock&unlock to FSL_FASTBOOT_FB_PART
  * Currently use the very first Byte of FSL_FASTBOOT_FB_PART
  * to store the fastboot lock&unlock status
  */
-int fastboot_set_lock_stat(unsigned char lock) {
+int fastboot_set_lock_stat(FbLockState lock) {
 	block_dev_desc_t *fs_dev_desc;
 	disk_partition_t fs_partition;
 	unsigned char *bdata;
 	unsigned int mmc_id;
+	int status, ret;
 
 	bdata = (unsigned char *)memalign(ALIGN_BYTES, SECTOR_SIZE);
+	if (bdata == NULL)
+		goto fail2;
 	memset(bdata, 0, SECTOR_SIZE);
 
-	int status;
 	mmc_id = fastboot_flash_find_index(FASTBOOT_PARTITION_FBMISC);
 	status = get_device_and_partition(FSL_FASTBOOT_FB_DEV,
 		get_mmc_part(mmc_id),
 		&fs_dev_desc, &fs_partition, 1);
 	if (status < 0) {
 		printf("%s:error in getdevice partition.\n", __FUNCTION__);
-		return -1;
+		goto fail2;
 	}
 	DEBUG("%s %s partition.start=%d, size=%d\n",FSL_FASTBOOT_FB_DEV,
 		get_mmc_part(mmc_id), fs_partition.start, fs_partition.size);
 
 	status = encrypt_lock_store(lock, bdata);
-	if (status < 0)
-		return -1;
+	if (status < 0) {
+		ret = -1;
+		goto fail;
+	}
 	status = fs_dev_desc->block_write(fs_dev_desc, fs_partition.start, 1, bdata);
 	if (!status) {
 		printf("%s:error in block write.\n", __FUNCTION__);
-		return -1;
+		ret = -1;
+		goto fail;
 	}
-
-
-
+	ret = 0;
+fail:
+	free(bdata);
+	return ret;
+fail2:
+	g_lockstat = lock;
 	return 0;
 }
 
-unsigned char fastboot_get_lock_stat(void)
-{
-
+FbLockState fastboot_get_lock_stat(void) {
 	block_dev_desc_t *fs_dev_desc;
 	disk_partition_t fs_partition;
 	unsigned char *bdata;
 	unsigned int mmc_id;
+	FbLockState ret;
 
 	bdata = (unsigned char *)memalign(ALIGN_BYTES, SECTOR_SIZE);
+	if (bdata == NULL)
+		return g_lockstat;
 
 	int status;
 	mmc_id = fastboot_flash_find_index(FASTBOOT_PARTITION_FBMISC);
@@ -251,7 +267,7 @@ unsigned char fastboot_get_lock_stat(void)
 
 	if (status < 0) {
 		printf("%s:error in getdevice partition.\n", __FUNCTION__);
-		return FASTBOOT_LOCK_ERROR;
+		return g_lockstat;
 	}
 	DEBUG("%s %s partition.start=%d, size=%d\n",FSL_FASTBOOT_FB_DEV,
 		get_mmc_part(mmc_id), fs_partition.start, fs_partition.size);
@@ -259,10 +275,14 @@ unsigned char fastboot_get_lock_stat(void)
 	status = fs_dev_desc->block_read(fs_dev_desc, fs_partition.start, 1, bdata);
 	if (!status) {
 		printf("%s:error in block read.\n", __FUNCTION__);
-		return FASTBOOT_LOCK_ERROR;
+		ret = FASTBOOT_LOCK_ERROR;
+		goto fail;
 	}
 
-	return decrypt_lock_store(bdata);
+	ret = decrypt_lock_store(bdata);
+fail:
+	free(bdata);
+	return ret;
 }
 
 
@@ -272,19 +292,20 @@ unsigned char fastboot_get_lock_stat(void)
 
 #ifdef CONFIG_ANDROID_THINGS_SUPPORT
 //Brillo has no presist data partition
-unsigned char fastboot_lock_enable(void)
-{
+FbLockEnableResult fastboot_lock_enable(void) {
 	return FASTBOOT_UL_ENABLE;
 }
 #else
-unsigned char fastboot_lock_enable() {
+FbLockEnableResult fastboot_lock_enable() {
 	block_dev_desc_t *fs_dev_desc;
 	disk_partition_t fs_partition;
 	unsigned char *bdata;
 	unsigned int mmc_id;
+	FbLockEnableResult ret;
 
 	bdata = (unsigned char *)memalign(ALIGN_BYTES, SECTOR_SIZE);
-
+	if (bdata == NULL)
+		return FASTBOOT_UL_ERROR;
 	int status;
 	mmc_id = fastboot_flash_find_index(FASTBOOT_PARTITION_PRDATA);
 	status = get_device_and_partition(FSL_FASTBOOT_FB_DEV,
@@ -301,7 +322,8 @@ unsigned char fastboot_lock_enable() {
 	status = fs_dev_desc->block_read(fs_dev_desc, target_block, 1, bdata);
 	if (!status) {
 		printf("%s: error in block read\n", __FUNCTION__);
-		return FASTBOOT_UL_ERROR;
+		ret = FASTBOOT_UL_ERROR;
+		goto fail;
 	}
 	int i = 0;
 	DEBUG("\n PRIST last sector is:\n");
@@ -311,12 +333,15 @@ unsigned char fastboot_lock_enable() {
 			DEBUG("\n");
 	}
 	DEBUG("\n");
-	return lock_enable_parse(bdata);
+	ret = lock_enable_parse(bdata);
+fail:
+	free(bdata);
+	return ret;
 
 }
 #endif
 
-int display_lock(int lock, int verify) {
+int display_lock(FbLockState lock, int verify) {
 	struct stdio_dev *disp;
 	disp = stdio_get_by_name("vga");
 	if (disp != NULL) {
