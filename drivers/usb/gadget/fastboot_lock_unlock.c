@@ -397,3 +397,15 @@ int fastboot_wipe_data_partition(void)
 
 	return 0;
 }
+int partition_table_valid(void)
+{
+	int status;
+	unsigned int mmc_id;
+	block_dev_desc_t *fs_dev_desc;
+	disk_partition_t fs_partition;
+	mmc_id = fastboot_flash_find_index(FASTBOOT_PARTITION_FBMISC);
+	status = get_device_and_partition(FSL_FASTBOOT_FB_DEV,
+		get_mmc_part(mmc_id),
+		&fs_dev_desc, &fs_partition, 1);
+	return (status < 0) ? 0 : 1;
+}

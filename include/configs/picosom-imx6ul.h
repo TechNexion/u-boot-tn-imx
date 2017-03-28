@@ -304,6 +304,9 @@
 #define CONFIG_USB_MAX_CONTROLLER_COUNT 2
 #endif
 
+#define PRODUCT_NAME "imx6ul_pico"
+#define VARIANT_NAME "imx6ul_pico"
+
 #if defined(CONFIG_ANDROID_SUPPORT)
 #include "mx6ul_14x14_evk_android.h"
 #endif

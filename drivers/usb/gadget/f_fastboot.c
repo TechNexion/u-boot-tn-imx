@@ -97,6 +97,9 @@ static unsigned int fastboot_flash_session_id;
 static unsigned int download_size;
 static unsigned int download_bytes;
 static bool is_high_speed;
+#ifdef CONFIG_SYSTEM_RAMDISK_SUPPORT
+static bool is_recovery_mode;
+#endif
 static int strcmp_l1(const char *s1, const char *s2);
 
 static struct usb_endpoint_descriptor fs_ep_in = {
@@ -1160,6 +1163,12 @@ static void process_flash_mmc(const char *cmdbuf, char *response)
 					printf("Writing '%s' DONE!\n", ptn->name);
 					sprintf(response, "OKAY");
 				}
+				if (strncmp(ptn->name, "gpt", 3) == 0) {
+					/* will force scan the device,
+					   so dev_desc can be re-inited
+					   with the latest data */
+					run_command(mmc_dev, 0);
+				}
 			}
 		}
 	} else {
@@ -1169,14 +1178,86 @@ static void process_flash_mmc(const char *cmdbuf, char *response)
 
 #endif
 
-
-static int rx_process_erase(const char *cmdbuf, char *response)
+#if defined(CONFIG_FASTBOOT_STORAGE_MMC)
+static void process_erase_mmc(const char *cmdbuf, char *response)
 {
+	int mmc_no = 0;
+	lbaint_t blks, blks_start, blks_size, grp_size;
+	struct mmc *mmc;
+	block_dev_desc_t *dev_desc;
+	struct fastboot_ptentry *ptn;
+	disk_partition_t info;
+
+	ptn = fastboot_flash_find_ptn(cmdbuf);
+	if ((ptn == NULL) || (ptn->flags & FASTBOOT_PTENTRY_FLAGS_UNERASEABLE)) {
+		sprintf(response, "FAILpartition does not exist or uneraseable");
+		return;
+	}
+
+	mmc_no = fastboot_devinfo.dev_id;
+	printf("erase target is MMC:%d\n", mmc_no);
+
+	mmc = find_mmc_device(mmc_no);
+	if (mmc && mmc_init(mmc))
+		printf("MMC card init failed!\n");
+
+	dev_desc = get_dev("mmc", mmc_no);
+	if (NULL == dev_desc) {
+		printf("Block device MMC %d not supported\n",
+			mmc_no);
+		sprintf(response, "FAILnot valid MMC card");
+		return;
+	}
+
+	if (get_partition_info(dev_desc,
+				ptn->partition_index, &info)) {
+		printf("Bad partition index:%d for partition:%s\n",
+		ptn->partition_index, ptn->name);
+		sprintf(response, "FAILerasing of MMC card");
+		return;
+	}
+
+	/* Align blocks to erase group size to avoid erasing other partitions */
+	grp_size = mmc->erase_grp_size;
+	blks_start = (info.start + grp_size - 1) & ~(grp_size - 1);
+	if (info.size >= grp_size)
+		blks_size = (info.size - (blks_start - info.start)) &
+				(~(grp_size - 1));
+	else
+		blks_size = 0;
+
+	printf("Erasing blocks " LBAFU " to " LBAFU " due to alignment\n",
+	       blks_start, blks_start + blks_size);
+
+	blks = dev_desc->block_erase(dev_desc, blks_start, blks_size);
+	if (blks != blks_size) {
+		printf("failed erasing from device %d", dev_desc->dev);
+		sprintf(response, "FAILerasing of MMC card");
+		return;
+	}
+
+	printf("........ erased " LBAFU " bytes from '%s'\n",
+	       blks_size * info.blksz, cmdbuf);
+	sprintf(response, "OKAY");
+
+    return;
+}
+#endif
+
+#if defined(CONFIG_FASTBOOT_STORAGE_SATA)
+static void process_erase_sata(const char *cmdbuf, char *response)
+{
+    return;
+}
+#endif
+
 #if defined(CONFIG_FASTBOOT_STORAGE_NAND)
+static int process_erase_nand(const char *cmdbuf, char *response)
+{
 	struct fastboot_ptentry *ptn;
 
 	ptn = fastboot_flash_find_ptn(cmdbuf);
-	if (ptn == 0) {
+	if (ptn == NULL || (ptn->flags & FASTBOOT_PTENTRY_FLAGS_UNERASEABLE)) {
 		sprintf(response, "FAILpartition does not exist");
 	} else {
 		int status, repeat, repeat_max;
@@ -1227,13 +1308,35 @@ static int rx_process_erase(const char *cmdbuf, char *response)
 			sprintf(response, "OKAY");
 		}
 	}
-	return 0;
-#else
-	printf("Not support erase command for EMMC\n");
-	sprintf(response, "OKAY");
-	return -1;
+	return;
+}
 #endif
 
+static void rx_process_erase(const char *cmdbuf, char *response)
+{
+	switch (fastboot_devinfo.type) {
+#if defined(CONFIG_FASTBOOT_STORAGE_SATA)
+	case DEV_SATA:
+		process_erase_sata(cmdbuf, response);
+		break;
+#endif
+#if defined(CONFIG_FASTBOOT_STORAGE_MMC)
+	case DEV_MMC:
+		process_erase_mmc(cmdbuf, response);
+		break;
+#endif
+#if defined(CONFIG_FASTBOOT_STORAGE_NAND)
+	case DEV_NAND:
+		process_erase_nand(cmdbuf, response);
+		break;
+#endif
+	default:
+		printf("Not support flash command for current device %d\n",
+			fastboot_devinfo.type);
+		sprintf(response,
+			   "FAILfailed to flash device");
+		break;
+	}
 }
 
 static void rx_process_flash(const char *cmdbuf, char *response)
@@ -1316,6 +1419,7 @@ static int _fastboot_parts_add_ptable_entry(int ptable_index,
 				      int mmc_dos_partition_index,
 				      int mmc_partition_index,
 				      const char *name,
+				      const char *fstype,
 				      block_dev_desc_t *dev_desc,
 				      struct fastboot_ptentry *ptable)
 {
@@ -1329,11 +1433,8 @@ static int _fastboot_parts_add_ptable_entry(int ptable_index,
 	ptable[ptable_index].length = info.size;
 	ptable[ptable_index].partition_id = mmc_partition_index;
 	ptable[ptable_index].partition_index = mmc_dos_partition_index;
-#ifdef CONFIG_EFI_PARTITION
 	strcpy(ptable[ptable_index].name, (const char *)info.name);
-#else
-	strcpy(ptable[ptable_index].name, name);
-#endif
+	strcpy(ptable[ptable_index].fstype, (const char *)info.type);
 #ifdef CONFIG_PARTITION_UUIDS
 	strcpy(ptable[ptable_index].uuid, (const char *)info.uuid);
 #endif
@@ -1408,6 +1509,7 @@ static int _fastboot_parts_load_from_ptable(void)
 	ptable[PTN_GPT_INDEX].start = ANDROID_GPT_OFFSET / dev_desc->blksz;
 	ptable[PTN_GPT_INDEX].length = ANDROID_GPT_SIZE  / dev_desc->blksz;
 	ptable[PTN_GPT_INDEX].partition_id = user_partition;
+	ptable[PTN_GPT_INDEX].flags = FASTBOOT_PTENTRY_FLAGS_UNERASEABLE;
 	/* Bootloader */
 	strcpy(ptable[PTN_BOOTLOADER_INDEX].name, FASTBOOT_PARTITION_BOOTLOADER);
 	ptable[PTN_BOOTLOADER_INDEX].start =
@@ -1415,6 +1517,7 @@ static int _fastboot_parts_load_from_ptable(void)
 	ptable[PTN_BOOTLOADER_INDEX].length =
 				 ANDROID_BOOTLOADER_SIZE / dev_desc->blksz;
 	ptable[PTN_BOOTLOADER_INDEX].partition_id = boot_partition;
+	ptable[PTN_BOOTLOADER_INDEX].flags = FASTBOOT_PTENTRY_FLAGS_UNERASEABLE;
 
 	int tbl_idx;
 	int part_idx = 1;
@@ -1423,6 +1526,7 @@ static int _fastboot_parts_load_from_ptable(void)
 		ret = _fastboot_parts_add_ptable_entry(tbl_idx,
 				part_idx++,
 				user_partition,
+				NULL,
 				NULL,
 				dev_desc, ptable);
 		if (ret)
@@ -1765,7 +1869,7 @@ void fastboot_setup(void)
 	char serial[17];
 
 	get_board_serial(&serialnr);
-	sprintf(serial, "%u%u", serialnr.high, serialnr.low);
+	sprintf(serial, "%08x%08x", serialnr.high, serialnr.low);
 	g_dnl_set_serialnumber(serial);
 
 	/*execute board relevant initilizations for preparing fastboot */
@@ -1820,6 +1924,34 @@ static FbBootMode fastboot_get_bootmode(void)
 	return boot_mode;
 }
 
+#ifdef CONFIG_SYSTEM_RAMDISK_SUPPORT
+/* Setup booargs for taking the system parition as ramdisk */
+static void fastboot_setup_system_boot_args(const char *slot)
+{
+	const char *system_part_name = NULL;
+	if(slot == NULL)
+		return;
+	if(!strncmp(slot, "_a", strlen("_a")) || !strncmp(slot, "boot_a", strlen("boot_a"))) {
+		system_part_name = FASTBOOT_PARTITION_SYSTEM_A;
+	}
+	else if(!strncmp(slot, "_b", strlen("_b")) || !strncmp(slot, "boot_b", strlen("boot_b"))) {
+		system_part_name = FASTBOOT_PARTITION_SYSTEM_B;
+	}
+	struct fastboot_ptentry *ptentry = fastboot_flash_find_ptn(system_part_name);
+	if(ptentry != NULL) {
+		char bootargs_3rd[ANDR_BOOT_ARGS_SIZE];
+#if defined(CONFIG_FASTBOOT_STORAGE_MMC)
+		u32 dev_no = mmc_map_to_kernel_blk(mmc_get_env_dev());
+		sprintf(bootargs_3rd, "skip_initramfs root=/dev/mmcblk%dp%d",
+				dev_no,
+				ptentry->partition_index);
+		setenv("bootargs_3rd", bootargs_3rd);
+#endif
+		//TBD to support NAND ubifs system parition boot directly
+	}
+}
+#endif
+
 /* export to lib_arm/board.c */
 void fastboot_run_bootmode(void)
 {
@@ -1828,6 +1960,9 @@ void fastboot_run_bootmode(void)
 	case BOOTMODE_FASTBOOT_BCB_CMD:
 		/* Make the boot into fastboot mode*/
 		puts("Fastboot: Got bootloader commands!\n");
+#ifdef CONFIG_SYSTEM_RAMDISK_SUPPORT
+		is_recovery_mode = false;
+#endif
 		run_command("fastboot", 0);
 		break;
 #ifdef CONFIG_ANDROID_RECOVERY
@@ -1835,11 +1970,18 @@ void fastboot_run_bootmode(void)
 	case BOOTMODE_RECOVERY_KEY_PRESSED:
 		/* Make the boot into recovery mode */
 		puts("Fastboot: Got Recovery key pressing or recovery commands!\n");
+#ifdef CONFIG_SYSTEM_RAMDISK_SUPPORT
+		is_recovery_mode = true;
+#else
 		board_recovery_setup();
+#endif
 		break;
 #endif
 	default:
 		/* skip special mode boot*/
+#ifdef CONFIG_SYSTEM_RAMDISK_SUPPORT
+		is_recovery_mode = false;
+#endif
 		puts("Fastboot: Normal\n");
 		break;
 	}
@@ -1935,6 +2077,10 @@ int do_boota(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]) {
 		}
 		printf(" verify OK, boot '%s%s'\n", avb_loadpart->partition_name, avb_out_data->ab_suffix);
 		setenv("bootargs_sec", avb_out_data->cmdline);
+#ifdef CONFIG_SYSTEM_RAMDISK_SUPPORT
+		if(!is_recovery_mode)
+			fastboot_setup_system_boot_args(avb_out_data->ab_suffix);
+#endif
 		image_size = avb_loadpart->data_size;
 		memcpy((void *)load_addr, (void *)hdr, image_size);
 	} else if (lock_status == FASTBOOT_LOCK) { /* && verify fail */
@@ -1980,6 +2126,10 @@ int do_boota(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]) {
 		char bootargs_sec[ANDR_BOOT_ARGS_SIZE];
 		sprintf(bootargs_sec, "androidboot.slot_suffix=%s", slot);
 		setenv("bootargs_sec", bootargs_sec);
+#ifdef CONFIG_SYSTEM_RAMDISK_SUPPORT
+		if(!is_recovery_mode)
+			fastboot_setup_system_boot_args(slot);
+#endif
 #ifdef CONFIG_FASTBOOT_LOCK
 	}
 #endif
@@ -2091,6 +2241,11 @@ slot_select:
 			printf("no valid slot found, enter to recovery\n");
 			ptn = "recovery";
 		}
+#ifdef CONFIG_SYSTEM_RAMDISK_SUPPORT
+		else {
+			fastboot_setup_system_boot_args(ptn);
+		}
+#endif
 use_given_ptn:
 		printf("use slot %s\n", ptn);
 	}
@@ -2625,6 +2780,40 @@ static int strcmp_l1(const char *s1, const char *s2)
 	return strncmp(s1, s2, strlen(s1));
 }
 
+static char *get_serial(void)
+{
+#ifdef CONFIG_SERIAL_TAG
+	struct tag_serialnr serialnr;
+	static char serial[32];
+	get_board_serial(&serialnr);
+	sprintf(serial, "%08x%08x", serialnr.high,      serialnr.low);
+	return serial;
+#else
+	return NULL;
+#endif
+}
+
+#if !defined(PRODUCT_NAME)
+#define PRODUCT_NAME "NXP i.MX"
+#endif
+
+#if !defined(VARIANT_NAME)
+#define VARIANT_NAME "NXP i.MX"
+#endif
+
+static int get_block_size(void) {
+	int mmc_no = 0;
+	block_dev_desc_t *dev_desc;
+	mmc_no = fastboot_devinfo.dev_id;
+	dev_desc = get_dev("mmc", mmc_no);
+	if (NULL == dev_desc) {
+		printf("** Block device MMC %d not supported\n",
+			mmc_no);
+		return 0;
+	}
+	return dev_desc->blksz;
+}
+
 static void cb_getvar(struct usb_ep *ep, struct usb_request *req)
 {
 	char *cmd = req->buf;
@@ -2649,10 +2838,46 @@ static void cb_getvar(struct usb_ep *ep, struct usb_request *req)
 		return;
 	}
 #endif
-	if (!strcmp_l1("version", cmd)) {
-		strncat(response, FASTBOOT_VERSION, chars_left);
-	} else if (!strcmp_l1("bootloader-version", cmd)) {
+	char *str = cmd;
+	if ((str = strstr(cmd, "partition-size:"))) {
+		str +=strlen("partition-size:");
+		struct fastboot_ptentry* fb_part;
+		fb_part = fastboot_flash_find_ptn(str);
+		if (!fb_part) {
+			strncat(response, "Wrong partition name.", chars_left);
+			goto fail;
+		} else {
+			char str_num[20];
+			sprintf(str_num, "0x%016x", fb_part->length * get_block_size());
+			strncat(response, str_num, chars_left);
+		}
+	} else if ((str = strstr(cmd, "partition-type:"))) {
+		str +=strlen("partition-type:");
+		struct fastboot_ptentry* fb_part;
+		fb_part = fastboot_flash_find_ptn(str);
+		if (!fb_part) {
+			strncat(response, "Wrong partition name.", chars_left);
+			goto fail;
+		} else {
+			strncat(response, fb_part->fstype, chars_left);
+		}
+	} else if (!strcmp_l1("all", cmd)) {
+		/* FIXME need to return all vars here */
+	} else if (!strcmp_l1("version-baseband", cmd)) {
+		strncat(response, "N/A", chars_left);
+	} else if (!strcmp_l1("version-bootloader", cmd) ||
+		!strcmp_l1("bootloader-version", cmd)) {
 		strncat(response, U_BOOT_VERSION, chars_left);
+	} else if (!strcmp_l1("version", cmd)) {
+		strncat(response, FASTBOOT_VERSION, chars_left);
+	} else if (!strcmp_l1("battery-voltage", cmd)) {
+		strncat(response, "0mV", chars_left);
+	} else if (!strcmp_l1("battery-soc-ok", cmd)) {
+		strncat(response, "yes", chars_left);
+	} else if (!strcmp_l1("variant", cmd)) {
+		strncat(response, VARIANT_NAME, chars_left);
+	} else if (!strcmp_l1("off-mode-charge", cmd)) {
+		strncat(response, "1", chars_left);
 	} else if (!strcmp_l1("downloadsize", cmd) ||
 		!strcmp_l1("max-download-size", cmd)) {
 		char str_num[12];
@@ -2669,13 +2894,15 @@ static void cb_getvar(struct usb_ep *ep, struct usb_request *req)
 		 */
 		fastboot_flash_session_id = 0;
 	} else if (!strcmp_l1("serialno", cmd)) {
-		s = getenv("serial#");
+		s = get_serial();
 		if (s)
 			strncat(response, s, chars_left);
-		else
-			strcpy(response, "FAILValue not set");
+		else {
+			strncat(response, "FAILValue not set", chars_left);
+			goto fail;
+		}
 	} else if (!strcmp_l1("product", cmd)) {
-		strncat(response, "Freescale i.MX", chars_left);
+		strncat(response, PRODUCT_NAME, chars_left);
 	}
 #ifdef CONFIG_FASTBOOT_LOCK
 	else if (!strcmp_l1("secure", cmd)) {
@@ -3025,13 +3252,22 @@ static void cb_flash(struct usb_ep *ep, struct usb_request *req)
 	strcpy(response, "FAILno flash device defined");
 
 #ifdef CONFIG_FSL_FASTBOOT
+	int gpt_valid_pre = 0;
+	int gpt_valid_pst = 0;
+	if (strncmp(cmd, "gpt", 3) == 0)
+		gpt_valid_pre = partition_table_valid();
 	rx_process_flash(cmd, response);
-#else
-#ifdef CONFIG_FASTBOOT_FLASH_MMC_DEV
-	fb_mmc_flash_write(cmd, fastboot_flash_session_id,
-			   (void *)CONFIG_FASTBOOT_BUF_ADDR,
-			   download_bytes, response);
-#endif
+	if (strncmp(cmd, "gpt", 3) == 0) {
+		gpt_valid_pst = partition_table_valid();
+		/* If gpt is valid, load partitons table into memory.
+		   So if the next command is "fastboot reboot bootloader",
+		   it can find the "misc" partition to r/w. */
+		if(gpt_valid_pst)
+			_fastboot_load_partitions();
+		/* If gpt invalid -> valid, write unlock status, also wipe data. */
+		if ((gpt_valid_pre == 0) && (gpt_valid_pst == 1))
+			do_fastboot_unlock();
+	}
 #ifdef CONFIG_FASTBOOT_FLASH_NAND_DEV
 	fb_nand_flash_write(cmd, fastboot_flash_session_id,
 			    (void *)CONFIG_FASTBOOT_BUF_ADDR,
@@ -3042,28 +3278,6 @@ static void cb_flash(struct usb_ep *ep, struct usb_request *req)
 	fastboot_tx_write_str(response);
 }
 #endif
-
-static void cb_oem(struct usb_ep *ep, struct usb_request *req)
-{
-	char *cmd = req->buf;
-#ifdef CONFIG_FASTBOOT_FLASH_MMC_DEV
-	if (strncmp("format", cmd + 4, 6) == 0) {
-		char cmdbuf[32];
-                sprintf(cmdbuf, "gpt write mmc %x $partitions",
-			CONFIG_FASTBOOT_FLASH_MMC_DEV);
-                if (run_command(cmdbuf, 0))
-			fastboot_tx_write_str("FAIL");
-                else
-			fastboot_tx_write_str("OKAY");
-	} else
-#endif
-	if (strncmp("unlock", cmd + 4, 8) == 0) {
-		fastboot_tx_write_str("FAILnot implemented");
-	}
-	else {
-		fastboot_tx_write_str("FAILunknown oem command");
-	}
-}
 
 #ifdef CONFIG_FASTBOOT_FLASH
 static void cb_erase(struct usb_ep *ep, struct usb_request *req)
@@ -3077,19 +3291,23 @@ static void cb_erase(struct usb_ep *ep, struct usb_request *req)
 		fastboot_tx_write_str("FAILmissing partition name");
 		return;
 	}
-
-	strcpy(response, "FAILno flash device defined");
-
-#ifdef CONFIG_FSL_FASTBOOT
+#ifdef CONFIG_FASTBOOT_LOCK
+	FbLockState status;
+	status = fastboot_get_lock_stat();
+	if (status == FASTBOOT_LOCK) {
+		error("device is LOCKed!\n");
+		strcpy(response, "FAIL device is locked.");
+		fastboot_tx_write_str(response);
+		return;
+	} else if (status == FASTBOOT_LOCK_ERROR) {
+		error("write lock status into device!\n");
+		fastboot_set_lock_stat(FASTBOOT_LOCK);
+		strcpy(response, "FAIL device is locked.");
+		fastboot_tx_write_str(response);
+		return;
+	}
+#endif
 	rx_process_erase(cmd, response);
-#else
-#ifdef CONFIG_FASTBOOT_FLASH_MMC_DEV
-	fb_mmc_erase(cmd, response);
-#endif
-#ifdef CONFIG_FASTBOOT_FLASH_NAND_DEV
-	fb_nand_erase(cmd, response);
-#endif
-#endif
 	fastboot_tx_write_str(response);
 }
 #endif

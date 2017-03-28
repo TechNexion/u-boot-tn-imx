@@ -65,4 +65,5 @@ int fastboot_wipe_data_partition(void);
 FbLockEnableResult fastboot_lock_enable(void);
 
 int display_lock(FbLockState lock, int verify);
+int partition_table_valid(void);
 #endif

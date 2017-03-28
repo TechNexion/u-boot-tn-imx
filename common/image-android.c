@@ -76,22 +76,8 @@ int android_image_get_kernel(const struct andr_img_hdr *hdr, int verify,
 	printf("Kernel load addr 0x%08x size %u KiB\n",
 	       kernel_addr, DIV_ROUND_UP(hdr->kernel_size, 1024));
 
-	int len = 0;
-	if (*hdr->cmdline) {
-		len += strlen(hdr->cmdline);
-	}
-
+	char newbootargs[512] = {0};
 	char *bootargs = getenv("bootargs");
-	if (bootargs)
-		len += strlen(bootargs);
-
-	char *newbootargs = malloc(len + 2);
-	if (!newbootargs) {
-		puts("Error: malloc in android_image_get_kernel failed!\n");
-		return -ENOMEM;
-	}
-	*newbootargs = '\0';
-
 	if (bootargs) {
 		strcpy(newbootargs, bootargs);
 	} else if (*hdr->cmdline) {
@@ -99,7 +85,7 @@ int android_image_get_kernel(const struct andr_img_hdr *hdr, int verify,
 	}
 
 	printf("Kernel command line: %s\n", newbootargs);
-	char commandline[ANDR_BOOT_ARGS_SIZE];
+	char commandline[1024];
 	strcpy(commandline, newbootargs);
 #ifdef CONFIG_SERIAL_TAG
 	struct tag_serialnr serialnr;
@@ -131,9 +117,8 @@ int android_image_get_kernel(const struct andr_img_hdr *hdr, int verify,
 		printf("boot device type is incorrect.\n");
 
 #ifdef CONFIG_FSL_BOOTCTL
-	char suffixStr[64];
-	sprintf(suffixStr, " androidboot.slot_suffix=%s", get_slot_suffix());
-	strcat(commandline, suffixStr);
+	sprintf(newbootargs, " androidboot.slot_suffix=%s", get_slot_suffix());
+	strcat(commandline, newbootargs);
 #endif
 #ifdef CONFIG_AVB_SUPPORT
 	/* secondary cmdline added by avb */
@@ -141,6 +126,18 @@ int android_image_get_kernel(const struct andr_img_hdr *hdr, int verify,
 	if (bootargs_sec) {
 		strcat(commandline, " ");
 		strcat(commandline, bootargs_sec);
+	}
+#endif
+#ifdef CONFIG_SYSTEM_RAMDISK_SUPPORT
+    /* Normal boot:
+     * cmdline to bypass ramdisk in boot.img, but use the system.img
+     * Recovery boot:
+     * Use the ramdisk in boot.img
+     * */
+	char *bootargs_3rd = getenv("bootargs_3rd");
+	if (bootargs_3rd) {
+		strcat(commandline, " ");
+		strcat(commandline, bootargs_3rd);
 	}
 #endif
 
