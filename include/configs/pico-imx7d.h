@@ -1,23 +1,28 @@
 /*
- * Copyright (C) 2015-2016 Freescale Semiconductor, Inc.
+ * Copyright (C) 2015 Freescale Semiconductor, Inc.
  *
  * Configuration settings for the Freescale i.MX7D SABRESD board.
  *
  * SPDX-License-Identifier:	GPL-2.0+
  */
 
-#ifndef __MX7D_SABRESD_CONFIG_H
-#define __MX7D_SABRESD_CONFIG_H
+#ifndef __PICO_IMX7D_CONFIG_H
+#define __PICO_IMX7D_CONFIG_H
 
+#include <asm/arch/imx-regs.h>
+#include <linux/sizes.h>
 #include "mx7_common.h"
+#include <asm/imx-common/gpio.h>
+
+#define CONFIG_DISPLAY_CPUINFO
+#define CONFIG_DISPLAY_BOARDINFO
+#define CONFIG_SYS_BOOTM_LEN 0x1000000
 
 #define CONFIG_DBG_MONITOR
-#define PHYS_SDRAM_SIZE			SZ_1G
-
 /* uncomment for PLUGIN mode support */
 /* #define CONFIG_USE_PLUGIN */
 
-/* Uncomment to enable secure boot support */
+/* uncomment for SECURE mode support */
 /* #define CONFIG_SECURE_BOOT */
 
 #ifdef CONFIG_SECURE_BOOT
@@ -26,27 +31,58 @@
 #endif
 #endif
 
-/* Network */
+#define CONFIG_CMDLINE_TAG
+#define CONFIG_SETUP_MEMORY_TAGS
+#define CONFIG_INITRD_TAG
+#define CONFIG_REVISION_TAG
+
+#define CONFIG_BOARD_EARLY_INIT_F
+#define CONFIG_BOARD_LATE_INIT
+#define CONFIG_MXC_GPIO
+
+#define CONFIG_MXC_UART
+#ifdef CONFIG_MXC_UART_BASE
+#undef CONFIG_MXC_UART_BASE
+#define CONFIG_MXC_UART_BASE		UART5_IPS_BASE_ADDR
+#endif
+/* allow to overwrite serial and ethaddr */
+#define CONFIG_ENV_OVERWRITE
+#define CONFIG_CONS_INDEX		1
+#define CONFIG_BAUDRATE			115200
+
+#define CONFIG_CMD_FUSE
+#ifdef CONFIG_CMD_FUSE
+#define CONFIG_MXC_OCOTP
+#endif
+
+/* MMC Configs */
+#define CONFIG_FSL_ESDHC
+#define CONFIG_FSL_USDHC
+#define CONFIG_SYS_FSL_ESDHC_ADDR	0
+
+#define CONFIG_MMC
+#define CONFIG_CMD_MMC
+#define CONFIG_GENERIC_MMC
+#define CONFIG_CMD_FAT
+#define CONFIG_DOS_PARTITION
+#define CONFIG_SUPPORT_EMMC_BOOT /* eMMC specific */
+
+#define CONFIG_CMD_PING
+#define CONFIG_CMD_DHCP
 #define CONFIG_CMD_MII
 #define CONFIG_FEC_MXC
 #define CONFIG_MII
 #define CONFIG_FEC_XCV_TYPE             RGMII
 #define CONFIG_ETHPRIME                 "FEC"
+#define CONFIG_FEC_MXC_PHYADDR          1
 
 #define CONFIG_PHYLIB
 #define CONFIG_PHY_BROADCOM
+#define CONFIG_FEC_DMA_MINALIGN		64
 
-#define CONFIG_FEC_ENET_DEV 0
-
-#if (CONFIG_FEC_ENET_DEV == 0)
+/* ENET1 + MDIO2 */
 #define IMX_FEC_BASE			ENET_IPS_BASE_ADDR
-#define CONFIG_FEC_MXC_PHYADDR          0x0
-#elif (CONFIG_FEC_ENET_DEV == 1)
-#define IMX_FEC_BASE			ENET2_IPS_BASE_ADDR
-#define CONFIG_FEC_MXC_PHYADDR          0x1
-#endif
-
-#define CONFIG_FEC_MXC_MDIO_BASE	ENET_IPS_BASE_ADDR
+#define CONFIG_FEC_MXC_MDIO_BASE 	ENET2_IPS_BASE_ADDR
 
 /* PMIC */
 #define CONFIG_POWER
@@ -65,31 +101,20 @@
 #define CONFIG_CMD_I2C
 #define CONFIG_SYS_I2C
 #define CONFIG_SYS_I2C_MXC
-#define CONFIG_SYS_I2C_MXC_I2C1		/* enable I2C bus 1 */
+#define CONFIG_SYS_I2C_MXC_I2C1                /* enable I2C bus 1 */
 #define CONFIG_SYS_I2C_SPEED		100000
 
-#ifdef CONFIG_SYS_BOOT_QSPI
-#define CONFIG_SYS_USE_QSPI
-#define CONFIG_ENV_IS_IN_SPI_FLASH
-#elif defined CONFIG_SYS_BOOT_NAND
-#define CONFIG_SYS_USE_NAND
-#define CONFIG_ENV_IS_IN_NAND
-#else
-#define CONFIG_ENV_IS_IN_MMC
-#endif
+#define CONFIG_BOOTDELAY		3
 
-#define CONFIG_SUPPORT_EMMC_BOOT	/* eMMC specific */
-#define CONFIG_SYS_MMC_IMG_LOAD_PART	1
+#define CONFIG_LOADADDR			0x80800000
+#define CONFIG_SYS_TEXT_BASE		0x87800000
 
-#ifdef CONFIG_IMX_BOOTAUX
-/* Set to QSPI1 A flash at default */
-#ifdef CONFIG_SYS_USE_QSPI
-#define CONFIG_SYS_AUXCORE_BOOTDATA 0x60100000 /* Set to QSPI1 A flash, offset 1M */
-#else
-#define CONFIG_SYS_AUXCORE_BOOTDATA 0x7F8000 /* Set to TCML address */
-#endif
+#define CONFIG_SYS_AUXCORE_BOOTDATA 0x60000000 /* Set to QSPI1 A flash at default */
+#define CONFIG_CMD_BOOTAUX /* Boot M4 */
 
-#ifdef CONFIG_SYS_USE_QSPI
+#ifdef CONFIG_CMD_BOOTAUX
+#define CONFIG_MXC_RDC /* Enable RDC to isolate the peripherals for A7 and M4 */
+
 #define UPDATE_M4_ENV \
 	"m4image=m4_qspi.bin\0" \
 	"loadm4image=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${m4image}\0" \
@@ -99,25 +124,27 @@
 				"setexpr fw_sz ${filesize} + 0xffff; " \
 				"setexpr fw_sz ${fw_sz} / 0x10000; "	\
 				"setexpr fw_sz ${fw_sz} * 0x10000; "	\
-				"sf erase 0x100000 ${fw_sz}; " \
-				"sf write ${loadaddr} 0x100000 ${filesize}; " \
+				"sf erase 0x0 ${fw_sz}; " \
+				"sf write ${loadaddr} 0x0 ${filesize}; " \
 			"fi; " \
 		"fi\0" \
 	"m4boot=sf probe 0:0; bootaux "__stringify(CONFIG_SYS_AUXCORE_BOOTDATA)"\0"
 #else
-#define UPDATE_M4_ENV \
-	"m4image=m4_qspi.bin\0" \
-	"loadm4image=fatload mmc ${mmcdev}:${mmcpart} "__stringify(CONFIG_SYS_AUXCORE_BOOTDATA)" ${m4image}\0" \
-	"m4boot=run loadm4image; bootaux "__stringify(CONFIG_SYS_AUXCORE_BOOTDATA)"\0"
-#endif
-#else
 #define UPDATE_M4_ENV ""
 #endif
 
+#define CONFIG_SYS_MMC_IMG_LOAD_PART	1
 #ifdef CONFIG_SYS_BOOT_NAND
-#define CONFIG_MFG_NAND_PARTITION "mtdparts=gpmi-nand:64m(boot),16m(kernel),16m(dtb),1m(misc),-(rootfs) "
+#define CONFIG_MFG_NAND_PARTITION "mtdparts=gpmi-nand:64m(boot),16m(kernel),16m(dtb),-(rootfs) "
 #else
 #define CONFIG_MFG_NAND_PARTITION ""
+#endif
+
+#ifdef CONFIG_VIDEO
+#define CONFIG_VIDEO_MODE \
+	"panel=EJ050NA\0"
+#else
+#define CONFIG_VIDEO_MODE ""
 #endif
 
 #define CONFIG_MFG_ENV_SETTINGS \
@@ -133,47 +160,41 @@
 	"initrd_high=0xffffffff\0" \
 	"bootcmd_mfg=run mfgtool_args;bootz ${loadaddr} ${initrd_addr} ${fdt_addr};\0" \
 
-#define CONFIG_DFU_ENV_SETTINGS \
-	"dfu_alt_info=image raw 0 0x800000;"\
-		"u-boot raw 0 0x4000;"\
-		"bootimg part 0 1;"\
-		"rootfs part 0 2\0" \
-
 #if defined(CONFIG_SYS_BOOT_NAND)
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	CONFIG_MFG_ENV_SETTINGS \
-	"panel=TFT43AB\0" \
+	CONFIG_VIDEO_MODE \
 	"fdt_addr=0x83000000\0" \
 	"fdt_high=0xffffffff\0"	  \
-	"console=ttymxc0\0" \
-	"bootargs=console=ttymxc0,115200 ubi.mtd=4 "  \
+	"console=ttymxc4\0" \
+	"bootargs=console=ttymxc4,115200 ubi.mtd=3 "  \
 		"root=ubi0:rootfs rootfstype=ubifs "		     \
-		"mtdparts=gpmi-nand:64m(boot),16m(kernel),16m(dtb),1m(misc),-(rootfs)\0"\
+		"mtdparts=gpmi-nand:64m(boot),16m(kernel),16m(dtb),-(rootfs)\0"\
 	"bootcmd=nand read ${loadaddr} 0x4000000 0x800000;"\
 		"nand read ${fdt_addr} 0x5000000 0x100000;"\
 		"bootz ${loadaddr} - ${fdt_addr}\0"
 
 #else
 #define CONFIG_EXTRA_ENV_SETTINGS \
-	UPDATE_M4_ENV \
 	CONFIG_MFG_ENV_SETTINGS \
-	CONFIG_DFU_ENV_SETTINGS \
+	UPDATE_M4_ENV \
+	CONFIG_VIDEO_MODE \
 	"script=boot.scr\0" \
 	"image=zImage\0" \
-	"console=ttymxc0\0" \
+	"console=ttymxc4\0" \
+	"splashpos=m,m\0" \
 	"fdt_high=0xffffffff\0" \
 	"initrd_high=0xffffffff\0" \
-	"fdt_file=imx7d-sdb.dtb\0" \
+	"fdt_file=imx7d-pico_dwarf.dtb\0" \
 	"fdt_addr=0x83000000\0" \
 	"boot_fdt=try\0" \
 	"ip_dyn=yes\0" \
-	"panel=TFT43AB\0" \
 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
 	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
 	"mmcroot=" CONFIG_MMCROOT " rootwait rw\0" \
 	"mmcautodetect=yes\0" \
 	"mmcargs=setenv bootargs console=${console},${baudrate} " \
-		"root=${mmcroot}\0" \
+		"root=${mmcroot} 2\0" \
 	"loadbootscript=" \
 		"fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${script};\0" \
 	"bootscript=echo Running bootscript from mmc ...; " \
@@ -234,6 +255,16 @@
 	   "else run netboot; fi"
 #endif
 
+/* Miscellaneous configurable options */
+#define CONFIG_SYS_LONGHELP
+#define CONFIG_SYS_HUSH_PARSER
+#define CONFIG_SYS_PROMPT		"=> "
+#define CONFIG_AUTO_COMPLETE
+
+/* Print Buffer Size */
+#define CONFIG_SYS_PBSIZE (CONFIG_SYS_CBSIZE + sizeof(CONFIG_SYS_PROMPT) + 16)
+#define CONFIG_SYS_BARGSIZE CONFIG_SYS_CBSIZE
+
 #define CONFIG_CMD_MEMTEST
 #define CONFIG_SYS_MEMTEST_START	0x80000000
 #define CONFIG_SYS_MEMTEST_END		(CONFIG_SYS_MEMTEST_START + 0x20000000)
@@ -241,6 +272,7 @@
 #define CONFIG_SYS_LOAD_ADDR		CONFIG_LOADADDR
 #define CONFIG_SYS_HZ			1000
 
+#define CONFIG_CMDLINE_EDITING
 #define CONFIG_STACKSIZE		SZ_128K
 
 /* Physical Memory Map */
@@ -258,12 +290,19 @@
 
 /* FLASH and environment organization */
 #define CONFIG_SYS_NO_FLASH
+
 #define CONFIG_ENV_SIZE			SZ_8K
 
-/*
- * If want to use nand, define CONFIG_NAND_MXS and rework board
- * to support nand, since emmc has pin conflicts with nand
- */
+#ifdef CONFIG_SYS_BOOT_QSPI
+#define CONFIG_SYS_USE_QSPI
+#define CONFIG_ENV_IS_IN_SPI_FLASH
+#elif defined CONFIG_SYS_BOOT_NAND
+#define CONFIG_SYS_USE_NAND
+#define CONFIG_ENV_IS_IN_NAND
+#else
+#define CONFIG_ENV_IS_IN_MMC
+#endif
+
 #ifdef CONFIG_SYS_USE_NAND
 #define CONFIG_CMD_NAND
 #define CONFIG_CMD_NAND_TRIMFFS
@@ -282,21 +321,22 @@
 #endif
 
 #ifdef CONFIG_SYS_USE_QSPI
-#define CONFIG_FSL_QSPI
-#define CONFIG_CMD_SF
-#define CONFIG_SPI_FLASH
-#define CONFIG_SPI_FLASH_MACRONIX
-#define CONFIG_SPI_FLASH_BAR
-#define CONFIG_SF_DEFAULT_BUS		0
-#define CONFIG_SF_DEFAULT_CS		0
-#define CONFIG_SF_DEFAULT_SPEED		40000000
-#define CONFIG_SF_DEFAULT_MODE		SPI_MODE_0
+#define CONFIG_FSL_QSPI    /* enable the QUADSPI driver */
 #define CONFIG_QSPI_BASE		QSPI1_IPS_BASE_ADDR
 #define CONFIG_QSPI_MEMMAP_BASE		QSPI0_ARB_BASE_ADDR
+
+#define CONFIG_CMD_SF
+#define	CONFIG_SPI_FLASH
+#define	CONFIG_SPI_FLASH_MACRONIX
+#define	CONFIG_SPI_FLASH_BAR
+#define	CONFIG_SF_DEFAULT_BUS		0
+#define	CONFIG_SF_DEFAULT_CS		0
+#define	CONFIG_SF_DEFAULT_SPEED		40000000
+#define	CONFIG_SF_DEFAULT_MODE		SPI_MODE_0
 #endif
 
 #if defined(CONFIG_ENV_IS_IN_MMC)
-#define CONFIG_ENV_OFFSET		(12 * SZ_64K)
+#define CONFIG_ENV_OFFSET		(8 * SZ_64K)
 #elif defined(CONFIG_ENV_IS_IN_SPI_FLASH)
 #define CONFIG_ENV_OFFSET		(768 * 1024)
 #define CONFIG_ENV_SECT_SIZE		(64 * 1024)
@@ -306,7 +346,7 @@
 #define CONFIG_ENV_SPI_MAX_HZ		CONFIG_SF_DEFAULT_SPEED
 #elif defined(CONFIG_ENV_IS_IN_NAND)
 #undef CONFIG_ENV_SIZE
-#define CONFIG_ENV_OFFSET		(60 << 20)
+#define CONFIG_ENV_OFFSET		(3 << 18)
 #define CONFIG_ENV_SECT_SIZE		(128 << 10)
 #define CONFIG_ENV_SIZE			CONFIG_ENV_SECT_SIZE
 #endif
@@ -316,44 +356,33 @@
 #else
 #define CONFIG_SYS_FSL_USDHC_NUM	2
 #endif
-
-/* MMC Config*/
-#define CONFIG_SYS_FSL_ESDHC_ADDR       0
 #define CONFIG_SYS_MMC_ENV_DEV		0   /* USDHC1 */
 #define CONFIG_SYS_MMC_ENV_PART		0	/* user area */
 #define CONFIG_MMCROOT			"/dev/mmcblk0p2"  /* USDHC1 */
 
-/* USB Configs */
-#define CONFIG_CMD_USB
-#define CONFIG_USB_EHCI
-#define CONFIG_USB_EHCI_MX7
-#define CONFIG_USB_STORAGE
-#define CONFIG_EHCI_HCD_INIT_AFTER_RESET
-#define CONFIG_USB_HOST_ETHER
-#define CONFIG_USB_ETHER_ASIX
-#define CONFIG_MXC_USB_PORTSC  (PORT_PTS_UTMI | PORT_PTS_PTW)
-#define CONFIG_MXC_USB_FLAGS   0
-#define CONFIG_USB_MAX_CONTROLLER_COUNT 2
-
-#define CONFIG_IMX_THERMAL
+#define CONFIG_OF_LIBFDT
+#define CONFIG_CMD_BOOTZ
 
 #define CONFIG_CMD_BMODE
 
+#ifndef CONFIG_SYS_DCACHE_OFF
+#define CONFIG_CMD_CACHE
+#endif
+
 #define CONFIG_VIDEO
 #ifdef CONFIG_VIDEO
-#define CONFIG_CFB_CONSOLE
-#define CONFIG_VIDEO_MXS
-#define CONFIG_VIDEO_LOGO
-#define CONFIG_VIDEO_SW_CURSOR
-#define CONFIG_VGA_AS_SINGLE_DEVICE
-#define CONFIG_SYS_CONSOLE_IS_IN_ENV
-#define CONFIG_SPLASH_SCREEN
+#define	CONFIG_CFB_CONSOLE
+#define	CONFIG_VIDEO_MXS
+#define	CONFIG_VIDEO_LOGO
+#define	CONFIG_VIDEO_SW_CURSOR
+#define	CONFIG_VGA_AS_SINGLE_DEVICE
+#define	CONFIG_SYS_CONSOLE_IS_IN_ENV
+#define	CONFIG_SPLASH_SCREEN
 #define CONFIG_SPLASH_SCREEN_ALIGN
-#define CONFIG_CMD_BMP
-#define CONFIG_BMP_16BPP
-#define CONFIG_VIDEO_BMP_RLE8
+#define	CONFIG_CMD_BMP
+#define	CONFIG_BMP_16BPP
+#define	CONFIG_VIDEO_BMP_RLE8
 #define CONFIG_VIDEO_BMP_LOGO
-#define CONFIG_IMX_VIDEO_SKIP
 #endif
 
 /* #define CONFIG_SPLASH_SCREEN*/
@@ -379,34 +408,29 @@
 #define CONFIG_WAVEFORM_BUF_SIZE		0x400000
 #endif
 
+/* USB Configs */
+#define CONFIG_CMD_USB
+#define CONFIG_USB_EHCI
+#define CONFIG_USB_EHCI_MX7
+#define CONFIG_USB_STORAGE
+#define CONFIG_EHCI_HCD_INIT_AFTER_RESET
+#define CONFIG_USB_HOST_ETHER
+#define CONFIG_USB_ETHER_ASIX
+#define CONFIG_MXC_USB_PORTSC  (PORT_PTS_UTMI | PORT_PTS_PTW)
+#define CONFIG_MXC_USB_FLAGS   0
+#define CONFIG_USB_MAX_CONTROLLER_COUNT 2
+
+#define CONFIG_IMX_THERMAL
+
 #if defined(CONFIG_MXC_EPDC) && defined(CONFIG_SYS_USE_QSPI)
 #error "EPDC Pins conflicts QSPI, Either EPDC or QSPI can be enabled!"
 #endif
 
-#if defined(CONFIG_ANDROID_SUPPORT)
-#include "mx7dsabresdandroid.h"
-#elif defined(CONFIG_ANDROID_THINGS_SUPPORT)
-#include "mx7dsabresd_androidthings.h"
-#else
-#define CONFIG_CI_UDC
-#define CONFIG_USBD_HS
-#define CONFIG_USB_GADGET_DUALSPEED
-
-#define CONFIG_USB_GADGET
-#define CONFIG_CMD_USB_MASS_STORAGE
-#define CONFIG_USB_FUNCTION_MASS_STORAGE
-#define CONFIG_USB_GADGET_DOWNLOAD
-#define CONFIG_USB_GADGET_VBUS_DRAW	2
-
-#define CONFIG_G_DNL_VENDOR_NUM		0x0525
-#define CONFIG_G_DNL_PRODUCT_NUM	0xa4a5
-#define CONFIG_G_DNL_MANUFACTURER	"FSL"
-
-/* USB Device Firmware Update support */
-#define CONFIG_CMD_DFU
-#define CONFIG_USB_FUNCTION_DFU
-#define CONFIG_DFU_MMC
-#define CONFIG_DFU_RAM
+#if defined(CONFIG_ANDROID_THINGS_SUPPORT)
+#include "pico-imx7dandroidthings.h"
 #endif
+
+#define PRODUCT_NAME "imx7d"
+#define VARIANT_NAME "imx7d_pico"
 
 #endif	/* __CONFIG_H */

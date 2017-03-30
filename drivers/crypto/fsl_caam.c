@@ -142,18 +142,14 @@ uint32_t caam_decap_blob(uint32_t plain_text, uint32_t blob_addr, uint32_t size)
     /* Add job to input ring */
 	g_input_ring[0] = (uint32_t)decap_dsc;
 
+	flush_dcache_range((uint32_t)blob_addr & ALIGN_MASK,
+			   (((uint32_t)blob_addr + 2 * size + 64) & ALIGN_MASK));
+	flush_dcache_range((uint32_t)plain_text & ALIGN_MASK,
+			   (((uint32_t)plain_text + 2 * size + 64) & ALIGN_MASK));
 	flush_dcache_range((uint32_t)decap_dsc & ALIGN_MASK,
 			   ((uint32_t)decap_dsc & ALIGN_MASK) + 128);
 	flush_dcache_range((uint32_t)g_input_ring & ALIGN_MASK,
 			   ((uint32_t)g_input_ring & ALIGN_MASK) + 128);
-	invalidate_dcache_range((uint32_t)decap_dsc & ALIGN_MASK,
-			((uint32_t)decap_dsc & ALIGN_MASK) + 128);
-	invalidate_dcache_range((uint32_t)g_input_ring & ALIGN_MASK,
-			((uint32_t)g_input_ring & ALIGN_MASK) + 128);
-	invalidate_dcache_range((uint32_t)blob_addr & ALIGN_MASK,
-			   (((uint32_t)blob_addr + 2 * size + 64) & ALIGN_MASK));
-	invalidate_dcache_range((uint32_t)plain_text & ALIGN_MASK,
-			   (((uint32_t)plain_text + 2 * size + 64) & ALIGN_MASK));
 
     /* Increment jobs added */
 	__raw_writel(1, CAAM_IRJAR0);
@@ -163,7 +159,7 @@ uint32_t caam_decap_blob(uint32_t plain_text, uint32_t blob_addr, uint32_t size)
 
 	// TODO: check if Secure memory is cacheable.
 	flush_dcache_range((uint32_t)g_output_ring & ALIGN_MASK,
-				((uint32_t)g_output_ring & 0xffffffe0) + 128);
+				((uint32_t)g_output_ring & ALIGN_MASK) + 128);
 	/* check that descriptor address is the one expected in the output ring */
 	if(g_output_ring[0] == (uint32_t)decap_dsc)
 	{
@@ -220,18 +216,14 @@ uint32_t caam_gen_blob(uint32_t plain_data_addr, uint32_t blob_addr, uint32_t si
     /* Add job to input ring */
 	g_input_ring[0] = (uint32_t)encap_dsc;
 
+	flush_dcache_range((uint32_t)plain_data_addr & ALIGN_MASK,
+			   (((uint32_t)plain_data_addr + 2 * size + 64) & ALIGN_MASK));
 	flush_dcache_range((uint32_t)encap_dsc & ALIGN_MASK,
 			   ((uint32_t)encap_dsc & ALIGN_MASK) + 128);
+	flush_dcache_range((uint32_t)blob & ALIGN_MASK,
+			   (((uint32_t)blob + 2 * size + 64) & ALIGN_MASK));
 	flush_dcache_range((uint32_t)g_input_ring & ALIGN_MASK,
 			   ((uint32_t)g_input_ring & ALIGN_MASK) + 128);
-	invalidate_dcache_range((uint32_t)encap_dsc & ALIGN_MASK,
-			   ((uint32_t)encap_dsc & ALIGN_MASK) + 128);
-	invalidate_dcache_range((uint32_t)g_input_ring & ALIGN_MASK,
-			   ((uint32_t)g_input_ring & ALIGN_MASK) + 128);
-	invalidate_dcache_range((uint32_t)plain_data_addr & ALIGN_MASK,
-			   (((uint32_t)plain_data_addr + 2 * size + 64) & ALIGN_MASK));
-	invalidate_dcache_range((uint32_t)blob & ALIGN_MASK,
-			   (((uint32_t)blob + 2 * size + 64) & ALIGN_MASK));
 	/* Increment jobs added */
 	__raw_writel(1, CAAM_IRJAR0);
 
@@ -240,7 +232,7 @@ uint32_t caam_gen_blob(uint32_t plain_data_addr, uint32_t blob_addr, uint32_t si
 
     // flush cache
 	flush_dcache_range((uint32_t)g_output_ring & ALIGN_MASK,
-				((uint32_t)g_output_ring & 0xffffffe0) + 128);
+				((uint32_t)g_output_ring & ALIGN_MASK) + 128);
 	/* check that descriptor address is the one expected in the output ring */
 	if(g_output_ring[0] == (uint32_t)encap_dsc)
 	{

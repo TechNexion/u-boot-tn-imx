@@ -57,11 +57,15 @@
  * This will return FASTBOOT_LOCK, FASTBOOT_UNLOCK or FASTBOOT_ERROR
  */
 static inline unsigned char decrypt_lock_store(unsigned char* bdata) {
-	return *bdata;
+	if (*bdata >= FASTBOOT_LOCK_NUM)
+		return FASTBOOT_LOCK_ERROR;
+	else
+		return *bdata;
 }
 
-static inline void encrypt_lock_store(FbLockState lock, unsigned char* bdata) {
+static inline int encrypt_lock_store(FbLockState lock, unsigned char* bdata) {
 	*bdata  = lock;
+	return 0;
 }
 #else
 
@@ -290,7 +294,7 @@ fail:
  * which is managed by PresistDataService
  */
 
-#ifdef CONFIG_ANDROID_THINGS_SUPPORT
+#ifdef CONFIG_ENABLE_LOCKSTATUS_SUPPORT
 //Brillo has no presist data partition
 FbLockEnableResult fastboot_lock_enable(void) {
 	return FASTBOOT_UL_ENABLE;
@@ -396,16 +400,4 @@ int fastboot_wipe_data_partition(void)
 	mdelay(2000);
 
 	return 0;
-}
-int partition_table_valid(void)
-{
-	int status;
-	unsigned int mmc_id;
-	block_dev_desc_t *fs_dev_desc;
-	disk_partition_t fs_partition;
-	mmc_id = fastboot_flash_find_index(FASTBOOT_PARTITION_FBMISC);
-	status = get_device_and_partition(FSL_FASTBOOT_FB_DEV,
-		get_mmc_part(mmc_id),
-		&fs_dev_desc, &fs_partition, 1);
-	return (status < 0) ? 0 : 1;
 }

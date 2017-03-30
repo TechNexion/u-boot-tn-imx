@@ -822,7 +822,7 @@ static void process_flash_sata(const char *cmdbuf, char *response)
 #if defined(CONFIG_FASTBOOT_STORAGE_MMC)
 static int is_raw_partition(struct fastboot_ptentry *ptn)
 {
-#ifdef CONFIG_ANDROID_THINGS_SUPPORT
+#ifdef CONFIG_ANDROID_AB_SUPPORT
 	if (ptn && (!strncmp(ptn->name, FASTBOOT_PARTITION_BOOTLOADER,
 			strlen(FASTBOOT_PARTITION_BOOTLOADER)) ||
 			!strncmp(ptn->name, FASTBOOT_PARTITION_GPT,
@@ -1397,9 +1397,11 @@ static int _fastboot_setup_dev(void)
 		} else if (!strcmp(fastboot_env, "nand")) {
 			fastboot_devinfo.type = DEV_NAND;
 			fastboot_devinfo.dev_id = 0;
+#if defined(CONFIG_FASTBOOT_STORAGE_MMC)
 		} else if (!strncmp(fastboot_env, "mmc", 3)) {
 			fastboot_devinfo.type = DEV_MMC;
 			fastboot_devinfo.dev_id = mmc_get_env_dev();
+#endif
 		}
 	} else {
 		return 1;
@@ -1434,10 +1436,22 @@ static int _fastboot_parts_add_ptable_entry(int ptable_index,
 	ptable[ptable_index].partition_id = mmc_partition_index;
 	ptable[ptable_index].partition_index = mmc_dos_partition_index;
 	strcpy(ptable[ptable_index].name, (const char *)info.name);
-	strcpy(ptable[ptable_index].fstype, (const char *)info.type);
 #ifdef CONFIG_PARTITION_UUIDS
 	strcpy(ptable[ptable_index].uuid, (const char *)info.uuid);
 #endif
+#ifdef CONFIG_ANDROID_AB_SUPPORT
+	if (!strcmp((const char *)info.name, FASTBOOT_PARTITION_SYSTEM_A) ||
+		!strcmp((const char *)info.name, FASTBOOT_PARTITION_SYSTEM_B) ||
+		!strcmp((const char *)info.name, FASTBOOT_PARTITION_DATA))
+#else
+	if (!strcmp((const char *)info.name, FASTBOOT_PARTITION_SYSTEM) ||
+		!strcmp((const char *)info.name, FASTBOOT_PARTITION_DATA) ||
+		!strcmp((const char *)info.name, FASTBOOT_PARTITION_DEVICE) ||
+		!strcmp((const char *)info.name, FASTBOOT_PARTITION_CACHE))
+#endif
+		strcpy(ptable[ptable_index].fstype, "ext4");
+	else
+		strcpy(ptable[ptable_index].fstype, "emmc");
 
 	return 0;
 }
@@ -2831,13 +2845,6 @@ static void cb_getvar(struct usb_ep *ep, struct usb_request *req)
 		return;
 	}
 
-#ifdef CONFIG_FSL_BOOTCTL
-	if (is_sotvar(cmd)) {
-		get_slotvar(cmd, response, chars_left);
-		fastboot_tx_write_str(response);
-		return;
-	}
-#endif
 	char *str = cmd;
 	if ((str = strstr(cmd, "partition-size:"))) {
 		str +=strlen("partition-size:");
@@ -2922,7 +2929,7 @@ static void cb_getvar(struct usb_ep *ep, struct usb_request *req)
 				response + strlen(response), chars_left + 1) < 0)
 			goto fail;
 	}
-#elif CONFIG_FSL_BOOTCTL
+#elif defined(CONFIG_FSL_BOOTCTL)
 	else if (is_sotvar(cmd)) {
 		if (get_slotvar(cmd, response + strlen(response), chars_left + 1) < 0)
 			goto fail;
@@ -3217,6 +3224,17 @@ static void cb_flashing(struct usb_ep *ep, struct usb_request *req)
 
 #endif
 
+static int partition_table_valid(void)
+{
+	int status, mmc_no;
+	block_dev_desc_t *dev_desc;
+	disk_partition_t info;
+	mmc_no = fastboot_devinfo.dev_id;
+	dev_desc = get_dev("mmc", mmc_no);
+	status = get_partition_info(dev_desc, 1, &info);
+	return (status == 0);
+}
+
 #ifdef CONFIG_FASTBOOT_FLASH
 static void cb_flash(struct usb_ep *ep, struct usb_request *req)
 {
@@ -3252,11 +3270,14 @@ static void cb_flash(struct usb_ep *ep, struct usb_request *req)
 	strcpy(response, "FAILno flash device defined");
 
 #ifdef CONFIG_FSL_FASTBOOT
+#ifdef CONFIG_FASTBOOT_LOCK
 	int gpt_valid_pre = 0;
 	int gpt_valid_pst = 0;
 	if (strncmp(cmd, "gpt", 3) == 0)
 		gpt_valid_pre = partition_table_valid();
+#endif
 	rx_process_flash(cmd, response);
+#ifdef CONFIG_FASTBOOT_LOCK
 	if (strncmp(cmd, "gpt", 3) == 0) {
 		gpt_valid_pst = partition_table_valid();
 		/* If gpt is valid, load partitons table into memory.
@@ -3268,6 +3289,8 @@ static void cb_flash(struct usb_ep *ep, struct usb_request *req)
 		if ((gpt_valid_pre == 0) && (gpt_valid_pst == 1))
 			do_fastboot_unlock();
 	}
+
+#endif
 #ifdef CONFIG_FASTBOOT_FLASH_NAND_DEV
 	fb_nand_flash_write(cmd, fastboot_flash_session_id,
 			    (void *)CONFIG_FASTBOOT_BUF_ADDR,
@@ -3408,7 +3431,7 @@ static const struct cmd_dispatch_info cmd_dispatch_info[] = {
 		.cmd = "set_active",
 		.cb = cb_set_active_avb,
 	},
-#elif CONFIG_FSL_BOOTCTL
+#elif defined(CONFIG_FSL_BOOTCTL)
 	{
 		.cmd = "set_active",
 		.cb = cb_set_active,
