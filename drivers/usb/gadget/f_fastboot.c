@@ -78,6 +78,9 @@
 #define TX_ENDPOINT_MAXIMUM_PACKET_SIZE      (0x0040)
 
 #define EP_BUFFER_SIZE			4096
+#ifdef CONFIG_FLASH_MCUFIRMWARE_SUPPORT
+struct fastboot_device_info fastboot_firmwareinfo;
+#endif
 
 struct f_fastboot {
 	struct usb_function usb_function;
@@ -714,6 +717,57 @@ static int saveenv_to_ptn(struct fastboot_ptentry *ptn, char *err_string)
 	return ret;
 }
 
+#ifdef CONFIG_FLASH_MCUFIRMWARE_SUPPORT
+static void process_flash_sf(const char *cmdbuf, char *response)
+{
+	if (download_bytes) {
+		struct fastboot_ptentry *ptn;
+
+		ptn = fastboot_flash_find_ptn(cmdbuf);
+		if (ptn == 0) {
+			sprintf(response, "FAILpartition does not exist");
+		} else if ((download_bytes > ptn->length)) {
+			sprintf(response, "FAILimage too large for partition");
+			/* TODO : Improve check for yaffs write */
+		} else {
+			int ret;
+			char sf_command[128];
+			/* Normal case */
+			sprintf(sf_command, "sf probe");
+			ret = run_command(sf_command, 0);
+			if (ret){
+				sprintf(response, "FAIL:Erasing sf failed");
+				return;
+			}
+			sprintf(sf_command, "sf erase 0x%x 0x%x",
+					ptn->start, /*start*/
+					ptn->length /*size*/);
+			ret = run_command(sf_command, 0);
+			if (ret){
+				sprintf(response, "FAIL:Erasing sf failed");
+				return;
+			}
+			sprintf(sf_command, "sf write 0x%x 0x%x 0x%x",
+					(unsigned int)interface.transfer_buffer, /*source*/
+					ptn->start, /*start*/
+					ptn->length /*size*/);
+
+			printf("sf write '%s'\n", ptn->name);
+			ret = run_command(sf_command, 0);
+			if (ret){
+				sprintf(response, "FAIL:Writing sf failed");
+				return;
+			}
+			printf("sf write finished '%s'\n", ptn->name);
+			sprintf(response, "OKAY");
+			}
+	} else {
+		sprintf(response, "FAILno image downloaded");
+	}
+
+}
+#endif
+
 #if defined(CONFIG_FASTBOOT_STORAGE_NAND)
 
 static void process_flash_nand(const char *cmdbuf, char *response)
@@ -1341,6 +1395,17 @@ static void rx_process_erase(const char *cmdbuf, char *response)
 
 static void rx_process_flash(const char *cmdbuf, char *response)
 {
+#ifdef CONFIG_FLASH_MCUFIRMWARE_SUPPORT
+	if (!strcmp(cmdbuf, FASTBOOT_MCU_FIRMWARE)) {
+		switch (fastboot_firmwareinfo.type) {
+		case DEV_SF:
+			process_flash_sf(cmdbuf, response);
+			return;
+		default:
+			printf("Not support flash firmware\n");
+		}
+	}
+#endif
 	switch (fastboot_devinfo.type) {
 #if defined(CONFIG_FASTBOOT_STORAGE_SATA)
 	case DEV_SATA:
@@ -1407,6 +1472,9 @@ static int _fastboot_setup_dev(void)
 		return 1;
 	}
 
+#ifdef CONFIG_FLASH_MCUFIRMWARE_SUPPORT
+	fastboot_firmwareinfo.type = DEV_SF;
+#endif
 	return 0;
 }
 
@@ -1546,6 +1614,13 @@ static int _fastboot_parts_load_from_ptable(void)
 		if (ret)
 			break;
 	}
+#ifdef CONFIG_FLASH_MCUFIRMWARE_SUPPORT
+	strcpy(ptable[tbl_idx].name, FASTBOOT_MCU_FIRMWARE);
+	ptable[tbl_idx].start = ANDROID_FIRMWARE_START;
+	ptable[tbl_idx].length = ANDROID_FIRMWARE_SIZE;
+	ptable[tbl_idx].flags = FASTBOOT_PTENTRY_FLAGS_UNERASEABLE;
+	part_idx++;
+#endif
 	for (i = 0; i < part_idx; i++)
 		fastboot_flash_add_ptn(&ptable[i]);
 

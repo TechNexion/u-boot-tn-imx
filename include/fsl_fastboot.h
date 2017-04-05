@@ -65,12 +65,15 @@
 #define FASTBOOT_PARTITION_MISC "misc"
 #define FASTBOOT_PARTITION_PRDATA "presistdata"
 #define FASTBOOT_PARTITION_FBMISC "fbmisc"
+#define FASTBOOT_MCU_FIRMWARE "mcufirmware"
 #endif
 
 enum {
     DEV_SATA,
     DEV_MMC,
-    DEV_NAND
+    DEV_NAND,
+    /*SPI flash*/
+    DEV_SF
 };
 
 typedef enum {
