@@ -1952,6 +1952,26 @@ void board_recovery_setup(void)
 #endif /*CONFIG_ANDROID_RECOVERY*/
 #endif /*CONFIG_FSL_FASTBOOT*/
 
+#if defined(CONFIG_AVB_SUPPORT) && defined(CONFIG_MMC)
+static AvbABOps fsl_avb_ab_ops = {
+	.read_ab_metadata = fsl_read_ab_metadata,
+	.write_ab_metadata = fsl_write_ab_metadata,
+	.ops = NULL
+};
+
+static AvbOps fsl_avb_ops = {
+	.ab_ops = &fsl_avb_ab_ops,
+	.read_from_partition = fsl_read_from_partition_multi,
+	.write_to_partition = fsl_write_to_partition,
+	.validate_vbmeta_public_key = fsl_validate_vbmeta_public_key_rpmb,
+	.read_rollback_index = fsl_read_rollback_index_rpmb,
+	.write_rollback_index = fsl_write_rollback_index_rpmb,
+	.read_is_device_unlocked = fsl_read_is_device_unlocked,
+	.get_unique_guid_for_partition = fsl_get_unique_guid_for_partition
+
+};
+#endif
+
 void fastboot_setup(void)
 {
 	struct tag_serialnr serialnr;
@@ -1971,6 +1991,10 @@ void fastboot_setup(void)
 	_fastboot_load_partitions();
 
 	parameters_setup();
+
+#ifdef CONFIG_AVB_SUPPORT
+	fsl_avb_ab_ops.ops = &fsl_avb_ops;
+#endif
 }
 
 /* Write the bcb with fastboot bootloader commands */
@@ -2113,20 +2137,6 @@ bootimg_print_image_hdr(struct andr_img_hdr *hdr)
 static struct andr_img_hdr boothdr __aligned(ARCH_DMA_MINALIGN);
 
 #if defined(CONFIG_AVB_SUPPORT) && defined(CONFIG_MMC)
-static AvbABOps fsl_avb_ab_ops = {
-	.ops = {
-		.read_from_partition = fsl_read_from_partition_multi,
-		.write_to_partition = fsl_write_to_partition,
-		.validate_vbmeta_public_key = fsl_validate_vbmeta_public_key_rpmb,
-		.read_rollback_index = fsl_read_rollback_index_rpmb,
-		.write_rollback_index = fsl_write_rollback_index_rpmb,
-		.read_is_device_unlocked = fsl_read_is_device_unlocked,
-		.get_unique_guid_for_partition = fsl_get_unique_guid_for_partition
-	},
-	.read_ab_metadata = fsl_read_ab_metadata,
-	.write_ab_metadata = fsl_write_ab_metadata
-};
-
 /* we can use avb to verify Trusty if we want */
 const char *requested_partitions[] = {"boot", 0};
 
@@ -2140,7 +2150,6 @@ int do_boota(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]) {
 	AvbABFlowResult avb_result;
 	AvbSlotVerifyData *avb_out_data;
 	AvbPartitionData *avb_loadpart;
-	AvbOps fsl_avb_ops = fsl_avb_ab_ops.ops;
 
 #ifdef CONFIG_FASTBOOT_LOCK
 	/* check lock state */
@@ -2150,8 +2159,9 @@ int do_boota(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]) {
 		fastboot_set_lock_stat(FASTBOOT_LOCK);
 		lock_status = FASTBOOT_LOCK;
 	}
+	bool allow_fail = (lock_status == FASTBOOT_UNLOCK ? true : false);
 	/* if in lock state, do avb verify */
-	avb_result = avb_ab_flow(&fsl_avb_ab_ops, requested_partitions, &avb_out_data);
+	avb_result = avb_ab_flow(&fsl_avb_ab_ops, requested_partitions, allow_fail, &avb_out_data);
 	if (avb_result == AVB_AB_FLOW_RESULT_OK) {
 		assert(avb_out_data != NULL);
 		/* load the first partition */
