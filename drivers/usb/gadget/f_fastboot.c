@@ -3228,10 +3228,12 @@ U_BOOT_CMD(
 	"lock_status",
 	"lock_status");
 
-static int do_fastboot_unlock(void)
+static int do_fastboot_unlock(bool force)
 {
 	int status;
-	if (fastboot_lock_enable() == FASTBOOT_UL_ENABLE) {
+	if (force)
+		set_fastboot_lock_disable();
+	if ((fastboot_lock_enable() == FASTBOOT_UL_ENABLE) || force) {
 		printf("It is able to unlock device. %d\n",fastboot_lock_enable());
 		if (fastboot_get_lock_stat() == FASTBOOT_UNLOCK) {
 			printf("The device is already unlocked\n");
@@ -3288,7 +3290,7 @@ static void cb_flashing(struct usb_ep *ep, struct usb_request *req)
 		strcpy(response, "OKAY");
 	} else if (!strncmp(cmd + len - 6, "unlock", 6)) {
 		printf("flashing unlock.\n");
-		status = do_fastboot_unlock();
+		status = do_fastboot_unlock(false);
 		if (status >= 0)
 			strcpy(response, "OKAY");
 		else
@@ -3372,7 +3374,7 @@ static void cb_flash(struct usb_ep *ep, struct usb_request *req)
 			_fastboot_load_partitions();
 		/* If gpt invalid -> valid, write unlock status, also wipe data. */
 		if ((gpt_valid_pre == 0) && (gpt_valid_pst == 1))
-			do_fastboot_unlock();
+			do_fastboot_unlock(true);
 	}
 
 #endif

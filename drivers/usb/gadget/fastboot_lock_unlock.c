@@ -192,6 +192,10 @@ static char* get_mmc_part(int part) {
 	return mmc_dev_part;
 }
 
+static inline unsigned char set_lock_disable_data(unsigned char* bdata) {
+	*(bdata + SECTOR_SIZE -1) = 0;
+}
+
 /*
  * The enabling value is stored in the last byte of target partition.
  */
@@ -213,7 +217,7 @@ int fastboot_set_lock_stat(FbLockState lock) {
 	block_dev_desc_t *fs_dev_desc;
 	disk_partition_t fs_partition;
 	unsigned char *bdata;
-	unsigned int mmc_id;
+	int mmc_id;
 	int status, ret;
 
 	bdata = (unsigned char *)memalign(ALIGN_BYTES, SECTOR_SIZE);
@@ -222,6 +226,10 @@ int fastboot_set_lock_stat(FbLockState lock) {
 	memset(bdata, 0, SECTOR_SIZE);
 
 	mmc_id = fastboot_flash_find_index(FASTBOOT_PARTITION_FBMISC);
+	if (mmc_id < 0) {
+		printf("%s: error in get mmc part\n", __FUNCTION__);
+		goto fail2;
+	}
 	status = get_device_and_partition(FSL_FASTBOOT_FB_DEV,
 		get_mmc_part(mmc_id),
 		&fs_dev_desc, &fs_partition, 1);
@@ -256,7 +264,7 @@ FbLockState fastboot_get_lock_stat(void) {
 	block_dev_desc_t *fs_dev_desc;
 	disk_partition_t fs_partition;
 	unsigned char *bdata;
-	unsigned int mmc_id;
+	int mmc_id;
 	FbLockState ret;
 
 	bdata = (unsigned char *)memalign(ALIGN_BYTES, SECTOR_SIZE);
@@ -265,6 +273,10 @@ FbLockState fastboot_get_lock_stat(void) {
 
 	int status;
 	mmc_id = fastboot_flash_find_index(FASTBOOT_PARTITION_FBMISC);
+	if (mmc_id < 0) {
+		printf("%s: error in get mmc part\n", __FUNCTION__);
+		return g_lockstat;
+	}
 	status = get_device_and_partition(FSL_FASTBOOT_FB_DEV,
 		get_mmc_part(mmc_id),
 		&fs_dev_desc, &fs_partition, 1);
@@ -299,12 +311,52 @@ fail:
 FbLockEnableResult fastboot_lock_enable(void) {
 	return FASTBOOT_UL_ENABLE;
 }
+void set_fastboot_lock_disable(void) {
+}
 #else
+void set_fastboot_lock_disable(void) {
+	block_dev_desc_t *fs_dev_desc;
+	disk_partition_t fs_partition;
+	unsigned char *bdata;
+	int mmc_id;
+	FbLockEnableResult ret;
+
+	bdata = (unsigned char *)memalign(ALIGN_BYTES, SECTOR_SIZE);
+	if (bdata == NULL)
+		return;
+	ret = set_lock_disable_data(bdata);
+	int status;
+	mmc_id = fastboot_flash_find_index(FASTBOOT_PARTITION_PRDATA);
+	if (mmc_id < 0) {
+		printf("%s: error in get mmc part\n", __FUNCTION__);
+		return;
+	}
+	status = get_device_and_partition(FSL_FASTBOOT_FB_DEV,
+		get_mmc_part(mmc_id),
+		&fs_dev_desc, &fs_partition, 1);
+	if (status < 0) {
+		printf("%s:error in getdevice partition.\n", __FUNCTION__);
+		return;
+	}
+
+	lbaint_t target_block = fs_partition.start + fs_partition.size - 1;
+	DEBUG("target_block.start=%d, size=%d target_block=%d\n", fs_partition.start, fs_partition.size, target_block);
+	status = fs_dev_desc->block_write(fs_dev_desc, target_block, 1, bdata);
+	if (!status) {
+		printf("%s: error in block read\n", __FUNCTION__);
+		goto fail;
+	}
+
+fail:
+	free(bdata);
+	return;
+
+}
 FbLockEnableResult fastboot_lock_enable() {
 	block_dev_desc_t *fs_dev_desc;
 	disk_partition_t fs_partition;
 	unsigned char *bdata;
-	unsigned int mmc_id;
+	int mmc_id;
 	FbLockEnableResult ret;
 
 	bdata = (unsigned char *)memalign(ALIGN_BYTES, SECTOR_SIZE);
@@ -312,6 +364,10 @@ FbLockEnableResult fastboot_lock_enable() {
 		return FASTBOOT_UL_ERROR;
 	int status;
 	mmc_id = fastboot_flash_find_index(FASTBOOT_PARTITION_PRDATA);
+	if (mmc_id < 0) {
+		printf("%s: error in get mmc part\n", __FUNCTION__);
+		return FASTBOOT_UL_ERROR;
+	}
 	status = get_device_and_partition(FSL_FASTBOOT_FB_DEV,
 		get_mmc_part(mmc_id),
 		&fs_dev_desc, &fs_partition, 1);
@@ -383,8 +439,12 @@ int fastboot_wipe_data_partition(void)
 	block_dev_desc_t *fs_dev_desc;
 	disk_partition_t fs_partition;
 	int status;
-	unsigned int mmc_id;
+	int mmc_id;
 	mmc_id = fastboot_flash_find_index(FASTBOOT_PARTITION_DATA);
+	if (mmc_id < 0) {
+		printf("%s: error in get mmc part\n", __FUNCTION__);
+		return -1;
+	}
 	status = get_device_and_partition(FSL_FASTBOOT_FB_DEV,
 		get_mmc_part(mmc_id), &fs_dev_desc, &fs_partition, 1);
 	if (status < 0) {
