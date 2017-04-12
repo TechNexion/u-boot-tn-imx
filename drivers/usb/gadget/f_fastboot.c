@@ -2076,7 +2076,7 @@ void fastboot_run_bootmode(void)
 #ifdef CONFIG_SYSTEM_RAMDISK_SUPPORT
 		is_recovery_mode = false;
 #endif
-		run_command("fastboot", 0);
+		run_command("fastboot 0", 0);
 		break;
 #ifdef CONFIG_ANDROID_RECOVERY
 	case BOOTMODE_RECOVERY_BCB_CMD:
@@ -2293,7 +2293,7 @@ fail:
 	if (avb_out_data != NULL)
 		avb_slot_verify_data_free(avb_out_data);
 
-	return run_command("fastboot", 0);
+	return run_command("fastboot 0", 0);
 }
 
 U_BOOT_CMD(
@@ -2615,7 +2615,7 @@ fail:
 		goto use_given_ptn;
 	}
 #elif defined(CONFIG_FSL_FASTBOOT)
-	return run_command("fastboot", 0);
+	return run_command("fastboot 0", 0);
 #else /*! CONFIG_FSL_FASTBOOT*/
 	return -1;
 #endif /*! CONFIG_FSL_FASTBOOT*/
