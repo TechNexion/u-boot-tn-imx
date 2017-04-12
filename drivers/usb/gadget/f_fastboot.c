@@ -3322,7 +3322,10 @@ static int partition_table_valid(void)
 	disk_partition_t info;
 	mmc_no = fastboot_devinfo.dev_id;
 	dev_desc = get_dev("mmc", mmc_no);
-	status = get_partition_info(dev_desc, 1, &info);
+	if (dev_desc)
+		status = get_partition_info(dev_desc, 1, &info);
+	else
+		status = -1;
 	return (status == 0);
 }
 
