@@ -21,7 +21,4 @@
 #define CONFIG_SHA1
 #define CONFIG_SHA256
 
-#undef CONFIG_EXTRA_ENV_SETTINGS
-#undef CONFIG_BOOTCOMMAND
-
 #endif
