@@ -79,7 +79,7 @@ int android_image_get_kernel(const struct andr_img_hdr *hdr, int verify,
 	char newbootargs[512] = {0};
 	char *bootargs = getenv("bootargs");
 	if (bootargs) {
-		strcpy(newbootargs, bootargs);
+		strncpy(newbootargs, bootargs, 511);
 	} else if (*hdr->cmdline) {
 		strcat(newbootargs, hdr->cmdline);
 	}
