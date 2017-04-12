@@ -3032,7 +3032,7 @@ static void cb_getvar(struct usb_ep *ep, struct usb_request *req)
 	fastboot_tx_write_str(response);
 	return;
 fail:
-	strncpy(response, "FAIL", 4);
+	strncpy(response, "FAIL", 5);
 	fastboot_tx_write_str(response);
 	return;
 }
