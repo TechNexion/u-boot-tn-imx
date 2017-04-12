@@ -1252,8 +1252,10 @@ static void process_erase_mmc(const char *cmdbuf, char *response)
 	printf("erase target is MMC:%d\n", mmc_no);
 
 	mmc = find_mmc_device(mmc_no);
-	if (mmc && mmc_init(mmc))
+	if ((mmc == NULL) || mmc_init(mmc)) {
 		printf("MMC card init failed!\n");
+		return;
+	}
 
 	dev_desc = get_dev("mmc", mmc_no);
 	if (NULL == dev_desc) {
