@@ -417,6 +417,28 @@ enum boot_device get_boot_device(void)
 }
 
 #ifdef CONFIG_FSL_FASTBOOT
+#ifdef CONFIG_RESET_CAUSE
+#define ANDROID_NORMAL_BOOT     6
+#define ANDROID_BOOT_REASON_OFFSET  6
+
+int read_boot_reason(void)
+{
+	u32 reg;
+	reg = readl(SNVS_BASE + SNVS_LPGPR);
+	if (reg & (1 << ANDROID_NORMAL_BOOT))
+		return ANDROID_NORMAL_BOOT;
+	return 0;
+}
+
+void clear_boot_reason(void)
+{
+	u32 reg;
+	reg = readl(SNVS_BASE + SNVS_LPGPR);
+	reg &= ~(1 << ANDROID_BOOT_REASON_OFFSET);
+	writel(reg, SNVS_BASE_ADDR + SNVS_LPGPR);
+}
+
+#endif /*CONFIG_RESET_CAUSE*/
 #ifdef CONFIG_SERIAL_TAG
 void get_board_serial(struct tag_serialnr *serialnr)
 {

@@ -26,4 +26,5 @@
 #define ANDROID_FASTBOOT_NAND_PARTS "16m@64m(boot) 16m@80m(recovery) 1m@96m(misc) 810m@97m(android_root)ubifs"
 #endif
 
+#define CONFIG_RESET_CAUSE
 #endif

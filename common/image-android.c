@@ -24,6 +24,15 @@ static char andr_tmp_str[ANDR_BOOT_ARGS_SIZE + 1];
 #include <linux/usb/gadget.h>
 #include "../drivers/usb/gadget/bootctrl.h"
 #endif
+
+#ifdef CONFIG_RESET_CAUSE
+#include <asm/arch-imx/cpu.h>
+#include <asm/imx-common/boot_reason.h>
+#define POR_NUM1 0x1
+#define POR_NUM2 0x11
+#define ANDROID_NORMAL_BOOT     6
+#endif
+
 static ulong android_image_get_kernel_addr(const struct andr_img_hdr *hdr)
 {
 	/*
@@ -96,6 +105,25 @@ int android_image_get_kernel(const struct andr_img_hdr *hdr, int verify,
 					newbootargs,
 					serialnr.high,
 					serialnr.low);
+	strcpy(newbootargs, commandline);
+#endif
+#ifdef CONFIG_RESET_CAUSE
+	u32 reset_cause_sw,reset_cause_hw;
+	reset_cause_sw = read_boot_reason();
+	clear_boot_reason();
+	reset_cause_hw = get_imx_reset_cause();
+	if (ANDROID_NORMAL_BOOT == reset_cause_sw)
+		sprintf(commandline,
+				"%s androidboot.bootreason=Reboot",
+				newbootargs);
+	else if (POR_NUM1==reset_cause_hw || POR_NUM2 == reset_cause_hw)
+		sprintf(commandline,
+				"%s androidboot.bootreason=normal",
+				newbootargs);
+	else
+		sprintf(commandline,
+				"%s androidboot.bootreason=unknown",
+				newbootargs);
 	strcpy(newbootargs, commandline);
 #endif
 	int bootdev = get_boot_device();

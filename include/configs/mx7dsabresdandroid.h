@@ -9,4 +9,6 @@
 #ifndef __MX7D_SABRESD_ANDROID_H
 #define __MX7D_SABRESD_ANDROID_H
 #include "mx_android_common.h"
+
+#define CONFIG_RESET_CAUSE
 #endif

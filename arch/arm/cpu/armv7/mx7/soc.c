@@ -463,3 +463,27 @@ void reset_misc(void)
 }
 
 
+#ifdef CONFIG_FSL_FASTBOOT
+#ifdef CONFIG_RESET_CAUSE
+#define ANDROID_NORMAL_BOOT     6
+#define ANDROID_BOOT_REASON_OFFSET  6
+
+int read_boot_reason(void)
+{
+	u32 reg;
+	reg = readl(SNVS_BASE_ADDR + SNVS_LPGPR);
+	if (reg & (1 << ANDROID_NORMAL_BOOT))
+		return ANDROID_NORMAL_BOOT;
+	return 0;
+}
+
+void clear_boot_reason(void)
+{
+	u32 reg;
+	reg = readl(SNVS_BASE_ADDR + SNVS_LPGPR);
+	reg &= ~(1 << ANDROID_BOOT_REASON_OFFSET);
+	writel(reg, SNVS_BASE_ADDR + SNVS_LPGPR);
+}
+
+#endif
+#endif

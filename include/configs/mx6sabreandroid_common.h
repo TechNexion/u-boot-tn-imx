@@ -15,6 +15,8 @@
 #define FASTBOOT_ENCRYPT_LOCK
 #endif
 
+#define CONFIG_RESET_CAUSE
+
 #define CONFIG_FSL_CAAM_KB
 #define CONFIG_CMD_FSL_CAAM_KB
 #define CONFIG_SHA1

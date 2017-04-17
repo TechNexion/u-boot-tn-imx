@@ -21,4 +21,5 @@
 #define CONFIG_SHA1
 #define CONFIG_SHA256
 
+#define CONFIG_RESET_CAUSE
 #endif

@@ -26,4 +26,6 @@
 	}
 #define CONFIG_MXC_KPD_COLMAX 4
 #define CONFIG_MXC_KPD_ROWMAX 4
+
+#define CONFIG_RESET_CAUSE
 #endif

@@ -19,4 +19,5 @@
 #define ANDROID_FIRMWARE_START 0
 #define ANDROID_FIRMWARE_SIZE  0x20000
 #endif
+#define CONFIG_RESET_CAUSE
 #endif
