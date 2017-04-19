@@ -435,7 +435,7 @@ void clear_boot_reason(void)
 	u32 reg;
 	reg = readl(SNVS_BASE + SNVS_LPGPR);
 	reg &= ~(1 << ANDROID_BOOT_REASON_OFFSET);
-	writel(reg, SNVS_BASE_ADDR + SNVS_LPGPR);
+	writel(reg, SNVS_BASE + SNVS_LPGPR);
 }
 
 #endif /*CONFIG_RESET_CAUSE*/
