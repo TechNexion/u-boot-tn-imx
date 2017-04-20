@@ -228,14 +228,16 @@ int fastboot_set_lock_stat(FbLockState lock) {
 	mmc_id = fastboot_flash_find_index(FASTBOOT_PARTITION_FBMISC);
 	if (mmc_id < 0) {
 		printf("%s: error in get mmc part\n", __FUNCTION__);
-		goto fail2;
+		ret = -1;
+		goto fail;
 	}
 	status = get_device_and_partition(FSL_FASTBOOT_FB_DEV,
 		get_mmc_part(mmc_id),
 		&fs_dev_desc, &fs_partition, 1);
 	if (status < 0) {
 		printf("%s:error in getdevice partition.\n", __FUNCTION__);
-		goto fail2;
+		ret = -1;
+		goto fail;
 	}
 	DEBUG("%s %s partition.start=%d, size=%d\n",FSL_FASTBOOT_FB_DEV,
 		get_mmc_part(mmc_id), fs_partition.start, fs_partition.size);
