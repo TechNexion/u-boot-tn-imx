@@ -30,6 +30,7 @@ int bcb_read_command(char *command)
 
 	offset_in_block = MISC_COMMAND%blk_size;
 	memcpy(command, p_block + offset_in_block, 32);
+	free(p_block);
 
 	return 0;
 }
