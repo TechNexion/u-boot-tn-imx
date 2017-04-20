@@ -82,7 +82,7 @@ static int do_write(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		return 1;
 	}
 
-	if (dev_desc->block_write(dev_desc, offset + blk, cnt, addr) < 0) {
+	if (dev_desc->block_write(dev_desc, offset + blk, cnt, addr) != cnt) {
 		printf("Error writing blocks\n");
 		return 1;
 	}
