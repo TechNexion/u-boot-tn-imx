@@ -2002,8 +2002,8 @@ void fastboot_setup(void)
 /* Write the bcb with fastboot bootloader commands */
 static void enable_fastboot_command(void)
 {
-	char fastboot_command[32];
-	memcpy(fastboot_command, FASTBOOT_BCB_CMD, 32);
+	char fastboot_command[32] = {0};
+	strncpy(fastboot_command, FASTBOOT_BCB_CMD, 31);
 	bcb_write_command(fastboot_command);
 }
 
