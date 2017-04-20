@@ -368,14 +368,16 @@ FbLockEnableResult fastboot_lock_enable() {
 	mmc_id = fastboot_flash_find_index(FASTBOOT_PARTITION_PRDATA);
 	if (mmc_id < 0) {
 		printf("%s: error in get mmc part\n", __FUNCTION__);
-		return FASTBOOT_UL_ERROR;
+		ret = FASTBOOT_UL_ERROR;
+		goto fail;
 	}
 	status = get_device_and_partition(FSL_FASTBOOT_FB_DEV,
 		get_mmc_part(mmc_id),
 		&fs_dev_desc, &fs_partition, 1);
 	if (status < 0) {
 		printf("%s:error in getdevice partition.\n", __FUNCTION__);
-		return FASTBOOT_UL_ERROR;
+		ret = FASTBOOT_UL_ERROR;
+		goto fail;
 	}
 
     //The data is stored in the last blcok of this partition.
