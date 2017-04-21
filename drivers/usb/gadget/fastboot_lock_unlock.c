@@ -192,7 +192,7 @@ static char* get_mmc_part(int part) {
 	return mmc_dev_part;
 }
 
-static inline unsigned char set_lock_disable_data(unsigned char* bdata) {
+static inline void set_lock_disable_data(unsigned char* bdata) {
 	*(bdata + SECTOR_SIZE -1) = 0;
 }
 
@@ -323,24 +323,23 @@ void set_fastboot_lock_disable(void) {
 	disk_partition_t fs_partition;
 	unsigned char *bdata;
 	int mmc_id;
-	FbLockEnableResult ret;
 
 	bdata = (unsigned char *)memalign(ALIGN_BYTES, SECTOR_SIZE);
 	if (bdata == NULL)
 		return;
-	ret = set_lock_disable_data(bdata);
+	set_lock_disable_data(bdata);
 	int status;
 	mmc_id = fastboot_flash_find_index(FASTBOOT_PARTITION_PRDATA);
 	if (mmc_id < 0) {
 		printf("%s: error in get mmc part\n", __FUNCTION__);
-		return;
+		goto fail;
 	}
 	status = get_device_and_partition(FSL_FASTBOOT_FB_DEV,
 		get_mmc_part(mmc_id),
 		&fs_dev_desc, &fs_partition, 1);
 	if (status < 0) {
 		printf("%s:error in getdevice partition.\n", __FUNCTION__);
-		return;
+		goto fail;
 	}
 
 	lbaint_t target_block = fs_partition.start + fs_partition.size - 1;
