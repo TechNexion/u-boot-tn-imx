@@ -63,7 +63,7 @@ source "board/freescale/mx7dsabresd/Kconfig"
 source "board/freescale/mx7d_12x12_lpddr3_arm2/Kconfig"
 source "board/freescale/mx7d_12x12_ddr3_arm2/Kconfig"
 source "board/freescale/mx7d_19x19_lpddr3_arm2/Kconfig"
-source "board/technexion/pico-imx7d/Kconfig"
+source "board/freescale/pico-imx7d/Kconfig"
 source "board/freescale/mx7d_19x19_ddr3_arm2/Kconfig"
 
 endif
