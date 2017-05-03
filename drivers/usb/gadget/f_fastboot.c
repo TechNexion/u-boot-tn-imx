@@ -2917,6 +2917,20 @@ static int get_block_size(void) {
 	return dev_desc->blksz;
 }
 
+bool is_slotvar(char *cmd)
+{
+	assert(cmd != NULL);
+	if (!strcmp_l1("has-slot:", cmd) ||
+		!strcmp_l1("slot-successful:", cmd) ||
+		!strcmp_l1("slot-count", cmd) ||
+		!strcmp_l1("slot-suffixes", cmd) ||
+		!strcmp_l1("current-slot", cmd) ||
+		!strcmp_l1("slot-unbootable:", cmd) ||
+		!strcmp_l1("slot-retry-count:", cmd))
+		return true;
+	return false;
+}
+
 static void cb_getvar(struct usb_ep *ep, struct usb_request *req)
 {
 	char *cmd = req->buf;
@@ -3012,18 +3026,18 @@ static void cb_getvar(struct usb_ep *ep, struct usb_request *req)
 		}
 	}
 #endif
+	else if (is_slotvar(cmd)) {
 #ifdef CONFIG_AVB_SUPPORT
-	else if (is_slotvar_avb(cmd)) {
 		if (get_slotvar_avb(&fsl_avb_ab_ops, cmd,
 				response + strlen(response), chars_left + 1) < 0)
 			goto fail;
-	}
 #elif defined(CONFIG_FSL_BOOTCTL)
-	else if (is_sotvar(cmd)) {
 		if (get_slotvar(cmd, response + strlen(response), chars_left + 1) < 0)
 			goto fail;
-	}
+#else
+		strncat(response, FASTBOOT_VAR_NO, chars_left);
 #endif
+	}
 	else {
 		strncat(response, "No such var", chars_left);
 		printf("WARNING: unknown variable: %s\n", cmd);

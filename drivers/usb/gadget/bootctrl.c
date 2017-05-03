@@ -278,19 +278,6 @@ static unsigned int slotidx_from_suffix(char *suffix)
 	return slot;
 }
 
-bool is_sotvar(char *cmd)
-{
-	if (!strcmp_l1("has-slot:", cmd) ||
-		!strcmp_l1("slot-successful:", cmd) ||
-		!strcmp_l1("slot-suffixes", cmd) ||
-		!strcmp_l1("current-slot", cmd) ||
-		!strcmp_l1("slot-unbootable:", cmd) ||
-		!strcmp_l1("slot-retry-count:", cmd)) {
-		return true;
-	}
-
-	return false;
-}
 
 int get_slotvar(char *cmd, char *response, size_t chars_left)
 {
