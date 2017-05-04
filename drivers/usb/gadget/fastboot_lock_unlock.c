@@ -102,31 +102,31 @@ static unsigned char decrypt_lock_store(unsigned char *bdata) {
 		return FASTBOOT_LOCK_ERROR;
 	}
 #ifdef FASTBOOT_LOCK_DEBUG
-	DEBUG("Decrypt data block are:\n \t=======\t\n");
+	FB_DEBUG("Decrypt data block are:\n \t=======\t\n");
 	for (p = 0; p < ENDATA_LEN; p++) {
-		DEBUG("0x%2x  ", *(bdata + p));
+		FB_DEBUG("0x%2x  ", *(bdata + p));
 		if (p % 16 == 0)
-			DEBUG("\n");
+			FB_DEBUG("\n");
 	}
-	DEBUG("\n \t========\t\n");
+	FB_DEBUG("\n \t========\t\n");
 	for (p = ENDATA_LEN; p < (ENDATA_LEN + ENDATA_LEN + 48 ); p++) {
-		DEBUG("0x%2x  ", *(bdata + p));
+		FB_DEBUG("0x%2x  ", *(bdata + p));
 		if (p % 16 == 0)
-			DEBUG("\n");
+			FB_DEBUG("\n");
 	}
 
-	DEBUG("\n plain text are:\n");
+	FB_DEBUG("\n plain text are:\n");
 	for (p = 0; p < ENDATA_LEN; p++) {
-		DEBUG("0x%2x  ", plain_data[p]);
+		FB_DEBUG("0x%2x  ", plain_data[p]);
 		if (p % 16 == 0)
-			DEBUG("\n");
+			FB_DEBUG("\n");
 	}
-	DEBUG("\n");
+	FB_DEBUG("\n");
 #endif
 
 	for (p = 0; p < ENDATA_LEN-1; p++) {
 		if (*(bdata+p) != plain_data[p]) {
-			DEBUG("Verify salt in decrypt error on pointer %d\n", p);
+			FB_DEBUG("Verify salt in decrypt error on pointer %d\n", p);
 			return FASTBOOT_LOCK_ERROR;
 		}
 	}
@@ -163,15 +163,15 @@ static int encrypt_lock_store(FbLockState lock, unsigned char* bdata) {
 
 #ifdef FASTBOOT_LOCK_DEBUG
 	int i = 0;
-	DEBUG("encrypt plain_text:\n");
+	FB_DEBUG("encrypt plain_text:\n");
 	for (i = 0; i < ENDATA_LEN; i++) {
-		DEBUG("0x%2x\t", *(bdata+i));
+		FB_DEBUG("0x%2x\t", *(bdata+i));
 		if (i % 16 == 0)
 			printf("\n");
 	}
 	printf("\nto:\n");
 	for (i=0; i < ENDATA_LEN + 48; i++) {
-		DEBUG("0x%2x\t", *(bdata + ENDATA_LEN + i));
+		FB_DEBUG("0x%2x\t", *(bdata + ENDATA_LEN + i));
 		if (i % 16 == 0)
 			printf("\n");
 	}
@@ -200,7 +200,7 @@ static inline void set_lock_disable_data(unsigned char* bdata) {
  * The enabling value is stored in the last byte of target partition.
  */
 static inline unsigned char lock_enable_parse(unsigned char* bdata) {
-	DEBUG("lock_enable_parse: 0x%x\n", *(bdata + SECTOR_SIZE -1));
+	FB_DEBUG("lock_enable_parse: 0x%x\n", *(bdata + SECTOR_SIZE -1));
 	if (*(bdata + SECTOR_SIZE -1) >= FASTBOOT_UL_NUM)
 		return FASTBOOT_UL_ERROR;
 	else
@@ -239,7 +239,7 @@ int fastboot_set_lock_stat(FbLockState lock) {
 		ret = -1;
 		goto fail;
 	}
-	DEBUG("%s %s partition.start=%d, size=%d\n",FSL_FASTBOOT_FB_DEV,
+	FB_DEBUG("%s %s partition.start=%d, size=%d\n",FSL_FASTBOOT_FB_DEV,
 		get_mmc_part(mmc_id), fs_partition.start, fs_partition.size);
 
 	status = encrypt_lock_store(lock, bdata);
@@ -289,7 +289,7 @@ FbLockState fastboot_get_lock_stat(void) {
 		ret = g_lockstat;
 		goto fail;
 	}
-	DEBUG("%s %s partition.start=%d, size=%d\n",FSL_FASTBOOT_FB_DEV,
+	FB_DEBUG("%s %s partition.start=%d, size=%d\n",FSL_FASTBOOT_FB_DEV,
 		get_mmc_part(mmc_id), fs_partition.start, fs_partition.size);
 
 	status = fs_dev_desc->block_read(fs_dev_desc, fs_partition.start, 1, bdata);
@@ -343,7 +343,7 @@ void set_fastboot_lock_disable(void) {
 	}
 
 	lbaint_t target_block = fs_partition.start + fs_partition.size - 1;
-	DEBUG("target_block.start=%d, size=%d target_block=%d\n", fs_partition.start, fs_partition.size, target_block);
+	FB_DEBUG("target_block.start=%d, size=%d target_block=%d\n", fs_partition.start, fs_partition.size, target_block);
 	status = fs_dev_desc->block_write(fs_dev_desc, target_block, 1, bdata);
 	if (!status) {
 		printf("%s: error in block read\n", __FUNCTION__);
@@ -383,7 +383,7 @@ FbLockEnableResult fastboot_lock_enable() {
 
     //The data is stored in the last blcok of this partition.
 	lbaint_t target_block = fs_partition.start + fs_partition.size - 1;
-	DEBUG("target_block.start=%d, size=%d target_block=%d\n", fs_partition.start, fs_partition.size, target_block);
+	FB_DEBUG("target_block.start=%d, size=%d target_block=%d\n", fs_partition.start, fs_partition.size, target_block);
 	status = fs_dev_desc->block_read(fs_dev_desc, target_block, 1, bdata);
 	if (!status) {
 		printf("%s: error in block read\n", __FUNCTION__);
@@ -391,13 +391,13 @@ FbLockEnableResult fastboot_lock_enable() {
 		goto fail;
 	}
 	int i = 0;
-	DEBUG("\n PRIST last sector is:\n");
+	FB_DEBUG("\n PRIST last sector is:\n");
 	for (i = 0; i < SECTOR_SIZE; i++) {
-		DEBUG("0x%x  ", *(bdata + i));
+		FB_DEBUG("0x%x  ", *(bdata + i));
 		if (i % 32 == 0)
-			DEBUG("\n");
+			FB_DEBUG("\n");
 	}
-	DEBUG("\n");
+	FB_DEBUG("\n");
 	ret = lock_enable_parse(bdata);
 fail:
 	free(bdata);
@@ -456,7 +456,7 @@ int fastboot_wipe_data_partition(void)
 		printf("error in get device partition for wipe /data\n");
 		return -1;
 	}
-	DEBUG("fs->start=%x, size=%d\n", fs_partition.start, fs_partition.size);
+	FB_DEBUG("fs->start=%x, size=%d\n", fs_partition.start, fs_partition.size);
 	status = fs_dev_desc->block_erase(fs_dev_desc, fs_partition.start , fs_partition.size );
 	if (status != fs_partition.size ) {
 		printf("erase not complete\n");

@@ -37,9 +37,9 @@
 #define FASTBOOT_ENCRYPT_LOCK
 
 #ifdef FASTBOOT_LOCK_DEBUG
-#define DEBUG(format, ...) printf(format, ##__VA_ARGS__)
+#define FB_DEBUG(format, ...) printf(format, ##__VA_ARGS__)
 #else
-#define DEBUG(format, ...)
+#define FB_DEBUG(format, ...)
 #endif
 
 typedef enum {
