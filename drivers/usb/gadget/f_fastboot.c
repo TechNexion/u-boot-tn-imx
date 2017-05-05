@@ -62,10 +62,9 @@
 
 #ifdef CONFIG_FASTBOOT_LOCK
 #include "fastboot_lock_unlock.h"
-#define FASTBOOT_VAR_SECURE "yes"
+#endif
 #define FASTBOOT_VAR_YES    "yes"
 #define FASTBOOT_VAR_NO     "no"
-#endif
 
 #define ANDROID_GPT_OFFSET         0
 #define ANDROID_GPT_SIZE           0x100000
@@ -3016,7 +3015,7 @@ static void cb_getvar(struct usb_ep *ep, struct usb_request *req)
 	}
 #ifdef CONFIG_FASTBOOT_LOCK
 	else if (!strcmp_l1("secure", cmd)) {
-		strncat(response, FASTBOOT_VAR_SECURE, chars_left);
+		strncat(response, FASTBOOT_VAR_YES, chars_left);
 	} else if (!strcmp_l1("unlocked",cmd)) {
 		int status = fastboot_get_lock_stat();
 		if (status == FASTBOOT_UNLOCK) {
@@ -3024,6 +3023,12 @@ static void cb_getvar(struct usb_ep *ep, struct usb_request *req)
 		} else {
 			strncat(response, FASTBOOT_VAR_NO, chars_left);
 		}
+	}
+#else
+	else if (!strcmp_l1("secure", cmd)) {
+		strncat(response, FASTBOOT_VAR_NO, chars_left);
+	} else if (!strcmp_l1("unlocked",cmd)) {
+		strncat(response, FASTBOOT_VAR_NO, chars_left);
 	}
 #endif
 	else if (is_slotvar(cmd)) {
