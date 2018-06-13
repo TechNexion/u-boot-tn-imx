@@ -18,7 +18,7 @@
 #define CONFIG_SC_TIMER_CLK 8000000 /* 8Mhz */
 #define COUNTER_FREQUENCY CONFIG_SC_TIMER_CLK
 
-#define CONFIG_SYS_BOOTM_LEN	0x1000000
+#define CONFIG_SYS_BOOTM_LEN		0xA000000
 
 /* Enable iomux-lpsr support */
 #define CONFIG_IOMUX_LPSR
