@@ -75,11 +75,12 @@ config TARGET_MX7D_19X19_LPDDR2_ARM2
 	select DM_THERMAL
 
 config TARGET_PICO_IMX7D
-	bool "pico-imx7d"
+	bool "TechNexion pico-imx7d boards"
 	select BOARD_LATE_INIT
 	select MX7D
 	select DM
 	select DM_THERMAL
+	select SUPPORT_SPL
 
 config TARGET_MULTA_IMX7D
 	bool "Support multa-imx7d"
