@@ -23,7 +23,7 @@
 #define CONFIG_BOARD_POSTCLK_INIT
 #define CONFIG_MXC_GPT_HCLK
 
-#define CONFIG_SYS_BOOTM_LEN	0x1000000
+#define CONFIG_SYS_BOOTM_LEN		0xA000000
 
 #include <linux/sizes.h>
 #include <asm/arch/imx-regs.h>
