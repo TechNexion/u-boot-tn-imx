@@ -66,6 +66,11 @@ config TARGET_IMX8MM_DDR4_EVK
 	select SUPPORT_SPL
 	select IMX8M_DDR4
 
+config TARGET_PICO_IMX8M
+	bool "pico-imx8m"
+	select IMX8MQ
+	select SUPPORT_SPL
+
 endchoice
 
 config SYS_SOC
@@ -77,5 +82,6 @@ source "board/freescale/imx8mq_phanbell/Kconfig"
 source "board/freescale/imx8mq_aiy/Kconfig"
 source "board/freescale/imx8mm_evk/Kconfig"
 source "board/freescale/imx8mm_val/Kconfig"
+source "board/technexion/pico-imx8m/Kconfig"
 
 endif
