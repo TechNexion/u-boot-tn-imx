@@ -1,7 +1,6 @@
 /*
  * Copyright 2018 TechNexion Ltd.
- * Copyright 2017 NXP
- * 
+ *
  * Author: Richard Hu <richard.hu@technexion.com>
  *
  * SPDX-License-Identifier:     GPL-2.0+
