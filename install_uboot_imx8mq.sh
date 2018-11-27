@@ -12,10 +12,10 @@
 DRIVE=/dev/sdX
 
 PLATFORM="imx8mq"
-BRANCH_VER="imx_4.9.51_imx8m_ga"
-DDR_FW_VER="7.4"
+BRANCH_VER="imx_4.14.62_1.0.0_beta"
+DDR_FW_VER="7.9"
 #BOARD="fsl-imx8mq-evk"
-BOARD="wand-pi-8m"
+BOARD="pico-imx8m"
 
 FSL_MIRROR="https://www.nxp.com/lgfiles/NMG/MAD/YOCTO"
 FIRMWARE_DIR="firmware_imx8mq"
@@ -49,11 +49,6 @@ install_firmware()
 		git clone https://source.codeaurora.org/external/imx/imx-atf -b ${BRANCH_VER} || printf "Fails to fetch ATF source code \n"
 	fi
 	cd imx-atf
-	#Apply patch to adapt for different types of LPDDR4
-	if [ ! -f 0001-ATF-support-to-different-LPDDR4-configurations.patch ] ; then
-		wget "https://github.com/TechNexion/meta-edm-bsp-release/raw/rocko_4.9.88-2.0.0_GA/recipes-bsp/imx-atf/imx-atf/0001-ATF-support-to-different-LPDDR4-configurations.patch"
-		git am 0001-ATF-support-to-different-LPDDR4-configurations.patch
-	fi
 
 	if [ ! -f build/imx8mq/release/bl31.bin ] ; then
 		make PLAT=${PLATFORM} bl31 || printf "Fails to build ATF firmware \n"
