@@ -1,11 +1,9 @@
 /*
  * Copyright 2018 TechNexion Ltd.
- /*
- * Copyright 2018 TechNexion Ltd.
  *
  * Author: Richard Hu <richard.hu@technexion.com>
  *
- * SPDX-License-Identifier:	GPL-2.0+
+ * SPDX-License-Identifier:     GPL-2.0+
  */
 
 #include <common.h>
@@ -27,7 +25,7 @@
 #include <asm/mach-imx/dma.h>
 #include <power/pmic.h>
 #include <power/bd71837.h>
-// #include <usb.h>
+#include <usb.h>
 #include <sec_mipi_dsim.h>
 #include <imx_mipi_dsi_bridge.h>
 #include <mipi_dsi_panel.h>
@@ -47,88 +45,6 @@ static iomux_v3_cfg_t const wdog_pads[] = {
 	IMX8MM_PAD_GPIO1_IO02_WDOG1_WDOG_B  | MUX_PAD_CTRL(WDOG_PAD_CTRL),
 };
 
-#ifdef CONFIG_FSL_FSPI
-#define QSPI_PAD_CTRL	(PAD_CTL_DSE2 | PAD_CTL_HYS)
-static iomux_v3_cfg_t const qspi_pads[] = {
-	IMX8MM_PAD_NAND_ALE_QSPI_A_SCLK | MUX_PAD_CTRL(QSPI_PAD_CTRL | PAD_CTL_PE | PAD_CTL_PUE),
-	IMX8MM_PAD_NAND_CE0_B_QSPI_A_SS0_B | MUX_PAD_CTRL(QSPI_PAD_CTRL),
-
-	IMX8MM_PAD_NAND_DATA00_QSPI_A_DATA0 | MUX_PAD_CTRL(QSPI_PAD_CTRL),
-	IMX8MM_PAD_NAND_DATA01_QSPI_A_DATA1 | MUX_PAD_CTRL(QSPI_PAD_CTRL),
-	IMX8MM_PAD_NAND_DATA02_QSPI_A_DATA2 | MUX_PAD_CTRL(QSPI_PAD_CTRL),
-	IMX8MM_PAD_NAND_DATA03_QSPI_A_DATA3 | MUX_PAD_CTRL(QSPI_PAD_CTRL),
-};
-
-int board_qspi_init(void)
-{
-	imx_iomux_v3_setup_multiple_pads(qspi_pads, ARRAY_SIZE(qspi_pads));
-
-	set_clk_qspi();
-
-	return 0;
-}
-#endif
-
-#ifdef CONFIG_MXC_SPI
-#define SPI_PAD_CTRL	(PAD_CTL_DSE2 | PAD_CTL_HYS)
-static iomux_v3_cfg_t const ecspi1_pads[] = {
-	IMX8MM_PAD_ECSPI1_SCLK_ECSPI1_SCLK | MUX_PAD_CTRL(SPI_PAD_CTRL),
-	IMX8MM_PAD_ECSPI1_MOSI_ECSPI1_MOSI | MUX_PAD_CTRL(SPI_PAD_CTRL),
-	IMX8MM_PAD_ECSPI1_MISO_ECSPI1_MISO | MUX_PAD_CTRL(SPI_PAD_CTRL),
-	IMX8MM_PAD_ECSPI1_SS0_GPIO5_IO9 | MUX_PAD_CTRL(NO_PAD_CTRL),
-};
-
-static iomux_v3_cfg_t const ecspi2_pads[] = {
-	IMX8MM_PAD_ECSPI2_SCLK_ECSPI2_SCLK | MUX_PAD_CTRL(SPI_PAD_CTRL),
-	IMX8MM_PAD_ECSPI2_MOSI_ECSPI2_MOSI | MUX_PAD_CTRL(SPI_PAD_CTRL),
-	IMX8MM_PAD_ECSPI2_MISO_ECSPI2_MISO | MUX_PAD_CTRL(SPI_PAD_CTRL),
-	IMX8MM_PAD_ECSPI2_SS0_GPIO5_IO13 | MUX_PAD_CTRL(NO_PAD_CTRL),
-};
-
-static void setup_spi(void)
-{
-	imx_iomux_v3_setup_multiple_pads(ecspi1_pads, ARRAY_SIZE(ecspi1_pads));
-	imx_iomux_v3_setup_multiple_pads(ecspi2_pads, ARRAY_SIZE(ecspi2_pads));
-	gpio_request(IMX_GPIO_NR(5, 9), "ECSPI1 CS");
-	gpio_request(IMX_GPIO_NR(5, 13), "ECSPI2 CS");
-}
-
-int board_spi_cs_gpio(unsigned bus, unsigned cs)
-{
-	if (bus == 0)
-		return IMX_GPIO_NR(5, 9);
-	else
-		return IMX_GPIO_NR(5, 13);
-}
-#endif
-
-#ifdef CONFIG_NAND_MXS
-#define NAND_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_FSEL2 | PAD_CTL_HYS)
-#define NAND_PAD_READY0_CTRL (PAD_CTL_DSE6 | PAD_CTL_FSEL2 | PAD_CTL_PUE)
-static iomux_v3_cfg_t const gpmi_pads[] = {
-	IMX8MM_PAD_NAND_ALE_RAWNAND_ALE | MUX_PAD_CTRL(NAND_PAD_CTRL),
-	IMX8MM_PAD_NAND_CE0_B_RAWNAND_CE0_B | MUX_PAD_CTRL(NAND_PAD_CTRL),
-	IMX8MM_PAD_NAND_CLE_RAWNAND_CLE | MUX_PAD_CTRL(NAND_PAD_CTRL),
-	IMX8MM_PAD_NAND_DATA00_RAWNAND_DATA00 | MUX_PAD_CTRL(NAND_PAD_CTRL),
-	IMX8MM_PAD_NAND_DATA01_RAWNAND_DATA01 | MUX_PAD_CTRL(NAND_PAD_CTRL),
-	IMX8MM_PAD_NAND_DATA02_RAWNAND_DATA02 | MUX_PAD_CTRL(NAND_PAD_CTRL),
-	IMX8MM_PAD_NAND_DATA03_RAWNAND_DATA03 | MUX_PAD_CTRL(NAND_PAD_CTRL),
-	IMX8MM_PAD_NAND_DATA04_RAWNAND_DATA04 | MUX_PAD_CTRL(NAND_PAD_CTRL),
-	IMX8MM_PAD_NAND_DATA05_RAWNAND_DATA05	| MUX_PAD_CTRL(NAND_PAD_CTRL),
-	IMX8MM_PAD_NAND_DATA06_RAWNAND_DATA06	| MUX_PAD_CTRL(NAND_PAD_CTRL),
-	IMX8MM_PAD_NAND_DATA07_RAWNAND_DATA07	| MUX_PAD_CTRL(NAND_PAD_CTRL),
-	IMX8MM_PAD_NAND_RE_B_RAWNAND_RE_B | MUX_PAD_CTRL(NAND_PAD_CTRL),
-	IMX8MM_PAD_NAND_READY_B_RAWNAND_READY_B | MUX_PAD_CTRL(NAND_PAD_READY0_CTRL),
-	IMX8MM_PAD_NAND_WE_B_RAWNAND_WE_B | MUX_PAD_CTRL(NAND_PAD_CTRL),
-	IMX8MM_PAD_NAND_WP_B_RAWNAND_WP_B | MUX_PAD_CTRL(NAND_PAD_CTRL),
-};
-
-static void setup_gpmi_nand(void)
-{
-	imx_iomux_v3_setup_multiple_pads(gpmi_pads, ARRAY_SIZE(gpmi_pads));
-}
-#endif
-
 int board_early_init_f(void)
 {
 	struct wdog_regs *wdog = (struct wdog_regs *)WDOG1_BASE_ADDR;
@@ -138,10 +54,6 @@ int board_early_init_f(void)
 	set_wdog_reset(wdog);
 
 	imx_iomux_v3_setup_multiple_pads(uart_pads, ARRAY_SIZE(uart_pads));
-
-#ifdef CONFIG_NAND_MXS
-	setup_gpmi_nand(); /* SPL will call the board_early_init_f */
-#endif
 
 	return 0;
 }
@@ -219,196 +131,11 @@ int board_phy_config(struct phy_device *phydev)
 }
 #endif
 
-#ifdef CONFIG_USB_TCPC
-struct tcpc_port port1;
-struct tcpc_port port2;
-
-static int setup_pd_switch(uint8_t i2c_bus, uint8_t addr)
-{
-	struct udevice *bus;
-	struct udevice *i2c_dev = NULL;
-	int ret;
-	uint8_t valb;
-
-	ret = uclass_get_device_by_seq(UCLASS_I2C, i2c_bus, &bus);
-	if (ret) {
-		printf("%s: Can't find bus\n", __func__);
-		return -EINVAL;
-	}
-
-	ret = dm_i2c_probe(bus, addr, 0, &i2c_dev);
-	if (ret) {
-		printf("%s: Can't find device id=0x%x\n",
-			__func__, addr);
-		return -ENODEV;
-	}
-
-	ret = dm_i2c_read(i2c_dev, 0xB, &valb, 1);
-	if (ret) {
-		printf("%s dm_i2c_read failed, err %d\n", __func__, ret);
-		return -EIO;
-	}
-	valb |= 0x4; /* Set DB_EXIT to exit dead battery mode */
-	ret = dm_i2c_write(i2c_dev, 0xB, (const uint8_t *)&valb, 1);
-	if (ret) {
-		printf("%s dm_i2c_write failed, err %d\n", __func__, ret);
-		return -EIO;
-	}
-
-	/* Set OVP threshold to 23V */
-	valb = 0x6;
-	ret = dm_i2c_write(i2c_dev, 0x8, (const uint8_t *)&valb, 1);
-	if (ret) {
-		printf("%s dm_i2c_write failed, err %d\n", __func__, ret);
-		return -EIO;
-	}
-
-	return 0;
-}
-
-int pd_switch_snk_enable(struct tcpc_port *port)
-{
-	if (port == &port1) {
-		debug("Setup pd switch on port 1\n");
-		return setup_pd_switch(1, 0x72);
-	} else if (port == &port2) {
-		debug("Setup pd switch on port 2\n");
-		return setup_pd_switch(1, 0x73);
-	} else
-		return -EINVAL;
-}
-
-struct tcpc_port_config port1_config = {
-	.i2c_bus = 1, /*i2c2*/
-	.addr = 0x50,
-	.port_type = TYPEC_PORT_UFP,
-	.max_snk_mv = 5000,
-	.max_snk_ma = 3000,
-	.max_snk_mw = 40000,
-	.op_snk_mv = 9000,
-	.switch_setup_func = &pd_switch_snk_enable,
-};
-
-struct tcpc_port_config port2_config = {
-	.i2c_bus = 1, /*i2c2*/
-	.addr = 0x52,
-	.port_type = TYPEC_PORT_UFP,
-	.max_snk_mv = 5000,
-	.max_snk_ma = 3000,
-	.max_snk_mw = 40000,
-	.op_snk_mv = 9000,
-	.switch_setup_func = &pd_switch_snk_enable,
-};
-
-static int setup_typec(void)
-{
-	int ret;
-
-	debug("tcpc_init port 2\n");
-	ret = tcpc_init(&port2, port2_config, NULL);
-	if (ret) {
-		printf("%s: tcpc port2 init failed, err=%d\n",
-		       __func__, ret);
-	} else if (tcpc_pd_sink_check_charging(&port2)) {
-		/* Disable PD for USB1, since USB2 has priority */
-		port1_config.disable_pd = true;
-		printf("Power supply on USB2\n");
-	}
-
-	debug("tcpc_init port 1\n");
-	ret = tcpc_init(&port1, port1_config, NULL);
-	if (ret) {
-		printf("%s: tcpc port1 init failed, err=%d\n",
-		       __func__, ret);
-	} else {
-		if (!port1_config.disable_pd)
-			printf("Power supply on USB1\n");
-		return ret;
-	}
-
-	return ret;
-}
-
-int board_usb_init(int index, enum usb_init_type init)
-{
-	int ret = 0;
-	struct tcpc_port *port_ptr;
-
-	debug("board_usb_init %d, type %d\n", index, init);
-
-	if (index == 0)
-		port_ptr = &port1;
-	else
-		port_ptr = &port2;
-
-	imx8m_usb_power(index, true);
-
-	if (init == USB_INIT_HOST)
-		tcpc_setup_dfp_mode(port_ptr);
-	else
-		tcpc_setup_ufp_mode(port_ptr);
-
-	return ret;
-}
-
-int board_usb_cleanup(int index, enum usb_init_type init)
-{
-	int ret = 0;
-
-	debug("board_usb_cleanup %d, type %d\n", index, init);
-
-	if (init == USB_INIT_HOST) {
-		if (index == 0)
-			ret = tcpc_disable_src_vbus(&port1);
-		else
-			ret = tcpc_disable_src_vbus(&port2);
-	}
-
-	imx8m_usb_power(index, false);
-	return ret;
-}
-
-int board_ehci_usb_phy_mode(struct udevice *dev)
-{
-	int ret = 0;
-	enum typec_cc_polarity pol;
-	enum typec_cc_state state;
-	struct tcpc_port *port_ptr;
-
-	if (dev->seq == 0)
-		port_ptr = &port1;
-	else
-		port_ptr = &port2;
-
-	tcpc_setup_ufp_mode(port_ptr);
-
-	ret = tcpc_get_cc_status(port_ptr, &pol, &state);
-	if (!ret) {
-		if (state == TYPEC_STATE_SRC_RD_RA || state == TYPEC_STATE_SRC_RD)
-			return USB_INIT_HOST;
-	}
-
-	return USB_INIT_DEVICE;
-}
-
-#endif
 
 int board_init(void)
 {
-#ifdef CONFIG_USB_TCPC
-	setup_typec();
-#endif
-
-#ifdef CONFIG_MXC_SPI
-	setup_spi();
-#endif
-
 #ifdef CONFIG_FEC_MXC
 	setup_fec();
-#endif
-
-#ifdef CONFIG_FSL_FSPI
-	board_qspi_init();
 #endif
 
 	return 0;
@@ -424,151 +151,39 @@ int mmc_map_to_kernel_blk(int devno)
 	return devno + 1;
 }
 
-#ifdef CONFIG_VIDEO_MXS
-
-#define ADV7535_MAIN 0x3d
-#define ADV7535_DSI_CEC 0x3c
-
-static const struct sec_mipi_dsim_plat_data imx8mm_mipi_dsim_plat_data = {
-	.version	= 0x1060200,
-	.max_data_lanes = 4,
-	.max_data_rate  = 1500000000ULL,
-	.reg_base = MIPI_DSI_BASE_ADDR,
-	.gpr_base = CSI_BASE_ADDR + 0x8000,
-};
-
-static int adv7535_i2c_reg_write(struct udevice *dev, uint addr, uint mask, uint data)
+static int check_mmc_autodetect(void)
 {
-	uint8_t valb;
-	int err;
+	char *autodetect_str = env_get("mmcautodetect");
 
-	if (mask != 0xff) {
-		err = dm_i2c_read(dev, addr, &valb, 1);
-		if (err)
-			return err;
-
-		valb &= ~mask;
-		valb |= data;
-	} else {
-		valb = data;
+	if ((autodetect_str != NULL) &&
+		(strcmp(autodetect_str, "yes") == 0)) {
+		return 1;
 	}
 
-	err = dm_i2c_write(dev, addr, &valb, 1);
-	return err;
-}
-
-static int adv7535_i2c_reg_read(struct udevice *dev, uint8_t addr, uint8_t *data)
-{
-	uint8_t valb;
-	int err;
-
-	err = dm_i2c_read(dev, addr, &valb, 1);
-	if (err)
-		return err;
-
-	*data = (int)valb;
 	return 0;
 }
 
-static void adv7535_init(void)
+void board_late_mmc_env_init(void)
 {
-	struct udevice *bus, *main_dev, *cec_dev;
-	int i2c_bus = 1;
-	int ret;
-	uint8_t val;
+	char cmd[32];
+	char mmcblk[32];
+	u32 dev_no = mmc_get_env_dev();
 
-	ret = uclass_get_device_by_seq(UCLASS_I2C, i2c_bus, &bus);
-	if (ret) {
-		printf("%s: No bus %d\n", __func__, i2c_bus);
+	if (!check_mmc_autodetect())
 		return;
-	}
 
-	ret = dm_i2c_probe(bus, ADV7535_MAIN, 0, &main_dev);
-	if (ret) {
-		printf("%s: Can't find device id=0x%x, on bus %d\n",
-			__func__, ADV7535_MAIN, i2c_bus);
-		return;
-	}
+	env_set_ulong("mmcdev", dev_no);
 
-	ret = dm_i2c_probe(bus, ADV7535_DSI_CEC, 0, &cec_dev);
-	if (ret) {
-		printf("%s: Can't find device id=0x%x, on bus %d\n",
-			__func__, ADV7535_MAIN, i2c_bus);
-		return;
-	}
+	/* Set mmcblk env */
+	sprintf(mmcblk, "/dev/mmcblk%dp2 rootwait rw",
+		mmc_map_to_kernel_blk(dev_no));
+	env_set("mmcroot", mmcblk);
 
-	adv7535_i2c_reg_read(main_dev, 0x00, &val);
-	debug("Chip revision: 0x%x (expected: 0x14)\n", val);
-	adv7535_i2c_reg_read(cec_dev, 0x00, &val);
-	debug("Chip ID MSB: 0x%x (expected: 0x75)\n", val);
-	adv7535_i2c_reg_read(cec_dev, 0x01, &val);
-	debug("Chip ID LSB: 0x%x (expected: 0x33)\n", val);
-
-	/* Power */
-	adv7535_i2c_reg_write(main_dev, 0x41, 0xff, 0x10);
-	/* Initialisation (Fixed) Registers */
-	adv7535_i2c_reg_write(main_dev, 0x16, 0xff, 0x20);
-	adv7535_i2c_reg_write(main_dev, 0x9A, 0xff, 0xE0);
-	adv7535_i2c_reg_write(main_dev, 0xBA, 0xff, 0x70);
-	adv7535_i2c_reg_write(main_dev, 0xDE, 0xff, 0x82);
-	adv7535_i2c_reg_write(main_dev, 0xE4, 0xff, 0x40);
-	adv7535_i2c_reg_write(main_dev, 0xE5, 0xff, 0x80);
-	adv7535_i2c_reg_write(cec_dev, 0x15, 0xff, 0xD0);
-	adv7535_i2c_reg_write(cec_dev, 0x17, 0xff, 0xD0);
-	adv7535_i2c_reg_write(cec_dev, 0x24, 0xff, 0x20);
-	adv7535_i2c_reg_write(cec_dev, 0x57, 0xff, 0x11);
-	/* 4 x DSI Lanes */
-	adv7535_i2c_reg_write(cec_dev, 0x1C, 0xff, 0x40);
-
-	/* DSI Pixel Clock Divider */
-	adv7535_i2c_reg_write(cec_dev, 0x16, 0xff, 0x18);
-
-	/* Enable Internal Timing Generator */
-	adv7535_i2c_reg_write(cec_dev, 0x27, 0xff, 0xCB);
-	/* 1920 x 1080p 60Hz */
-	adv7535_i2c_reg_write(cec_dev, 0x28, 0xff, 0x89); /* total width */
-	adv7535_i2c_reg_write(cec_dev, 0x29, 0xff, 0x80); /* total width */
-	adv7535_i2c_reg_write(cec_dev, 0x2A, 0xff, 0x02); /* hsync */
-	adv7535_i2c_reg_write(cec_dev, 0x2B, 0xff, 0xC0); /* hsync */
-	adv7535_i2c_reg_write(cec_dev, 0x2C, 0xff, 0x05); /* hfp */
-	adv7535_i2c_reg_write(cec_dev, 0x2D, 0xff, 0x80); /* hfp */
-	adv7535_i2c_reg_write(cec_dev, 0x2E, 0xff, 0x09); /* hbp */
-	adv7535_i2c_reg_write(cec_dev, 0x2F, 0xff, 0x40); /* hbp */
-
-	adv7535_i2c_reg_write(cec_dev, 0x30, 0xff, 0x46); /* total height */
-	adv7535_i2c_reg_write(cec_dev, 0x31, 0xff, 0x50); /* total height */
-	adv7535_i2c_reg_write(cec_dev, 0x32, 0xff, 0x00); /* vsync */
-	adv7535_i2c_reg_write(cec_dev, 0x33, 0xff, 0x50); /* vsync */
-	adv7535_i2c_reg_write(cec_dev, 0x34, 0xff, 0x00); /* vfp */
-	adv7535_i2c_reg_write(cec_dev, 0x35, 0xff, 0x40); /* vfp */
-	adv7535_i2c_reg_write(cec_dev, 0x36, 0xff, 0x02); /* vbp */
-	adv7535_i2c_reg_write(cec_dev, 0x37, 0xff, 0x40); /* vbp */
-
-	/* Reset Internal Timing Generator */
-	adv7535_i2c_reg_write(cec_dev, 0x27, 0xff, 0xCB);
-	adv7535_i2c_reg_write(cec_dev, 0x27, 0xff, 0x8B);
-	adv7535_i2c_reg_write(cec_dev, 0x27, 0xff, 0xCB);
-
-	/* HDMI Output */
-	adv7535_i2c_reg_write(main_dev, 0xAF, 0xff, 0x16);
-	/* AVI Infoframe - RGB - 16-9 Aspect Ratio */
-	adv7535_i2c_reg_write(main_dev, 0x55, 0xff, 0x02);
-	adv7535_i2c_reg_write(main_dev, 0x56, 0xff, 0x0);
-
-	/*  GC Packet Enable */
-	adv7535_i2c_reg_write(main_dev, 0x40, 0xff, 0x0);
-	/*  GC Colour Depth - 24 Bit */
-	adv7535_i2c_reg_write(main_dev, 0x4C, 0xff, 0x0);
-	/*  Down Dither Output Colour Depth - 8 Bit (default) */
-	adv7535_i2c_reg_write(main_dev, 0x49, 0xff, 0x00);
-
-	/* set low refresh 1080p30 */
-	adv7535_i2c_reg_write(main_dev, 0x4A, 0xff, 0x80); /*should be 0x80 for 1080p60 and 0x8c for 1080p30*/
-
-	/* HDMI Output Enable */
-	adv7535_i2c_reg_write(cec_dev, 0xbe, 0xff, 0x3c);
-	adv7535_i2c_reg_write(cec_dev, 0x03, 0xff, 0x89);
+	sprintf(cmd, "mmc dev %d", dev_no);
+	run_command(cmd, 0);
 }
+
+#ifdef CONFIG_VIDEO_MXS
 
 #define DISPLAY_MIX_SFT_RSTN_CSR		0x00
 #define DISPLAY_MIX_CLK_EN_CSR		0x04
@@ -622,26 +237,13 @@ struct mipi_dsi_client_dev rm67191_dev = {
 #define DISPMIX				9
 #define MIPI				10
 
-void do_enable_mipi2hdmi(struct display_info_t const *dev)
-{
-	gpio_request(IMX_GPIO_NR(1, 8), "DSI EN");
-	gpio_direction_output(IMX_GPIO_NR(1, 8), 1);
-
-	/* ADV7353 initialization */
-	adv7535_init();
-
-	/* enable the dispmix & mipi phy power domain */
-	call_imx_sip(FSL_SIP_GPC, FSL_SIP_CONFIG_GPC_PM_DOMAIN, DISPMIX, true, 0);
-	call_imx_sip(FSL_SIP_GPC, FSL_SIP_CONFIG_GPC_PM_DOMAIN, MIPI, true, 0);
-
-	/* Put lcdif out of reset */
-	disp_mix_bus_rstn_reset(imx8mm_mipi_dsim_plat_data.gpr_base, false);
-	disp_mix_lcdif_clks_enable(imx8mm_mipi_dsim_plat_data.gpr_base, true);
-
-	/* Setup mipi dsim */
-	sec_mipi_dsim_setup(&imx8mm_mipi_dsim_plat_data);
-	imx_mipi_dsi_bridge_attach(&adv7535_dev); /* attach adv7535 device */
-}
+static const struct sec_mipi_dsim_plat_data imx8mm_mipi_dsim_plat_data = {
+	.version	= 0x1060200,
+	.max_data_lanes = 4,
+	.max_data_rate  = 1500000000ULL,
+	.reg_base = MIPI_DSI_BASE_ADDR,
+	.gpr_base = CSI_BASE_ADDR + 0x8000,
+};
 
 void do_enable_mipi_led(struct display_info_t const *dev)
 {
@@ -673,27 +275,6 @@ void board_quiesce_devices(void)
 }
 
 struct display_info_t const displays[] = {{
-	.bus = LCDIF_BASE_ADDR,
-	.addr = 0,
-	.pixfmt = 24,
-	.detect = NULL,
-	.enable	= do_enable_mipi2hdmi,
-	.mode	= {
-		.name			= "MIPI2HDMI",
-		.refresh		= 60,
-		.xres			= 1920,
-		.yres			= 1080,
-		.pixclock		= 6734, /* 148500000 */
-		.left_margin	= 148,
-		.right_margin	= 88,
-		.upper_margin	= 36,
-		.lower_margin	= 4,
-		.hsync_len		= 44,
-		.vsync_len		= 5,
-		.sync			= FB_SYNC_EXT,
-		.vmode			= FB_VMODE_NONINTERLACED
-
-} }, {
 	.bus = LCDIF_BASE_ADDR,
 	.addr = 0,
 	.pixfmt = 24,
