@@ -4,6 +4,7 @@
  * Author: Tapani Utriainen <tapani@technexion.com>
  *         Richard Hu <richard.hu@technexion.com>
  *         Alvin Chen <alvin.chen@technexion.com>
+ *         Po Cheng <po.cheng@technexion.com>
  *
  * SPDX-License-Identifier:	GPL-2.0+
  */
@@ -22,6 +23,7 @@
 #include <mmc.h>
 #include <miiphy.h>
 #include <netdev.h>
+#include <usb.h>
 #include <power/pmic.h>
 #include <power/pfuze3000_pmic.h>
 #include <asm/arch/clock_slice.h>
@@ -176,6 +178,7 @@ static iomux_v3_cfg_t const uart5_pads[] = {
 	MX7D_PAD_I2C4_SDA__UART5_DCE_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
 };
 
+/* EMMC/SD */
 static iomux_v3_cfg_t const usdhc1_pads[] = {
 	MX7D_PAD_SD1_CLK__SD1_CLK | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX7D_PAD_SD1_CMD__SD1_CMD | MUX_PAD_CTRL(USDHC_PAD_CTRL),
@@ -186,7 +189,6 @@ static iomux_v3_cfg_t const usdhc1_pads[] = {
 	MX7D_PAD_SD1_CD_B__GPIO5_IO0  | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 };
 
-/* EMMC/SD */
 #define USDHC3_CD_GPIO IMX_GPIO_NR(1, 14)
 static iomux_v3_cfg_t const usdhc3_emmc_pads[] = {
 	MX7D_PAD_SD3_CLK__SD3_CLK | MUX_PAD_CTRL(USDHC_PAD_CTRL),
@@ -699,7 +701,7 @@ int board_late_init(void)
 	set_wdog_reset((struct wdog_regs *)WDOG1_BASE_ADDR);
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
-	setenv("som", get_som_type());
+	env_set("som", get_som_type());
 #endif
 
 	return 0;
@@ -725,6 +727,11 @@ int ft_board_setup(void *blob, bd_t *bd)
 	return 0;
 }
 #endif
+
+int board_usb_phy_mode(int port)
+{
+	return USB_INIT_DEVICE;
+}
 
 #ifdef CONFIG_USB_EHCI_MX7
 iomux_v3_cfg_t const usb_otg1_pads[] = {
