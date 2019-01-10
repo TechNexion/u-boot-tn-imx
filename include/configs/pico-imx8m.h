@@ -132,7 +132,7 @@
 	"fdt_addr=0x43000000\0"			\
 	"fdt_high=0xffffffffffffffff\0"		\
 	"boot_fdt=try\0" \
-	"fdt_file=fsl-imx8mq-evk.dtb\0" \
+	"fdt_file=pico-imx8m.dtb\0" \
 	"initrd_addr=0x43800000\0"		\
 	"initrd_high=0xffffffffffffffff\0" \
 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
@@ -147,9 +147,9 @@
 	"display=hdmi\0" \
 	"setfdt=" \
 		"if test ${display} = mipi5; then " \
-			"setenv fdt_file pico-8m-dcss-ili9881c.dtb; " \
+			"setenv fdt_file pico-imx8m-dcss-ili9881c.dtb; " \
 		"elif test ${display} = hdmi; then; " \
-			"setenv fdt_file pico-8m.dtb;" \
+			"setenv fdt_file pico-imx8m.dtb;" \
 		"fi\0" \
 	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
 	"bootenv=uEnv.txt\0" \
