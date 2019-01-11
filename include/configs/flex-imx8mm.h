@@ -60,6 +60,7 @@
 #define CONFIG_SYS_I2C_MXC_I2C1		/* enable I2C bus 1 */
 #define CONFIG_SYS_I2C_MXC_I2C2		/* enable I2C bus 2 */
 #define CONFIG_SYS_I2C_MXC_I2C3		/* enable I2C bus 3 */
+#define CONFIG_SYS_I2C_MXC_I2C4		/* enable I2C bus 4 */
 
 #define CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 
@@ -283,6 +284,8 @@
 #define CONFIG_SYS_I2C_MXC_I2C1		/* enable I2C bus 1 */
 #define CONFIG_SYS_I2C_MXC_I2C2		/* enable I2C bus 2 */
 #define CONFIG_SYS_I2C_MXC_I2C3		/* enable I2C bus 3 */
+#define CONFIG_SYS_I2C_MXC_I2C4		/* enable I2C bus 4 */
+
 #define CONFIG_SYS_I2C_SPEED		100000
 
 /* USB configs */
