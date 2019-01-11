@@ -18,8 +18,8 @@ DRIVE=/dev/sdX
 #BOARD="fsl-imx8mq-evk"
 #BOARD="pico-imx8m"
 
-BRANCH_VER="imx_4.14.62_1.0.0_beta"
-DDR_FW_VER="7.9"
+BRANCH_VER="imx_4.14.78_1.0.0_ga"
+DDR_FW_VER="8.0"
 
 FSL_MIRROR="https://www.nxp.com/lgfiles/NMG/MAD/YOCTO"
 FIRMWARE_DIR="firmware_imx8"
