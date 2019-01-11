@@ -1,0 +1,12 @@
+if TARGET_AXON_IMX8MM
+
+config SYS_BOARD
+	default "axon-imx8mm"
+
+config SYS_VENDOR
+	default "technexion"
+
+config SYS_CONFIG_NAME
+	default "axon-imx8mm"
+
+endif
