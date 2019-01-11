@@ -214,12 +214,12 @@ if [ "$(id -u)" = "0" ]; then
    exit 1
 fi
 
-if [ ! -b $DRIVE ]
-then
-   echo Target block device $DRIVE does not exist
-   usage
-   exit 1
-fi
+#if [ ! -b $DRIVE ]
+#then
+#   echo Target block device $DRIVE does not exist
+#   usage
+#   exit 1
+#fi
 print_settings
 setup_platform
 install_firmware
