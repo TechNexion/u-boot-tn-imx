@@ -24,8 +24,8 @@
 	compatible = "fsl,imx8mm-axon", "fsl,imx8mm";
 
 	chosen {
-		bootargs = "console=ttymxc1,115200 earlycon=ec_imx6q,0x30890000,115200";
-		stdout-patch = &uart2;
+		bootargs = "console=ttymxc0,115200 earlycon=ec_imx6q,0x30860000,115200";
+		stdout-patch = &uart1;
 	};
 
 	reg_usdhc2_vmmc: regulator-usdhc2 {
@@ -44,7 +44,7 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_hog_1>;
 
-	imx8mm-evk {
+	imx8mm-axon {
 		pinctrl_hog_1: hoggrp-1 {
 			fsl,pins = <
 				MX8MM_IOMUXC_GPIO1_IO08_GPIO1_IO8		0x19
@@ -101,6 +101,13 @@
 			fsl,pins = <
 				MX8MM_IOMUXC_I2C3_SCL_I2C3_SCL			0x400001c3
 				MX8MM_IOMUXC_I2C3_SDA_I2C3_SDA			0x400001c3
+			>;
+		};
+
+		pinctrl_i2c4: i2c4grp {
+			fsl,pins = <
+				MX8MM_IOMUXC_I2C4_SCL_I2C4_SCL			0x400001c3
+				MX8MM_IOMUXC_I2C4_SDA_I2C4_SDA			0x400001c3
 			>;
 		};
 
@@ -219,6 +226,27 @@
 	clock-frequency = <400000>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_i2c1>;
+	status = "okay";
+};
+
+&i2c2 {
+	clock-frequency = <400000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c2>;
+	status = "okay";
+};
+
+&i2c3 {
+	clock-frequency = <100000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c3>;
+	status = "okay";
+};
+
+&i2c4 {
+	clock-frequency = <400000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c4>;
 	status = "okay";
 
 	pmic: bd71837@4b {
@@ -371,46 +399,6 @@
 	};
 };
 
-&i2c2 {
-	clock-frequency = <400000>;
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_i2c2>;
-	status = "okay";
-
-	typec_ptn5110_1: ptn5110@50 {
-		compatible = "usb,tcpci";
-		reg = <0x50>;
-		src-pdos = <0x380190c8>;
-		snk-pdos = <0x380190c8 0x3802d0c8>;
-		max-snk-mv = <9000>;
-		max-snk-ma = <2000>;
-		op-snk-mw = <9000>;
-		max-snk-mw = <18000>;
-		port-type = "drp";
-		default-role = "sink";
-	};
-
-	typec_ptn5110_2: ptn5110@52 {
-		compatible = "usb,tcpci";
-		reg = <0x52>;
-		src-pdos = <0x380190c8>;
-		snk-pdos = <0x380190c8 0x3802d0c8>;
-		max-snk-mv = <9000>;
-		max-snk-ma = <2000>;
-		op-snk-mw = <9000>;
-		max-snk-mw = <18000>;
-		port-type = "drp";
-		default-role = "sink";
-	};
-};
-
-&i2c3 {
-	clock-frequency = <100000>;
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_i2c3>;
-	status = "okay";
-};
-
 &flexspi0 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_flexspi0>;
@@ -487,11 +475,11 @@
 };
 
 &usbotg1 {
+	dr_mode = "peripheral";
 	status = "okay";
-	extcon = <&typec_ptn5110_1>;
 };
 
 &usbotg2 {
+	dr_mode = "host";
 	status = "okay";
-	extcon = <&typec_ptn5110_2>;
 };
