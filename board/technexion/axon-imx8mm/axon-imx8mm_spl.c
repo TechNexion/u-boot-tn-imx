@@ -126,6 +126,7 @@ int board_mmc_getcd(struct mmc *mmc)
 		ret = 1;
 		break;
 	case USDHC2_BASE_ADDR:
+		return 1; /* workaround: It seems it doesn't work to set SD2_CD as gpio input. */
 		imx_iomux_v3_setup_pad(usdhc2_cd_pad);
 		gpio_request(USDHC2_CD_GPIO, "usdhc2 cd");
 		gpio_direction_input(USDHC2_CD_GPIO);
