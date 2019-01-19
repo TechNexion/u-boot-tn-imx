@@ -35,11 +35,11 @@ TWD=`pwd`
 setup_platform()
 {
 	SOC=`echo $BOARD | sed 's/.*-\(imx[5-8][a-z]*\)[- $]*.*/\1/g'`
-	if [ ${SOC} == "imx8m" ] ; then
+	if [ ${SOC} = "imx8m" ] ; then
 		PLATFORM="imx8mq"
 		SOC_TARGET="iMX8M"
 		SOC_DIR="iMX8M"
-	elif [ ${SOC} == "imx8mm" ] ; then
+	elif [ ${SOC} = "imx8mm" ] ; then
 		PLATFORM="imx8mm"
 		SOC_TARGET="iMX8MM"
 		SOC_DIR="iMX8M"
