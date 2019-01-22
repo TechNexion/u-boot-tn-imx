@@ -66,16 +66,35 @@ int board_postclk_init(void)
 }
 #endif
 
+static int ddr_size;
+
 int dram_init(void)
 {
-	/* rom_pointer[1] contains the size of TEE occupies */
-	if (rom_pointer[1])
-		gd->ram_size = PHYS_SDRAM_SIZE - rom_pointer[1];
+	/*************************************************
+	ToDo: It's a dirty workaround to store the
+	information of DDR size into start address of TCM.
+	It'd be better to detect DDR size from DDR controller.
+	**************************************************/
+	ddr_size = readl(M4_BOOTROM_BASE_ADDR);
+
+	if (ddr_size == 0x2) {
+		if (rom_pointer[1])
+			gd->ram_size = PHYS_SDRAM_SIZE_2GB - rom_pointer[1];
+		else
+			gd->ram_size = PHYS_SDRAM_SIZE_2GB;
+	}
+	else if (ddr_size == 0x1) {
+		if (rom_pointer[1])
+			gd->ram_size = PHYS_SDRAM_SIZE_1GB - rom_pointer[1];
+		else
+			gd->ram_size = PHYS_SDRAM_SIZE_1GB;
+	}
 	else
-		gd->ram_size = PHYS_SDRAM_SIZE;
+		puts("Unknown DDR type!!!\n");
 
 	return 0;
 }
+
 
 #ifdef CONFIG_OF_BOARD_SETUP
 int ft_board_setup(void *blob, bd_t *bd)
