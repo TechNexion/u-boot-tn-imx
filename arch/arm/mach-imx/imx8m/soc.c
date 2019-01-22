@@ -126,7 +126,6 @@ static struct mm_region imx8m_mem_map[] = {
 		/* DRAM1 */
 		.virt = 0x40000000UL,
 		.phys = 0x40000000UL,
-		.size = PHYS_SDRAM_SIZE,
 		.attrs = PTE_BLOCK_MEMTYPE(MT_NORMAL) |
 #ifdef CONFIG_IMX_TRUSTY_OS
 			 PTE_BLOCK_INNER_SHARE
@@ -157,9 +156,7 @@ struct mm_region *mem_map = imx8m_mem_map;
 void enable_caches(void)
 {
 	/* If OPTEE runs, remove OPTEE memory from MMU table to avoid speculative prefetch */
-	if (rom_pointer[1]) {
-		imx8m_mem_map[5].size -= rom_pointer[1];
-	}
+	imx8m_mem_map[5].size = gd->ram_size;
 
 	icache_enable();
 	dcache_enable();
