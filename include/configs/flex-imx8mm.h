@@ -2,6 +2,7 @@
  * Copyright 2018 TechNexion Ltd.
  * 
  * Author: Richard Hu <richard.hu@technexion.com>
+ *         Ray Chang <ray.chang@technexion.com>
  *
  * SPDX-License-Identifier:     GPL-2.0+
  */
@@ -235,7 +236,9 @@
 
 #define CONFIG_SYS_SDRAM_BASE           0x40000000
 #define PHYS_SDRAM                      0x40000000
-#define PHYS_SDRAM_SIZE			0x80000000 /* 2GB DDR */
+#define PHYS_SDRAM_SIZE_1GB		SZ_1G /* 1GB DDR */
+#define PHYS_SDRAM_SIZE_2GB		SZ_2G /* 2GB DDR */
+#define PHYS_SDRAM_SIZE			PHYS_SDRAM_SIZE_1GB
 #define CONFIG_NR_DRAM_BANKS		1
 
 #define CONFIG_SYS_MEMTEST_START    PHYS_SDRAM
@@ -285,7 +288,6 @@
 #define CONFIG_SYS_I2C_MXC_I2C2		/* enable I2C bus 2 */
 #define CONFIG_SYS_I2C_MXC_I2C3		/* enable I2C bus 3 */
 #define CONFIG_SYS_I2C_MXC_I2C4		/* enable I2C bus 4 */
-
 #define CONFIG_SYS_I2C_SPEED		100000
 
 /* USB configs */
