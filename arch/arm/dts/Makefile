@@ -462,6 +462,7 @@ dtb-$(CONFIG_ARCH_MX7ULP) += imx7ulp-evk.dtb \
 	imx7ulp-14x14-arm2.dtb
 
 dtb-$(CONFIG_ARCH_IMX8M) += axon-imx8mm.dtb \
+		flex-imx8mm.dtb \
 		fsl-imx8mq-evk.dtb \
 		fsl-imx8mq-ddr3l-arm2.dtb \
 		fsl-imx8mq-ddr4-arm2.dtb \
