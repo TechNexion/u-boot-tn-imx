@@ -330,7 +330,7 @@
 #endif
 
 #if defined(CONFIG_ANDROID_SUPPORT)
-#include "imx8mq_evk_android.h"
+#include "pico-imx8m_android.h"
 #elif defined (CONFIG_ANDROID_THINGS_SUPPORT)
 #include "imx8mq_evk_androidthings.h"
 #endif
