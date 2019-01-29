@@ -27,7 +27,15 @@ DECLARE_GLOBAL_DATA_PTR;
 
 void spl_dram_init(void)
 {
-	ddr_init(&dram_timing);
+	/*************************************************
+	ToDo: It's a dirty workaround to store the
+	information of DDR size into start address of TCM.
+	U-boot would extract this information in dram_init().
+	**************************************************/
+
+	puts("dram_init: LPDDR4: 2GB\n");
+	ddr_init(&dram_timing_2gb);
+	writel(0x2, M4_BOOTROM_BASE_ADDR);
 }
 
 #define I2C_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_HYS | PAD_CTL_PUE | PAD_CTL_PE)
