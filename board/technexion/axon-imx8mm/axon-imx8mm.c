@@ -143,12 +143,14 @@ int board_init(void)
 
 int board_mmc_get_env_dev(int devno)
 {
+	printf("%s: devno= %d",__FUNCTION__, devno);
 	return devno;
 }
 
 int mmc_map_to_kernel_blk(int devno)
 {
-	return devno + 1;
+	printf("%s: devno= %d",__FUNCTION__, devno);
+	return devno;
 }
 
 static int check_mmc_autodetect(void)
