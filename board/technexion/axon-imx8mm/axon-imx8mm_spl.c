@@ -85,8 +85,8 @@ static iomux_v3_cfg_t const usdhc2_cd_pad =
 	IMX8MM_PAD_SD2_CD_B_GPIO2_IO12 | MUX_PAD_CTRL(USDHC_GPIO_PAD_CTRL);
 
 static struct fsl_esdhc_cfg usdhc_cfg[2] = {
-	{USDHC2_BASE_ADDR, 0, 1},
 	{USDHC1_BASE_ADDR, 0, 1},
+	{USDHC2_BASE_ADDR, 0, 1},
 };
 
 int board_mmc_init(bd_t *bis)
@@ -101,14 +101,14 @@ int board_mmc_init(bd_t *bis)
 	for (i = 0; i < CONFIG_SYS_FSL_USDHC_NUM; i++) {
 		switch (i) {
 		case 0:
-			usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC2_CLK);
-			imx_iomux_v3_setup_multiple_pads(
-				usdhc2_pads, ARRAY_SIZE(usdhc2_pads));
-			break;
-		case 1:
-			usdhc_cfg[1].sdhc_clk = mxc_get_clock(MXC_ESDHC_CLK);
+			usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC_CLK);
 			imx_iomux_v3_setup_multiple_pads(
 				usdhc1_pads, ARRAY_SIZE(usdhc1_pads));
+			break;
+		case 1:
+			usdhc_cfg[1].sdhc_clk = mxc_get_clock(MXC_ESDHC2_CLK);
+			imx_iomux_v3_setup_multiple_pads(
+				usdhc2_pads, ARRAY_SIZE(usdhc2_pads));
 			break;
 		default:
 			printf("Warning: you configured more USDHC controllers"
