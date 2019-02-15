@@ -50,6 +50,7 @@ struct dram_timing_info {
 	unsigned int fsp_table[4];
 };
 
+extern struct dram_timing_info dram_timing;
 extern struct dram_timing_info dram_timing_1gb;
 extern struct dram_timing_info dram_timing_2gb;
 
