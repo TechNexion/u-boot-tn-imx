@@ -165,7 +165,7 @@ usage()
     * This script is used to download required firmware files, generate and flash bootable u-boot binary
     *
     * [-d disk-path]: specify the disk to flash u-boot binary, e.g., /dev/sdd
-    * [-b dtb_name]: specify the name of dtb, e.g.imx8mm-pico-pi, flex-imx8mm
+    * [-b dtb_name]: specify the name of dtb, e.g.imx8mm-pico-pi, imx8mm-flex-pi
     * [-t]: target u-boot binary is without HDMI firmware
     * [-c]: clean temporary directory
     * [-h]: help
