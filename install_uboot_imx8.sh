@@ -34,7 +34,7 @@ TWD=`pwd`
 
 setup_platform()
 {
-	SOC=`echo $BOARD | sed 's/.*-\(imx[5-8][a-z]*\)[- $]*.*/\1/g'`
+	SOC=$( echo $BOARD | grep -o 'imx8m[mq]' )
 	if [ ${SOC} = "imx8m" ] ; then
 		PLATFORM="imx8mq"
 		SOC_TARGET="iMX8M"
@@ -165,10 +165,15 @@ usage()
     * This script is used to download required firmware files, generate and flash bootable u-boot binary
     *
     * [-d disk-path]: specify the disk to flash u-boot binary, e.g., /dev/sdd
-    * [-b dtb_name]: specify the name of dtb, e.g.,fsl-imx8mq-evk, wand-pi-8m, pico-8m, flex-imx8mm
+    * [-b dtb_name]: specify the name of dtb, e.g.imx8mm-pico-pi, flex-imx8mm
     * [-t]: target u-boot binary is without HDMI firmware
     * [-c]: clean temporary directory
     * [-h]: help
+
+    For example:
+
+    PICO-IMX8MM with PICO-PI-IMX8 baseboard:
+    ./install_uboot_imx8.sh -b imx8mm-pico-pi -d /dev/sdX
 "
 }
 
@@ -181,6 +186,7 @@ print_settings()
 	echo "The default board name: $BOARD"
 	echo "Make target: ${PLATFORM}"
 	echo "Make target: ${MKIMAGE_TARGET}"
+	echo "SOC platform: ${SOC}"
 	echo "*************************************************************
 		
 	"
@@ -220,8 +226,9 @@ fi
 #   usage
 #   exit 1
 #fi
-print_settings
+
 setup_platform
+print_settings
 install_firmware
 install_uboot_dtb
 generate_imx_boot
