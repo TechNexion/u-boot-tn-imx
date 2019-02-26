@@ -124,6 +124,15 @@
 	"jh_mmcboot=setenv fdt_file fsl-imx8mm-evk-root.dtb; setenv jh_clk clk_ignore_unused; run mmcboot\0 " \
 	"jh_netboot=setenv fdt_file fsl-imx8mm-evk-root.dtb; setenv jh_clk clk_ignore_unused; run netboot\0 "
 
+/* Boot M4 */
+#define CONFIG_SYS_AUXCORE_BOOTDATA 0x7E0000 /* Set to TCML address */
+
+#define M4_BOOT_ENV \
+	"m4_image=m4.bin\0" \
+	"loadm4image=fatload mmc ${mmcdev}:${mmcpart} "__stringify(CONFIG_SYS_AUXCORE_BOOTDATA)" ${m4_image}\0" \
+	"updatem4fdtfile=setexpr fdt_file sub \"\\\\.\" -m4.\0" \
+	"m4boot=if run loadm4image; then dcache flush; bootaux "__stringify(CONFIG_SYS_AUXCORE_BOOTDATA)"; run updatem4fdtfile; fi;\0" \
+
 #ifdef CONFIG_NAND_BOOT
 #define MFG_NAND_PARTITION "mtdparts=gpmi-nand:64m(nandboot),16m(nandfit),32m(nandkernel),16m(nanddtb),8m(nandtee),-(nandrootfs) "
 #endif
@@ -138,6 +147,7 @@
 /* Initial environment variables */
 #define CONFIG_EXTRA_ENV_SETTINGS		\
 	CONFIG_MFG_ENV_SETTINGS \
+	M4_BOOT_ENV \
 	JAILHOUSE_ENV \
 	"script=boot.scr\0" \
 	"image=Image\0" \
@@ -196,6 +206,7 @@
 			   "run bootscript; " \
 		   "else " \
 			   "if run loadimage; then " \
+				   "run m4boot; " \
 				   "run mmcboot; " \
 			   "else run netboot; " \
 			   "fi; " \
