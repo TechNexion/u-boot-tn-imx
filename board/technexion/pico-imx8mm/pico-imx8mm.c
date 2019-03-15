@@ -77,7 +77,20 @@ int dram_init(void)
 	**************************************************/
 	ddr_size = readl(M4_BOOTROM_BASE_ADDR);
 
-	if (ddr_size == 0x2) {
+	if (ddr_size == 0x4) {
+		/* rom_pointer[1] contains the size of TEE occupies */
+		if (rom_pointer[1])
+			gd->ram_size = PHYS_SDRAM_SIZE_3GB - rom_pointer[1];
+		else
+			gd->ram_size = PHYS_SDRAM_SIZE_3GB;
+	}
+	else if (ddr_size == 0x3) {
+		if (rom_pointer[1])
+			gd->ram_size = PHYS_SDRAM_SIZE_3GB - rom_pointer[1];
+		else
+			gd->ram_size = PHYS_SDRAM_SIZE_3GB;
+	}
+	else if (ddr_size == 0x2) {
 		if (rom_pointer[1])
 			gd->ram_size = PHYS_SDRAM_SIZE_2GB - rom_pointer[1];
 		else
@@ -91,8 +104,16 @@ int dram_init(void)
 	}
 	else
 		puts("Unknown DDR type!!!\n");
-
 	return 0;
+}
+
+/* Get the top of usable RAM */
+ulong board_get_usable_ram_top(ulong total_size)
+{
+	if(gd->ram_top > 0x100000000)
+		gd->ram_top = 0x100000000;
+
+	return gd->ram_top;
 }
 
 
