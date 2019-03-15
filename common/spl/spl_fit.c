@@ -378,6 +378,7 @@ int spl_load_simple_fit(struct spl_image_info *spl_image,
 	int images, ret;
 	int base_offset;
 	int index = 0;
+	bool loadKernel = false;
 
 	/*
 	 * For FIT with external data, figure out where the external images
@@ -441,8 +442,11 @@ int spl_load_simple_fit(struct spl_image_info *spl_image,
 	if (node < 0)
 		node = spl_fit_get_image_node(fit, images, "firmware", 0);
 #ifdef CONFIG_SPL_OS_BOOT
-	if (node < 0)
+	if (node < 0) {
 		node = spl_fit_get_image_node(fit, images, FIT_KERNEL_PROP, 0);
+		if (node > 0)
+			loadKernel = true;
+	}
 #endif
 	if (node < 0) {
 		debug("could not find firmware image, trying loadables...\n");
@@ -471,7 +475,16 @@ int spl_load_simple_fit(struct spl_image_info *spl_image,
 	 */
 	if (!spl_fit_image_get_os(fit, node, &spl_image->os))
 		debug("Image OS is %s\n", genimg_get_os_name(spl_image->os));
-#if !defined(CONFIG_SPL_OS_BOOT)
+#ifdef CONFIG_SPL_OS_BOOT
+	/*
+	 * if unable to load the kernel node from FIT image in Falcon Mode
+	 * assume it is U-boot image
+	 */
+	if (loadKernel)
+		spl_image->os = IH_OS_LINUX;
+	else
+		spl_image->os = IH_OS_U_BOOT;
+#else
 	else
 		spl_image->os = IH_OS_U_BOOT;
 #endif
