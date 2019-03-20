@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Freescale Semiconductor, Inc.
+ * Copyright (C) 2014-2015 Freescale Semiconductor, Inc.
  *
  * SPDX-License-Identifier:	GPL-2.0+
  */
@@ -7,83 +7,11 @@
 #include <config.h>
 
 /* DDR script */
-.macro imx7d_ddrphy_latency_setting
-	ldr r2, =ANATOP_BASE_ADDR
-	ldr r3, [r2, #0x800]
-	and r3, r3, #0xFF
-	cmp r3, #0x11
-	bne NO_DELAY
-
-	/*TO 1.1*/
-	ldr r1, =0x00000dee
-	str r1, [r0, #0x9c]
-	ldr r1, =0x18181818
-	str r1, [r0, #0x7c]
-	ldr r1, =0x18181818
-	str r1, [r0, #0x80]
-	ldr r1, =0x40401818
-	str r1, [r0, #0x84]
-	ldr r1, =0x00000040
-	str r1, [r0, #0x88]
-	ldr r1, =0x40404040
-	str r1, [r0, #0x6c]
-	b TUNE_END
-
-NO_DELAY:
-	/*TO 1.0*/
-	ldr r1, =0x00000b24
-	str r1, [r0, #0x9c]
-
-TUNE_END:
-.endm
-
-.macro imx7d_ddr_freq_setting
-	ldr r2, =ANATOP_BASE_ADDR
-	ldr r3, [r2, #0x800]
-	and r3, r3, #0xFF
-	cmp r3, #0x11
-	bne FREQ_DEFAULT_533
-
-	/* Change to 400Mhz for TO1.1 */
-	ldr r0, =ANATOP_BASE_ADDR
-	ldr r1, =0x70
-	ldr r2, =0x00703021
-	str r2, [r0, r1]
-	ldr r1, =0x90
-	ldr r2, =0x0
-	str r2, [r0, r1]
-	ldr r1, =0x70
-	ldr r2, =0x00603021
-	str r2, [r0, r1]
-
-	ldr r3, =0x80000000
-wait_lock:
-	ldr r2, [r0, r1]
-	and r2, r3
-	cmp r2, r3
-	bne wait_lock
-
-	ldr r0, =CCM_BASE_ADDR
-	ldr r1, =0x9880
-	ldr r2, =0x1
-	str r2, [r0, r1]
-
-FREQ_DEFAULT_533:
-.endm
-
 .macro imx7d_sabresd_ddr_setting
-	imx7d_ddr_freq_setting
-
 	/* Configure ocram_epdc */
 	ldr r0, =IOMUXC_GPR_BASE_ADDR
 	ldr r1, =0x4f400005
 	str r1, [r0, #0x4]
-
-	/* clear/set bit30 of SNVS_MISC_CTRL to ensure exit from ddr retention */
-	ldr r0, =ANATOP_BASE_ADDR
-	ldr r1, =(0x1 << 30)
-	str r1, [r0, #0x388]
-	str r1, [r0, #0x384]
 
 	ldr r0, =SRC_BASE_ADDR
 	ldr r1, =0x2
@@ -140,13 +68,11 @@ FREQ_DEFAULT_533:
 
 	ldr r1, =0x00000016
 	str r1, [r0, #0x200]
-	ldr r1, =0x00080808
+	ldr r1, =0x00171717
 	str r1, [r0, #0x204]
-	ldr r1, =0x00000f0f
-	str r1, [r0, #0x210]
-	ldr r1, =0x07070707
+	ldr r1, =0x04040404
 	str r1, [r0, #0x214]
-	ldr r1, =0x0f070707
+	ldr r1, =0x0f040404
 	str r1, [r0, #0x218]
 
 	ldr r1, =0x06000604
@@ -168,7 +94,8 @@ FREQ_DEFAULT_533:
 	str r1, [r0, #0x10]
 	ldr r1, =0x1010007e
 	str r1, [r0, #0xb0]
-	imx7d_ddrphy_latency_setting
+	ldr r1, =0x00000d6e
+	str r1, [r0, #0x9c]
 	ldr r1, =0x08080808
 	str r1, [r0, #0x20]
 	ldr r1, =0x08080808
@@ -188,6 +115,8 @@ wait_zq:
 	tst r1, #0x1
 	beq wait_zq
 
+	ldr r1, =0x0e447304
+	str r1, [r0, #0xc0]
 	ldr r1, =0x0e407304
 	str r1, [r0, #0xc0]
 
