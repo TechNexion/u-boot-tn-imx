@@ -57,7 +57,7 @@
 #define CONFIG_BAUDRATE         115200
 
 /* Filesystems and image support */
-#define CONFIG_SUPPORT_RAW_INITRD
+/* #define CONFIG_SUPPORT_RAW_INITRD -- redefined */
 
 /* Miscellaneous configurable options */
 #define CONFIG_SYS_CBSIZE	512
