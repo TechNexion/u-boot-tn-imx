@@ -25,6 +25,7 @@
 #include <mmc.h>
 #include <miiphy.h>
 #include <netdev.h>
+#include <usb.h>
 #include <phy.h>
 #include <input.h>
 #include <i2c.h>
@@ -67,11 +68,13 @@ int dram_init(void)
 	return 0;
 }
 
+/* UART */
 static iomux_v3_cfg_t const uart1_pads[] = {
 	IOMUX_PADS(PAD_CSI0_DAT10__UART1_TX_DATA | MUX_PAD_CTRL(UART_PAD_CTRL)),
 	IOMUX_PADS(PAD_CSI0_DAT11__UART1_RX_DATA | MUX_PAD_CTRL(UART_PAD_CTRL)),
 };
 
+/* EMMC/SD */
 static iomux_v3_cfg_t const usdhc1_pads[] = {
 	IOMUX_PADS(PAD_SD1_CLK__SD1_CLK    | MUX_PAD_CTRL(BASEBOARD_USDHC_PAD_CTRL)),
 	IOMUX_PADS(PAD_SD1_CMD__SD1_CMD    | MUX_PAD_CTRL(BASEBOARD_USDHC_PAD_CTRL)),
@@ -94,6 +97,7 @@ static iomux_v3_cfg_t const usdhc3_pads[] = {
 	IOMUX_PADS(PAD_EIM_DA9__GPIO3_IO09  | MUX_PAD_CTRL(NO_PAD_CTRL)),
 };
 
+/* Ethernet/Wifi/BT */
 static iomux_v3_cfg_t const enet_pads[] = {
 	IOMUX_PADS(PAD_ENET_MDIO__ENET_MDIO  | MUX_PAD_CTRL(ENET_PAD_CTRL)),
 	IOMUX_PADS(PAD_ENET_MDC__ENET_MDC    | MUX_PAD_CTRL(ENET_PAD_CTRL)),
@@ -676,4 +680,9 @@ int checkboard(void)
 	printf("Available baseboard: dwarf, hobbit, nymph, pi\n");
 
 	return 0;
+}
+
+int board_usb_phy_mode(int port)
+{
+       return USB_INIT_DEVICE;
 }
