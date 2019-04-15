@@ -17,6 +17,8 @@
 #define CONFIG_CSF_SIZE			0x2000 /* 8K region */
 #endif
 
+#define CONFIG_SYS_BOOTM_LEN       0xA000000
+
 #define CONFIG_SPL_TEXT_BASE		0x7E1000
 #define CONFIG_SPL_MAX_SIZE		(124 * 1024)
 #define CONFIG_SYS_MONITOR_LEN		(512 * 1024)
@@ -179,27 +181,40 @@
 			"fi; " \
 		"else " \
 			"booti; " \
-		"fi;\0"
+		"fi;\0" \
+	"fitboard=pi_hdmi\0" \
+	"fit_addr=0x44000000\0" \
+	"fit_high=0xffffffff\0" \
+	"fitargs=setenv bootargs ${jh_clk} console=${console} root=/dev/ram0 rootwait rw " \
+		"modules-load=g_acm_ms g_acm_ms.stall=0 g_acm_ms.removable=1 g_acm_ms.file=/dev/mmcblk${mmcdev} " \
+		"g_acm_ms.iSerialNumber=${ethaddr} g_acm_ms.iManufacturer=TechNexion\0" \
+	"loadfit=fatload mmc ${mmcdev}:${mmcpart} ${fit_addr} tnrescue.itb\0" \
+	"fitboot=echo Booting from FIT image ...; " \
+		"run fitargs; " \
+		"bootm ${fit_addr}#config@${som}_${fitboard}\0"
 
 #define CONFIG_BOOTCOMMAND \
 	   "mmc dev ${mmcdev}; if mmc rescan; then " \
 		   "if run loadbootenv; then " \
-			   "echo Loaded environment from ${bootenv};" \
-			   "run importbootenv;" \
-		   "fi;" \
+			   "echo Loaded environment from ${bootenv}; " \
+			   "run importbootenv; " \
+		   "fi; " \
 		   "if test -n $uenvcmd; then " \
-			   "echo Running uenvcmd ...;" \
-			   "run uenvcmd;" \
-		   "fi;" \
+			   "echo Running uenvcmd ...; " \
+			   "run uenvcmd; " \
+		   "fi; " \
 		   "if run loadbootscript; then " \
 			   "run bootscript; " \
-		   "else " \
-			   "if run loadimage; then " \
-				   "run mmcboot; " \
-			   "else run netboot; " \
-			   "fi; " \
 		   "fi; " \
-	   "else booti ${loadaddr} - ${fdt_addr}; fi"
+		   "if run loadfit; then " \
+			   "run fitboot; " \
+		   "fi; " \
+		   "if run loadimage; then " \
+			   "run mmcboot; " \
+		   "else " \
+			   "echo WARN: Cannot load kernel from boot media; " \
+		   "fi; " \
+	   "else run netboot; fi"
 
 /* Link Definitions */
 #define CONFIG_LOADADDR			0x40480000
