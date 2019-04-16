@@ -35,7 +35,7 @@ TWD=`pwd`
 setup_platform()
 {
 	SOC=$( echo $BOARD | grep -o 'imx8m*[mq]' )
-	if [ ${SOC} = "imx8m" ] ; then
+	if [ ${SOC} = "imx8m" ] || [ ${SOC} = "imx8mq" ] ; then
 		PLATFORM="imx8mq"
 		SOC_TARGET="iMX8M"
 		SOC_DIR="iMX8M"
