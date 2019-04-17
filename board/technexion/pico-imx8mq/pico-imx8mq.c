@@ -24,11 +24,6 @@
 #include <asm/mach-imx/video.h>
 #include <asm/arch/video_common.h>
 #include <spl.h>
-#include <power/pmic.h>
-#include <power/pfuze100_pmic.h>
-#include <dm.h>
-#include "../common/tcpc.h"
-#include "../common/pfuze.h"
 #include <usb.h>
 #include <dwc3-uboot.h>
 
@@ -208,49 +203,6 @@ static void dwc3_nxp_usb_phy_init(struct dwc3_device *dwc3)
 }
 #endif
 
-#ifdef CONFIG_USB_TCPC
-struct tcpc_port port;
-struct tcpc_port_config port_config = {
-	.i2c_bus = 0,
-	.addr = 0x50,
-	.port_type = TYPEC_PORT_UFP,
-	.max_snk_mv = 20000,
-	.max_snk_ma = 3000,
-	.max_snk_mw = 15000,
-	.op_snk_mv = 9000,
-};
-
-#define USB_TYPEC_SEL IMX_GPIO_NR(3, 15)
-
-static iomux_v3_cfg_t ss_mux_gpio[] = {
-	IMX8MQ_PAD_NAND_RE_B__GPIO3_IO15 | MUX_PAD_CTRL(NO_PAD_CTRL),
-};
-
-void ss_mux_select(enum typec_cc_polarity pol)
-{
-	if (pol == TYPEC_POLARITY_CC1)
-		gpio_direction_output(USB_TYPEC_SEL, 1);
-	else
-		gpio_direction_output(USB_TYPEC_SEL, 0);
-}
-
-static int setup_typec(void)
-{
-	int ret;
-
-	imx_iomux_v3_setup_multiple_pads(ss_mux_gpio, ARRAY_SIZE(ss_mux_gpio));
-	gpio_request(USB_TYPEC_SEL, "typec_sel");
-
-	ret = tcpc_init(&port, port_config, &ss_mux_select);
-	if (ret) {
-		printf("%s: tcpc init failed, err=%d\n",
-		       __func__, ret);
-	}
-
-	return ret;
-}
-#endif
-
 #if defined(CONFIG_USB_DWC3) || defined(CONFIG_USB_XHCI_IMX8M)
 int board_usb_init(int index, enum usb_init_type init)
 {
@@ -292,7 +244,6 @@ int board_usb_cleanup(int index, enum usb_init_type init)
 
 int board_init(void)
 {
-	board_qspi_init();
 
 #ifdef CONFIG_FEC_MXC
 	setup_fec();
@@ -302,15 +253,50 @@ int board_init(void)
 	init_usb_clk();
 #endif
 
-#ifdef CONFIG_USB_TCPC
-	setup_typec();
-#endif
 	return 0;
 }
 
 int board_mmc_get_env_dev(int devno)
 {
 	return devno;
+}
+
+static int check_mmc_autodetect(void)
+{
+	char *autodetect_str = env_get("mmcautodetect");
+
+	if ((autodetect_str != NULL) &&
+		(strcmp(autodetect_str, "yes") == 0)) {
+		return 1;
+	}
+
+	return 0;
+}
+
+/* This should be defined for each board */
+__weak int mmc_map_to_kernel_blk(int dev_no)
+{
+	return dev_no;
+}
+
+void board_late_mmc_env_init(void)
+{
+	char cmd[32];
+	char mmcblk[32];
+	u32 dev_no = mmc_get_env_dev();
+
+	if (!check_mmc_autodetect())
+		return;
+
+	env_set_ulong("mmcdev", dev_no);
+
+	/* Set mmcblk env */
+	sprintf(mmcblk, "/dev/mmcblk%dp2 rootwait rw",
+		mmc_map_to_kernel_blk(dev_no));
+	env_set("mmcroot", mmcblk);
+
+	sprintf(cmd, "mmc dev %d", dev_no);
+	run_command(cmd, 0);
 }
 
 int board_late_init(void)

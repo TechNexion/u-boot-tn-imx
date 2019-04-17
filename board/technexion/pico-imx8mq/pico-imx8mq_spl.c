@@ -1,7 +1,9 @@
 /*
- * Copyright 2017 NXP
+ * Copyright 2018 TechNexion Ltd.
  *
- * SPDX-License-Identifier:	GPL-2.0+
+ * Author: Richard Hu <richard.hu@technexion.com>
+ *
+ * SPDX-License-Identifier:     GPL-2.0+
  */
 
 #include <common.h>
@@ -13,9 +15,6 @@
 #include <asm/arch/ddr.h>
 #include <asm/arch/imx8mq_pins.h>
 #include <asm/arch/sys_proto.h>
-#include <power/pmic.h>
-#include <power/pfuze100_pmic.h>
-#include "../common/pfuze.h"
 #include <asm/arch/clock.h>
 #include <asm/mach-imx/gpio.h>
 #include <asm/mach-imx/mxc_i2c.h>
@@ -149,47 +148,6 @@ int board_mmc_init(bd_t *bis)
 	return 0;
 }
 
-#ifdef CONFIG_POWER
-#define I2C_PMIC	0
-int power_init_board(void)
-{
-	struct pmic *p;
-	int ret;
-	unsigned int reg;
-
-	ret = power_pfuze100_init(I2C_PMIC);
-	if (ret)
-		return -ENODEV;
-
-	p = pmic_get("PFUZE100");
-	ret = pmic_probe(p);
-	if (ret)
-		return -ENODEV;
-
-	pmic_reg_read(p, PFUZE100_DEVICEID, &reg);
-	printf("PMIC:  PFUZE100 ID=0x%02x\n", reg);
-
-	pmic_reg_read(p, PFUZE100_SW3AVOL, &reg);
-	if ((reg & 0x3f) != 0x18) {
-		reg &= ~0x3f;
-		reg |= 0x18;
-		pmic_reg_write(p, PFUZE100_SW3AVOL, reg);
-	}
-
-	ret = pfuze_mode_init(p, APS_PFM);
-	if (ret < 0)
-		return ret;
-
-	/* set SW3A standby mode to off */
-	pmic_reg_read(p, PFUZE100_SW3AMODE, &reg);
-	reg &= ~0xf;
-	reg |= APS_OFF;
-	pmic_reg_write(p, PFUZE100_SW3AMODE, reg);
-
-	return 0;
-}
-#endif
-
 void spl_board_init(void)
 {
 #ifndef CONFIG_SPL_USB_SDP_SUPPORT
@@ -242,11 +200,6 @@ void board_init_f(ulong dummy)
 	}
 
 	enable_tzc380();
-
-	/* Adjust pmic voltage to 1.0V for 800M */
-	setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1);
-
-	power_init_board();
 
 	/* DDR initialization */
 	spl_dram_init();
