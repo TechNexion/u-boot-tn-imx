@@ -39,27 +39,6 @@ static iomux_v3_cfg_t const wdog_pads[] = {
 	IMX8MQ_PAD_GPIO1_IO02__WDOG1_WDOG_B | MUX_PAD_CTRL(WDOG_PAD_CTRL),
 };
 
-#ifdef CONFIG_FSL_QSPI
-static iomux_v3_cfg_t const qspi_pads[] = {
-	IMX8MQ_PAD_NAND_ALE__QSPI_A_SCLK | MUX_PAD_CTRL(QSPI_PAD_CTRL),
-	IMX8MQ_PAD_NAND_CE0_B__QSPI_A_SS0_B | MUX_PAD_CTRL(QSPI_PAD_CTRL),
-
-	IMX8MQ_PAD_NAND_DATA00__QSPI_A_DATA0 | MUX_PAD_CTRL(QSPI_PAD_CTRL),
-	IMX8MQ_PAD_NAND_DATA01__QSPI_A_DATA1 | MUX_PAD_CTRL(QSPI_PAD_CTRL),
-	IMX8MQ_PAD_NAND_DATA02__QSPI_A_DATA2 | MUX_PAD_CTRL(QSPI_PAD_CTRL),
-	IMX8MQ_PAD_NAND_DATA03__QSPI_A_DATA3 | MUX_PAD_CTRL(QSPI_PAD_CTRL),
-};
-
-int board_qspi_init(void)
-{
-	imx_iomux_v3_setup_multiple_pads(qspi_pads, ARRAY_SIZE(qspi_pads));
-
-	set_clk_qspi();
-
-	return 0;
-}
-#endif
-
 static iomux_v3_cfg_t const uart_pads[] = {
 	IMX8MQ_PAD_UART1_RXD__UART1_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
 	IMX8MQ_PAD_UART1_TXD__UART1_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
@@ -240,15 +219,9 @@ int board_usb_init(int index, enum usb_init_type init)
 	imx8m_usb_power(index, true);
 
 	if (index == 0 && init == USB_INIT_DEVICE) {
-#ifdef CONFIG_USB_TCPC
-		ret = tcpc_setup_ufp_mode(&port);
-#endif
 		dwc3_nxp_usb_phy_init(&dwc3_device_data);
 		return dwc3_uboot_init(&dwc3_device_data);
 	} else if (index == 0 && init == USB_INIT_HOST) {
-#ifdef CONFIG_USB_TCPC
-		ret = tcpc_setup_dfp_mode(&port);
-#endif
 		return ret;
 	}
 
@@ -258,13 +231,8 @@ int board_usb_init(int index, enum usb_init_type init)
 int board_usb_cleanup(int index, enum usb_init_type init)
 {
 	int ret = 0;
-	if (index == 0 && init == USB_INIT_DEVICE) {
-		dwc3_uboot_exit(index);
-	} else if (index == 0 && init == USB_INIT_HOST) {
-#ifdef CONFIG_USB_TCPC
-		ret = tcpc_disable_src_vbus(&port);
-#endif
-	}
+	if (index == 0 && init == USB_INIT_DEVICE)
+			dwc3_uboot_exit(index);
 
 	imx8m_usb_power(index, false);
 
