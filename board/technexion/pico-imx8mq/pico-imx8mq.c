@@ -106,6 +106,15 @@ int dram_init(void)
 	return 0;
 }
 
+/* Get the top of usable RAM */
+ulong board_get_usable_ram_top(ulong total_size)
+{
+        if(gd->ram_top > 0x100000000)
+            gd->ram_top = 0x100000000;
+
+        return gd->ram_top;
+}
+
 #ifdef CONFIG_OF_BOARD_SETUP
 int ft_board_setup(void *blob, bd_t *bd)
 {
@@ -119,10 +128,29 @@ static iomux_v3_cfg_t const fec1_rst_pads[] = {
 	IMX8MQ_PAD_GPIO1_IO09__GPIO1_IO9 | MUX_PAD_CTRL(NO_PAD_CTRL),
 };
 
+#define FEC_PWR_PAD IMX_GPIO_NR(1, 0)
+static iomux_v3_cfg_t const fec1_pwr_pads[] = {
+	IMX8MQ_PAD_GPIO1_IO00__GPIO1_IO0 | MUX_PAD_CTRL(NO_PAD_CTRL),
+};
+
+#define WL_REG_ON_PAD IMX_GPIO_NR(3, 24)
+static iomux_v3_cfg_t const wl_reg_on_pads[] = {
+	IMX8MQ_PAD_SAI5_RXD3__GPIO3_IO24 | MUX_PAD_CTRL(NO_PAD_CTRL),
+};
+
+#define BT_ON_PAD IMX_GPIO_NR(3, 21)
+static iomux_v3_cfg_t const bt_on_pads[] = {
+	IMX8MQ_PAD_SAI5_RXD0__GPIO3_IO21 | MUX_PAD_CTRL(NO_PAD_CTRL),
+};
+
 static void setup_iomux_fec(void)
 {
-	imx_iomux_v3_setup_multiple_pads(fec1_rst_pads,
-					 ARRAY_SIZE(fec1_rst_pads));
+	imx_iomux_v3_setup_multiple_pads(fec1_rst_pads, ARRAY_SIZE(fec1_rst_pads));
+	imx_iomux_v3_setup_multiple_pads(fec1_pwr_pads, ARRAY_SIZE(fec1_pwr_pads));
+
+	gpio_request(IMX_GPIO_NR(1, 0), "fec1_pwr");
+	gpio_direction_output(IMX_GPIO_NR(1, 0), 1);
+	udelay(500);
 
 	gpio_request(IMX_GPIO_NR(1, 9), "fec1_rst");
 	gpio_direction_output(IMX_GPIO_NR(1, 9), 0);
@@ -240,8 +268,23 @@ int board_usb_cleanup(int index, enum usb_init_type init)
 }
 #endif
 
+void setup_wifi(void)
+{
+	imx_iomux_v3_setup_multiple_pads(wl_reg_on_pads, ARRAY_SIZE(wl_reg_on_pads));
+	imx_iomux_v3_setup_multiple_pads(bt_on_pads, ARRAY_SIZE(bt_on_pads));
+
+	gpio_request(WL_REG_ON_PAD, "wl_reg_on");
+	gpio_direction_output(WL_REG_ON_PAD, 0);
+	gpio_set_value(WL_REG_ON_PAD, 0);
+
+	gpio_request(BT_ON_PAD, "bt_on");
+	gpio_direction_output(BT_ON_PAD, 0);
+	gpio_set_value(BT_ON_PAD, 0);
+}
+
 int board_init(void)
 {
+	setup_wifi();
 
 #ifdef CONFIG_FEC_MXC
 	setup_fec();
@@ -300,7 +343,7 @@ void board_late_mmc_env_init(void)
 int board_late_init(void)
 {
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
-	env_set("board_name", "EVK");
+	env_set("board_name", "PICO-IMX8MQ");
 	env_set("board_rev", "iMX8MQ");
 #endif
 
