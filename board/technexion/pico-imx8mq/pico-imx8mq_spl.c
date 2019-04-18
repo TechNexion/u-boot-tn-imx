@@ -24,15 +24,71 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
-extern struct dram_timing_info dram_timing_b0;
+#define DDR_DET_1		IMX_GPIO_NR(3, 11)
+#define DDR_DET_2		IMX_GPIO_NR(3, 12)
+#define DDR_DET_3		IMX_GPIO_NR(3, 13)
 
+static iomux_v3_cfg_t const ver_det_pads[] = {
+	IMX8MQ_PAD_NAND_DATA01__GPIO3_IO7 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	IMX8MQ_PAD_NAND_DATA02__GPIO3_IO8 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	IMX8MQ_PAD_NAND_DATA03__GPIO3_IO9 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	IMX8MQ_PAD_NAND_DATA04__GPIO3_IO10 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	IMX8MQ_PAD_NAND_DATA05__GPIO3_IO11 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	IMX8MQ_PAD_NAND_DATA06__GPIO3_IO12 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	IMX8MQ_PAD_NAND_DATA07__GPIO3_IO13 | MUX_PAD_CTRL(NO_PAD_CTRL),
+};
+void setup_iomux_ver_det(void)
+{
+	imx_iomux_v3_setup_multiple_pads(ver_det_pads, ARRAY_SIZE(ver_det_pads));
+
+	gpio_request(DDR_DET_1, "ddr_det_1");
+	gpio_direction_input(DDR_DET_1);
+	gpio_request(DDR_DET_2, "ddr_det_2");
+	gpio_direction_input(DDR_DET_2);
+	gpio_request(DDR_DET_3, "ddr_det_3");
+	gpio_direction_input(DDR_DET_3);
+}
+
+/***********************************************
+DDR_DET_1    DDR_DET_2   DDR_DET_3
+   0            0            1       4G LPDDR4
+   1            1            1       3G LPDDR4
+   1            1            0       2G LPDDR4
+   1            0            1       1G LPDDR4
+************************************************/
 void spl_dram_init(void)
 {
-	/* ddr init */
-	if ((get_cpu_rev() & 0xfff) == CHIP_REV_2_1)
-		ddr_init(&dram_timing);
+	setup_iomux_ver_det();
+
+	/*************************************************
+	ToDo: It's a dirty workaround to store the
+	information of DDR size into start address of TCM.
+	U-boot would extract this information in dram_init().
+	**************************************************/
+	
+	if (!gpio_get_value(DDR_DET_1) && !gpio_get_value(DDR_DET_2) && gpio_get_value(DDR_DET_3)) {
+		puts("dram_init: LPDDR4 4GB\n");
+		ddr_init(&dram_timing_4gb);
+		writel(0x4, M4_BOOTROM_BASE_ADDR);
+	}
+	else if (gpio_get_value(DDR_DET_1) && gpio_get_value(DDR_DET_2) && gpio_get_value(DDR_DET_3)) {
+		puts("dram_init: LPDDR4 3GB\n");
+		ddr_init(&dram_timing_3gb);
+		writel(0x3, M4_BOOTROM_BASE_ADDR);
+	}
+	else if (gpio_get_value(DDR_DET_1) && gpio_get_value(DDR_DET_2) && !gpio_get_value(DDR_DET_3)) {
+		puts("dram_init: LPDDR4 2GB\n");
+		ddr_init(&dram_timing_2gb);
+		writel(0x2, M4_BOOTROM_BASE_ADDR);
+	}
+	else if (gpio_get_value(DDR_DET_1) && !gpio_get_value(DDR_DET_2) && gpio_get_value(DDR_DET_3)) {
+		puts("dram_init: LPDDR4 1GB\n");
+		ddr_init(&dram_timing_1gb);
+		writel(0x1, M4_BOOTROM_BASE_ADDR);
+	}	
+
 	else
-		ddr_init(&dram_timing_b0);
+		puts("Unknown DDR type!!!\n");
 }
 
 #define I2C_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_HYS | PAD_CTL_PUE)
