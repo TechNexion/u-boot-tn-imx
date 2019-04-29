@@ -33,8 +33,8 @@
 			arch = "arm64";
 			os = "linux";
 			compression = "none";
-			load = <0x41480000>;
-			entry = <0x41480000>;
+			load = <0x43800000>;
+			entry = <0x43800000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -46,7 +46,7 @@
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
-			load = <0x40460000>;
+			load = <0x43000000>;
 			hash@1 {
 				algo = "crc32";
 			};
@@ -61,7 +61,7 @@
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
-			load = <0x40460000>;
+			load = <0x43000000>;
 			hash@1 {
 				algo = "crc32";
 			};
