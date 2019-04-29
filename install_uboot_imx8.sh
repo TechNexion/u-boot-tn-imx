@@ -153,7 +153,7 @@ flash_imx_boot()
 	fi
 	sudo umount ${DRIVE}?
 	sleep 0.1
-	sudo dd if=${TWD}/${MKIMAGE_DIR}/${SOC_DIR}/${IMX_BOOT} of=${DRIVE} bs=1k seek=33 oflag=dsync && \
+	sudo dd if=${TWD}/${MKIMAGE_DIR}/${SOC_DIR}/${IMX_BOOT} of=${DRIVE} bs=1k seek=33 oflag=dsync status=progress && \
 	printf "Flash flash.bin... \n" || printf "Fails to flash flash.bin... \n"
 }
 
