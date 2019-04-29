@@ -183,15 +183,15 @@
 			"booti; " \
 		"fi;\0" \
 	"fitboard=pi_hdmi\0" \
-	"fit_addr=0x44000000\0" \
+	"fit_addr=0x45800000\0" \
 	"fit_high=0xffffffff\0" \
 	"fitargs=setenv bootargs ${jh_clk} console=${console} root=/dev/ram0 rootwait rw " \
-		"modules-load=g_acm_ms g_acm_ms.stall=0 g_acm_ms.removable=1 g_acm_ms.file=/dev/mmcblk${mmcdev} " \
+		"modules-load=g_acm_ms g_acm_ms.stall=0 g_acm_ms.removable=1 g_acm_ms.file=/dev/mmcblk2 " \
 		"g_acm_ms.iSerialNumber=${ethaddr} g_acm_ms.iManufacturer=TechNexion\0" \
 	"loadfit=fatload mmc ${mmcdev}:${mmcpart} ${fit_addr} tnrescue.itb\0" \
 	"fitboot=echo Booting from FIT image ...; " \
 		"run fitargs; " \
-		"bootm ${fit_addr}#config@${som}_${fitboard}\0"
+		"bootm ${fit_addr}#config@${soc_type}_${fitboard}\0"
 
 #define CONFIG_BOOTCOMMAND \
 	   "mmc dev ${mmcdev}; if mmc rescan; then " \

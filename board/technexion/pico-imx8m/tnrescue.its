@@ -33,8 +33,8 @@
 			arch = "arm64";
 			os = "linux";
 			compression = "none";
-			load = <0x41480000>;
-			entry = <0x41480000>;
+			load = <0x43800000>;
+			entry = <0x43800000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -42,11 +42,11 @@
 
 		fdt@1 {
 			description = "Pico imx8m flat device tree blob for HDMI";
-			data = /incbin/("./dtb/pico-imx8m.dtb");
+			data = /incbin/("./dtb/imx8mq-pico-pi.dtb");
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
-			load = <0x40460000>;
+			load = <0x43000000>;
 			hash@1 {
 				algo = "crc32";
 			};
@@ -57,11 +57,11 @@
 
 		fdt@2 {
 			description = "Pico imx8m flat device tree blob for MIPI DSI";
-			data = /incbin/("./dtb/pico-imx8m-dcss-ili9881c.dtb");
+			data = /incbin/("./dtb/imx8mq-pico-pi-dcss-ili9881c.dtb");
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
-			load = <0x40460000>;
+			load = <0x43000000>;
 			hash@1 {
 				algo = "crc32";
 			};
