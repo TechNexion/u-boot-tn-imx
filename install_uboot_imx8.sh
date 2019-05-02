@@ -172,8 +172,11 @@ usage()
 
     For example:
 
-    PICO-IMX8MM with PICO-PI-IMX8 baseboard:
+    * PICO-IMX8MM with PICO-PI-IMX8 baseboard:
     ./install_uboot_imx8.sh -b imx8mm-pico-pi -d /dev/sdX
+
+    * PICO-IMX8MQ with PICO-PI-IMX8 baseboard:
+    ./install_uboot_imx8.sh -b imx8mq-pico-pi -d /dev/sdX
 "
 }
 
