@@ -195,8 +195,10 @@
 	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
 	"searchbootdev=" \
 		"if test ${bootdev} = SD0; then " \
+			"setenv mmcrootdev 2; " \
 			"setenv mmcroot /dev/mmcblk2p2 rootwait rw; " \
 		"else " \
+			"setenv mmcrootdev 0; " \
 			"setenv mmcroot /dev/mmcblk0p2 rootwait rw; " \
 		"fi\0" \
 	"mmcautodetect=yes\0" \
@@ -208,8 +210,9 @@
 		"source\0" \
 	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
 	"setfdt=" \
-		"if test ${wifi_module} = qca; then " \
+		"if test -n ${wifi_module} && test ${wifi_module} = qca; then " \
 			"setenv fdtfile ${som}-${form}-${wifi_module}_${baseboard}${mcu}.dtb; " \
+			"setenv form ${form}-${wifi_module}; " \
 		"else " \
 			"setenv fdtfile ${som}-${form}_${baseboard}${mcu}.dtb;" \
 		"fi\0" \
@@ -255,7 +258,6 @@
 		"run importbootenv; " \
 		"run setfdt; " \
 		"run netargs; " \
-		"echo ${bootargs}; " \
 		"${get_cmd} ${loadaddr} ${image}; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
 			"if ${get_cmd} ${fdt_addr} ${fdtfile}; then " \
@@ -270,12 +272,15 @@
 		"else " \
 			"bootz; " \
 		"fi;\0" \
-	"loadfit=fatload mmc ${mmcdev}:${mmcpart} 0x87880000 tnrescue.itb\0" \
-	"fit_args=setenv bootargs console=${console},${baudrate} root=/dev/ram0 rootwait rw " \
-		"modules-load=g_acm_ms g_acm_ms.stall=0 g_acm_ms.removable=1 g_acm_ms.file=/dev/mmcblk${mmcdev} " \
+	"fit_addr=0x87880000\0" \
+	"fit_high=0xffffffff\0" \
+	"loadfit=fatload mmc ${mmcdev}:${mmcpart} ${fit_addr} tnrescue.itb\0" \
+	"fitargs=setenv bootargs console=${console},${baudrate} root=/dev/ram0 rootwait rw " \
+		"modules-load=g_acm_ms g_acm_ms.stall=0 g_acm_ms.removable=1 g_acm_ms.file=/dev/mmcblk${mmcrootdev} " \
 		"g_acm_ms.iSerialNumber=${ethaddr} g_acm_ms.iManufacturer=TechNexion\0" \
-	"fitboot=run fit_args; echo ${bootargs}; bootm 87880000#config@${som}-${form}_${baseboard};\0"
-
+	"fitboot=echo Booting from FIT image...; " \
+		"run searchbootdev; run setfdt; run fitargs; " \
+		"bootm ${fit_addr}#config@${som}-${form}_${baseboard};\0"
 
 #define CONFIG_BOOTCOMMAND \
 	   "mmc dev ${mmcdev}; if mmc rescan; then " \
