@@ -46,7 +46,7 @@
 
 #define CONFIG_SYS_MEMTEST_START	0x10000000
 #define CONFIG_SYS_MEMTEST_END		(CONFIG_SYS_MEMTEST_START + 500 * SZ_1M)
-#define CONFIG_LOADADDR			0x12000000
+#define CONFIG_LOADADDR				0x12000000
 #define CONFIG_SYS_TEXT_BASE		0x17800000
 
 /* I2C Configs */
@@ -86,7 +86,7 @@
 #define CONFIG_PHY_ATHEROS
 
 /* Framebuffer */
-#ifdef CONFIG_VIDEO
+#define CONFIG_VIDEO_IPUV3
 #define CONFIG_VIDEO_BMP_RLE8
 #define CONFIG_SPLASH_SCREEN
 #define CONFIG_SPLASH_SCREEN_ALIGN
@@ -99,7 +99,6 @@
 #define CONFIG_CMD_HDMIDETECT
 #define CONFIG_IMX_HDMI
 #define CONFIG_IMX_VIDEO_SKIP
-#endif
 
 /* #define CONFIG_CMD_FUSE -- redefined */
 #ifdef CONFIG_CMD_FUSE
@@ -118,25 +117,67 @@
 	"default_baseboard=pi\0" \
 	"fdtfile=undefined\0" \
 	"fdt_high=0xffffffff\0" \
+	"initrd_high=0xffffffff\0" \
 	"fdt_addr=0x18000000\0" \
-	"boot_fdt=try\0" \
-	"nfsroot=/srv/rootfs\0" \
-	"serverip=192.168.0.254\0" \
 	"ip_dyn=no\0" \
 	"mmcdev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
 	"mmcpart=1\0" \
-	"mmcroot=/dev/mmcblk2p2\0" \
+	"searchbootdev=" \
+		"if test ${bootdev} = SD0; then " \
+			"setenv mmcroot /dev/mmcblk2p2 rootwait rw; " \
+		"else " \
+			"setenv mmcroot /dev/mmcblk0p2 rootwait rw; " \
+		"fi\0" \
 	"mmcargs=setenv bootargs console=${console},${baudrate} " \
 		"root=${mmcroot}; run videoargs\0" \
-	"enable_uEnv=yes\0" \
-	"enable_som_detection=yes\0" \
-	"enable_mmc_detection=yes\0" \
+	"fdtfile_autodetect=on\0" \
+	"bootdev_autodetect=on\0" \
+	"display_autodetect=on\0" \
 	"videoargs=" \
-		"setenv bootargs ${bootargs} ${displayinfo};\0" \
-	"loadimage=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
-	"setfdt=setenv fdtfile ${som}_${baseboard}.dtb\0" \
+		"if test ${display_autodetect} = off; then " \
+			"echo Applying custom display setting...;" \
+			"setenv bootargs ${bootargs} ${displayinfo} ${fbmem};" \
+		"else " \
+			"echo Detecting monitor...;" \
+			"setenv nextcon 0; " \
+			"i2c dev 1; " \
+			"if i2c probe 0x38; then " \
+				"setenv bootargs ${bootargs} " \
+					"video=mxcfb${nextcon}:dev=lcd,800x480@60," \
+						"if=RGB24; " \
+				"if test 0 -eq ${nextcon}; then " \
+					"setenv fbmem fbmem=10M; " \
+				"else " \
+					"setenv fbmem ${fbmem},10M; " \
+				"fi; " \
+				"setexpr nextcon ${nextcon} + 1; " \
+			"else " \
+				"echo '- no FT5x06 touch display';" \
+			"fi; " \
+			"if hdmidet; then " \
+				"setenv bootargs ${bootargs} " \
+					"video=mxcfb${nextcon}:dev=hdmi,1280x720M@60," \
+						"if=RGB24; " \
+				"setenv fbmem fbmem=28M; " \
+				"setexpr nextcon ${nextcon} + 1; " \
+			"else " \
+				"echo - no HDMI monitor;" \
+			"fi; " \
+			"setenv bootargs ${bootargs} ${fbmem};" \
+		"fi;\0" \
+	"loadbootscript=" \
+		"fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${script};\0" \
+	"bootscript=echo Running bootscript from mmc ...; " \
+		"source\0" \
+	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
+	"setfdt=setenv fdtfile ${som}-axon-${baseboard}.dtb\0" \
 	"loadfdt=load mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdtfile}\0" \
 	"mmcboot=echo Booting from mmc ...; " \
+		"run searchbootdev; " \
+		"run mmcargs; " \
+		"echo baseboard is ${baseboard}; " \
+		"echo ${bootargs}; " \
+		"run setfdt; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
 			"if run loadfdt; then " \
 				"bootz ${loadaddr} - ${fdt_addr}; " \
@@ -161,19 +202,18 @@
 		"env import -t -r $loadaddr $filesize\0" \
 	"netargs=setenv bootargs console=${console},${baudrate} " \
 		"root=/dev/nfs " \
-	"ip=${get_ip} nfsroot=${serverip}:${nfsroot},v3,tcp rw ${displayinfo} \0" \
-		"netboot=echo Booting from net ...; " \
-		"if test -n ${ipaddr}; then " \
-			"setenv get_cmd tftp; " \
-			"setenv get_ip ${ipaddr}; " \
-		"else " \
+		"ip=${ipaddr} nfsroot=${serverip}:${nfsroot},v3,tcp rw; run videoargs\0" \
+	"netboot=echo Booting from net ...; " \
+		"if test ${ip_dyn} = yes; then " \
 			"setenv get_cmd dhcp; " \
-			"setenv get_ip dhcp; " \
+		"else " \
+			"setenv get_cmd tftp; " \
 		"fi; " \
 		"run loadbootenv; " \
 		"run importbootenv; " \
 		"run setfdt; " \
 		"run netargs; " \
+		"echo ${bootargs}; " \
 		"${get_cmd} ${loadaddr} ${image}; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
 			"if ${get_cmd} ${fdt_addr} ${fdtfile}; then " \
@@ -187,18 +227,37 @@
 			"fi; " \
 		"else " \
 			"bootz; " \
-		"fi;\0"
+		"fi;\0" \
+	"fitargs=setenv bootargs console=${console},${baudrate} root=/dev/ram0 rootwait rw " \
+		"modules-load=g_acm_ms g_acm_ms.stall=0 g_acm_ms.removable=1 g_acm_ms.file=/dev/mmcblk${mmcdev} " \
+		"g_acm_ms.iSerialNumber=${ethaddr} g_acm_ms.iManufacturer=TechNexion; run videoargs\0" \
+	"loadfit=fatload mmc ${mmcdev} 0x17880000 tnrescue.itb\0" \
+	"fitboot=echo Booting from FIT image...; " \
+		"run fitargs; echo ${bootargs}; " \
+		"bootm 17880000#config@${som}-${form}_${baseboard};\0"
 
 #define CONFIG_BOOTCOMMAND \
-	   "mmc dev ${mmcdev}; if mmc rescan; then " \
-		   "if test -n $uenvcmd; then " \
-			   "echo Running uenvcmd ...;" \
-			   "run uenvcmd;" \
-		   "fi;" \
-		   "if run loadimage; then " \
-			   "run mmcboot; " \
-		   "fi; " \
-	   "fi"
+	"mmc dev ${mmcdev}; if mmc rescan; then " \
+		"if run loadbootenv; then " \
+			"echo Loaded environment from ${bootenv};" \
+			"run importbootenv;" \
+		"fi;" \
+		"if test -n $uenvcmd; then " \
+			"echo Running uenvcmd ...;" \
+			"run uenvcmd;" \
+		"fi;" \
+		"if run loadbootscript; then " \
+			"run bootscript; " \
+		"fi; " \
+		"if run loadfit; then " \
+			"run fitboot; " \
+		"fi; " \
+		"if run loadimage; then " \
+			"run mmcboot; " \
+		"else " \
+			"echo WARN: Cannot load kernel from boot media; " \
+		"fi; " \
+	"else run netboot; fi"
 
 /* Miscellaneous configurable options */
 /* #define CONFIG_SYS_LONGHELP  redefined */

@@ -262,7 +262,7 @@ int board_phy_config(struct phy_device *phydev)
 	return 0;
 }
 
-#if defined(CONFIG_VIDEO_IPUV3)
+#ifdef CONFIG_VIDEO_IPUV3
 struct i2c_pads_info mx6q_i2c2_pad_info = {
 	.scl = {
 		.i2c_mode = MX6Q_PAD_KEY_COL3__I2C2_SCL
@@ -365,6 +365,12 @@ static void do_enable_hdmi(struct display_info_t const *dev)
 	imx_enable_hdmi_phy();
 }
 
+static int detect_i2c(struct display_info_t const *dev)
+{
+	return (0 == i2c_set_bus_num(dev->bus)) &&
+			(0 == i2c_probe(dev->addr));
+}
+
 static void enable_lvds(struct display_info_t const *dev)
 {
 	struct iomuxc *iomux = (struct iomuxc *)
@@ -435,7 +441,7 @@ struct display_info_t const displays[] = {{
 	.bus	= -1,
 	.addr	= 0,
 	.pixfmt	= IPU_PIX_FMT_RGB24,
-	.detect	= NULL,
+	.detect	= detect_i2c,
 	.enable	= enable_ft5x06_wvga,
 	.mode	= {
 		.name           = "FT5x06-WVGA",
@@ -583,11 +589,13 @@ static const struct boot_mode board_boot_modes[] = {
 };
 #endif
 
+/*
 int board_mmc_get_env_dev(int devno)
 {
 	return devno;
 }
-
+*/
+/*
 static int check_mmc_autodetect(void)
 {
 	char *autodetect_str = env_get("mmcautodetect");
@@ -598,9 +606,10 @@ static int check_mmc_autodetect(void)
 	}
 
 	return 0;
-}
+} */
 
 /* This should be defined for each board */
+/*
 __weak int mmc_map_to_kernel_blk(int dev_no)
 {
 	return dev_no;
@@ -617,7 +626,7 @@ void board_late_mmc_env_init(void)
 
 	env_set_ulong ("mmcdev", dev_no);
 
-	/* Set mmcblk env */
+	/* Set mmcblk env */ /*
 	sprintf(mmcblk, "/dev/mmcblk%dp2 rootwait rw",
 		mmc_map_to_kernel_blk(dev_no));
 	env_set ("mmcroot", mmcblk);
@@ -625,9 +634,12 @@ void board_late_mmc_env_init(void)
 	sprintf(cmd, "mmc dev %d", dev_no);
 	run_command(cmd, 0);
 }
+*/
 
 int board_late_init(void)
 {
+	char *s;
+
 	/* reset wifi chip */
 	SETUP_IOMUX_PADS(wifi_pads);
 	gpio_direction_output(WL_REG_ON, 0);
@@ -640,41 +652,44 @@ int board_late_init(void)
 	mdelay(10);
 	gpio_set_value(BT_NRST, 1);
 
-#ifdef CONFIG_CMD_BMODE
-	add_board_boot_modes(board_boot_modes);
+#ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
+	env_set("som", get_som_type());
 #endif
 
-#ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
-	char *autodetect_str;
-
-	if ((autodetect_str = env_get ("enable_som_detection")) != NULL) {
-		if (strcmp(autodetect_str, "yes") == 0) {
-			if (is_mx6dq())
-				env_set("som", "imx6q-axon");
+	if ((s = env_get ("fdtfile_autodetect")) != NULL) {
+		if (strncmp (s, "off", 3) != 0) {
+			if (is_mx6dqp())
+				env_set("som", "imx6qp");
+			else if (is_mx6dq())
+				env_set("som", "imx6q");
 			else
-				env_set("som", "imx6dl-axon");
+				env_set("som", get_som_type());
 		}
 	}
 
-	if ((autodetect_str = env_get ("enable_mmc_detection")) != NULL) {
-		if (strcmp(autodetect_str, "yes") == 0) {
+	if ((s = env_get ("bootdev_autodetect")) != NULL) {
+		if (strncmp (s, "off", 3) != 0) {
 			switch (get_boot_device()) {
-				case SD3_BOOT:
-					env_set("mmcroot", "/dev/mmcblk2p2");
-					break;
-				case SD1_BOOT:
-					env_set("mmcroot", "/dev/mmcblk0p2");
-					break;
-				default:
-					printf("Wrong boot device!");
+			case SD3_BOOT:
+				env_set("bootdev", "SD0");
+				break;
+			case SD1_BOOT:
+				env_set("bootdev", "SD1");
+				break;
+			default:
+				printf("Wrong boot device!");
 			}
 		}
 	}
-#endif
 
+#ifdef CONFIG_CMD_BMODE
+	add_board_boot_modes(board_boot_modes);
+#endif
+/*
 #ifdef CONFIG_ENV_IS_IN_MMC
 	board_late_mmc_env_init();
 #endif
+*/
 
 	return 0;
 }
