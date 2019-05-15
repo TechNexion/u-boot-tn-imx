@@ -30,7 +30,7 @@
 		compatible = "gpio-reset";
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_bt_ctrl>;
-		reset-gpios = <&gpio3 7 GPIO_ACTIVE_LOW>;
+		reset-gpios = <&gpio1 3 GPIO_ACTIVE_LOW>;
 		reset-delay-us = <2000>;
 		reset-post-delay-ms = <40>;
 		#reset-cells = <0>;
@@ -59,7 +59,7 @@
 			regulator-name = "WL_REG_ON";
 			regulator-min-microvolt = <3300000>;
 			regulator-max-microvolt = <3300000>;
-			gpio = <&gpio3 6 GPIO_ACTIVE_HIGH>;
+			gpio = <&gpio1 0 GPIO_ACTIVE_HIGH>;
 			off-on-delay = <20000>;
 			startup-delay-us = <100>;
 			enable-active-high;
@@ -147,7 +147,7 @@
 
 		pinctrl_pmic: pmicirq {
 			fsl,pins = <
-				MX8MM_IOMUXC_GPIO1_IO03_GPIO1_IO3	0x41
+				MX8MM_IOMUXC_NAND_DATA01_GPIO3_IO7	0x41
 			>;
 		};
 
@@ -178,14 +178,14 @@
 
 		pinctrl_wifi_ctrl: wifi_ctrlgrp {
 			fsl,pins = <
-				MX8MM_IOMUXC_NAND_DATA00_GPIO3_IO6	0x41 /* WL_REG_ON */
+				MX8MM_IOMUXC_GPIO1_IO00_GPIO1_IO0	0x41 /* WL_REG_ON */
 				MX8MM_IOMUXC_NAND_ALE_GPIO3_IO0		0x41 /* WL_WAKE_HOST */
 			>;
 		};
 
 		pinctrl_bt_ctrl: bt_ctrlgrp {
 			fsl,pins = <
-				MX8MM_IOMUXC_NAND_DATA01_GPIO3_IO7	0x41 /* BT_REG_ON */
+				MX8MM_IOMUXC_GPIO1_IO03_GPIO1_IO3	0x41 /* BT_REG_ON */
 				MX8MM_IOMUXC_NAND_READY_B_GPIO3_IO16	0x41 /* BT_WAKE_HOST */
 			>;
 		};
@@ -362,9 +362,9 @@
 	pmic: bd71837@4b {
 		reg = <0x4b>;
 		compatible = "rohm,bd71840", "rohm,bd71837";
-		/* PMIC BD71837 PMIC_nINT GPIO1_IO3 */
+		/* PMIC BD71837 PMIC_nINT GPIO3_IO7 */
 		pinctrl-0 = <&pinctrl_pmic>;
-		gpio_intr = <&gpio1 3 GPIO_ACTIVE_LOW>;
+		gpio_intr = <&gpio3 7 GPIO_ACTIVE_LOW>;
 
 		gpo {
 			rohm,drv = <0x0C>;	/* 0b0000_1100 all gpos with cmos output mode */
