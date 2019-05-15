@@ -111,6 +111,7 @@ struct i2c_pads_info i2c_pad_info1 = {
 };
 
 #define USDHC2_CD_GPIO	IMX_GPIO_NR(2, 12)
+#define USDHC2_PWR_GPIO IMX_GPIO_NR(2, 19)
 
 #define USDHC_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_HYS | PAD_CTL_PUE |PAD_CTL_PE | \
 			 PAD_CTL_FSEL2)
@@ -136,6 +137,7 @@ static iomux_v3_cfg_t const usdhc2_pads[] = {
 	IMX8MM_PAD_SD2_DATA1_USDHC2_DATA1 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	IMX8MM_PAD_SD2_DATA2_USDHC2_DATA2 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	IMX8MM_PAD_SD2_DATA3_USDHC2_DATA3 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	IMX8MM_PAD_SD2_RESET_B_GPIO2_IO19 | MUX_PAD_CTRL(USDHC_GPIO_PAD_CTRL),
 };
 
 static iomux_v3_cfg_t const usdhc2_cd_pad =
@@ -161,6 +163,10 @@ int board_mmc_init(bd_t *bis)
 			usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC2_CLK);
 			imx_iomux_v3_setup_multiple_pads(
 				usdhc2_pads, ARRAY_SIZE(usdhc2_pads));
+			gpio_request(USDHC2_PWR_GPIO, "usdhc2_reset");
+			gpio_direction_output(USDHC2_PWR_GPIO, 0);
+			udelay(500);
+			gpio_direction_output(USDHC2_PWR_GPIO, 1);
 			break;
 		case 1:
 			usdhc_cfg[1].sdhc_clk = mxc_get_clock(MXC_ESDHC3_CLK);
