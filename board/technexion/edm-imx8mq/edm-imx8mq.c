@@ -128,9 +128,9 @@ static iomux_v3_cfg_t const fec1_rst_pads[] = {
 	IMX8MQ_PAD_GPIO1_IO09__GPIO1_IO9 | MUX_PAD_CTRL(NO_PAD_CTRL),
 };
 
-#define FEC_PWR_PAD IMX_GPIO_NR(1, 0)
+#define FEC_PWR_PAD IMX_GPIO_NR(1, 13)
 static iomux_v3_cfg_t const fec1_pwr_pads[] = {
-	IMX8MQ_PAD_GPIO1_IO00__GPIO1_IO0 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	IMX8MQ_PAD_GPIO1_IO13__GPIO1_IO13 | MUX_PAD_CTRL(NO_PAD_CTRL),
 };
 
 #define WL_REG_ON_PAD IMX_GPIO_NR(3, 24)
@@ -148,8 +148,8 @@ static void setup_iomux_fec(void)
 	imx_iomux_v3_setup_multiple_pads(fec1_rst_pads, ARRAY_SIZE(fec1_rst_pads));
 	imx_iomux_v3_setup_multiple_pads(fec1_pwr_pads, ARRAY_SIZE(fec1_pwr_pads));
 
-	gpio_request(IMX_GPIO_NR(1, 0), "fec1_pwr");
-	gpio_direction_output(IMX_GPIO_NR(1, 0), 1);
+	gpio_request(IMX_GPIO_NR(1, 13), "fec1_pwr");
+	gpio_direction_output(IMX_GPIO_NR(1, 13), 1);
 	udelay(500);
 
 	gpio_request(IMX_GPIO_NR(1, 9), "fec1_rst");
