@@ -175,6 +175,10 @@ usage()
     * PICO-IMX8MM with PICO-PI-IMX8 baseboard:
     ./install_uboot_imx8.sh -b imx8mm-pico-pi -d /dev/sdX
 
+    i.mx8MQ:
+    * EDM-IMX8MQ with EDM-WIZARD baseboard:
+    ./install_uboot_imx8.sh -b imx8mq-edm-wizard -d /dev/sdX
+
     * PICO-IMX8MQ with PICO-PI-IMX8 baseboard:
     ./install_uboot_imx8.sh -b imx8mq-pico-pi -d /dev/sdX
 "
