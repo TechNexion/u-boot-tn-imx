@@ -268,6 +268,24 @@ int board_usb_cleanup(int index, enum usb_init_type init)
 }
 #endif
 
+#define MIPI_RESET_PAD IMX_GPIO_NR(1, 10)
+static iomux_v3_cfg_t const mipi_reset_pads[] = {
+	IMX8MQ_PAD_GPIO1_IO10__GPIO1_IO10 | MUX_PAD_CTRL(NO_PAD_CTRL),  /* DSI RST, GPIO_P264 */
+};
+
+void reset_mipi_panel(void)
+{
+	imx_iomux_v3_setup_multiple_pads(mipi_reset_pads, ARRAY_SIZE(mipi_reset_pads));
+
+	gpio_request(MIPI_RESET_PAD, "mipi_reset");
+	gpio_direction_output(MIPI_RESET_PAD, 1);
+	udelay(500);
+	gpio_direction_output(MIPI_RESET_PAD, 0);
+	udelay(500);
+	gpio_direction_output(MIPI_RESET_PAD, 1);
+
+}
+
 void setup_wifi(void)
 {
 	imx_iomux_v3_setup_multiple_pads(wl_reg_on_pads, ARRAY_SIZE(wl_reg_on_pads));
@@ -285,6 +303,8 @@ void setup_wifi(void)
 int board_init(void)
 {
 	setup_wifi();
+
+	reset_mipi_panel();
 
 #ifdef CONFIG_FEC_MXC
 	setup_fec();
