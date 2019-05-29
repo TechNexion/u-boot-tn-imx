@@ -55,7 +55,6 @@ DECLARE_GLOBAL_DATA_PTR;
 	PAD_CTL_ODE | PAD_CTL_SRE_FAST)
 
 #define USDHC1_CD_GPIO		IMX_GPIO_NR(3, 9)
-#define USDHC3_CD_GPIO		IMX_GPIO_NR(1, 2)
 #define ETH_PHY_RESET		IMX_GPIO_NR(1, 26)
 #define WL_REG_ON		IMX_GPIO_NR(1, 7)
 #define BT_NRST			IMX_GPIO_NR(7, 12)
@@ -172,7 +171,7 @@ int board_mmc_getcd(struct mmc *mmc)
 		ret = !gpio_get_value(USDHC1_CD_GPIO);
 		break;
 	case USDHC3_BASE_ADDR:
-		ret = !gpio_get_value(USDHC3_CD_GPIO);
+		ret = true;
 		break;
 	}
 
@@ -193,7 +192,6 @@ int board_mmc_init(bd_t *bis)
 	 */
 
 	SETUP_IOMUX_PADS(usdhc3_pads);
-	gpio_direction_input(USDHC3_CD_GPIO);
 
 	SETUP_IOMUX_PADS(usdhc1_pads);
 	gpio_direction_input(USDHC1_CD_GPIO);
@@ -265,37 +263,31 @@ int board_phy_config(struct phy_device *phydev)
 #ifdef CONFIG_VIDEO_IPUV3
 struct i2c_pads_info mx6q_i2c2_pad_info = {
 	.scl = {
-		.i2c_mode = MX6Q_PAD_KEY_COL3__I2C2_SCL
-			| MUX_PAD_CTRL(I2C_PAD_CTRL),
-		.gpio_mode = MX6Q_PAD_KEY_COL3__GPIO4_IO12
-			| MUX_PAD_CTRL(I2C_PAD_CTRL),
+		.i2c_mode = MX6Q_PAD_KEY_COL3__I2C2_SCL | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		.gpio_mode = MX6Q_PAD_KEY_COL3__GPIO4_IO12 | MUX_PAD_CTRL(I2C_PAD_CTRL),
 		.gp = IMX_GPIO_NR(4, 12)
 	},
 	.sda = {
-		.i2c_mode = MX6Q_PAD_KEY_ROW3__I2C2_SDA
-			| MUX_PAD_CTRL(I2C_PAD_CTRL),
-		.gpio_mode = MX6Q_PAD_KEY_ROW3__GPIO4_IO13
-			| MUX_PAD_CTRL(I2C_PAD_CTRL),
-		.gp = IMX_GPIO_NR(4, 13)
+		.i2c_mode = MX6Q_PAD_EIM_D16__I2C2_SDA | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		.gpio_mode = MX6Q_PAD_EIM_D16__GPIO3_IO16 | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		.gp = IMX_GPIO_NR(3, 16)
 	}
 };
 
 struct i2c_pads_info mx6dl_i2c2_pad_info = {
 	.scl = {
-		.i2c_mode = MX6DL_PAD_KEY_COL3__I2C2_SCL
-			| MUX_PAD_CTRL(I2C_PAD_CTRL),
-		.gpio_mode = MX6DL_PAD_KEY_COL3__GPIO4_IO12
-			| MUX_PAD_CTRL(I2C_PAD_CTRL),
+		.i2c_mode = MX6DL_PAD_KEY_COL3__I2C2_SCL | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		.gpio_mode = MX6DL_PAD_KEY_COL3__GPIO4_IO12 | MUX_PAD_CTRL(I2C_PAD_CTRL),
 		.gp = IMX_GPIO_NR(4, 12)
 	},
 	.sda = {
-		.i2c_mode = MX6DL_PAD_KEY_ROW3__I2C2_SDA
-			| MUX_PAD_CTRL(I2C_PAD_CTRL),
-		.gpio_mode = MX6DL_PAD_KEY_ROW3__GPIO4_IO13
-			| MUX_PAD_CTRL(I2C_PAD_CTRL),
-		.gp = IMX_GPIO_NR(4, 13)
+		.i2c_mode = MX6DL_PAD_EIM_D16__I2C2_SDA | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		.gpio_mode = MX6DL_PAD_EIM_D16__GPIO3_IO16 | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		.gp = IMX_GPIO_NR(3, 16)
 	}
 };
+
+#endif /* CONFIG_VIDEO_IPUV3 */
 
 struct i2c_pads_info mx6q_i2c3_pad_info = {
 	.scl = {
@@ -322,7 +314,6 @@ struct i2c_pads_info mx6dl_i2c3_pad_info = {
 		.gp = IMX_GPIO_NR(3, 18)
 	}
 };
-#endif /* CONFIG_VIDEO_IPUV3 */
 
 #ifndef CONFIG_SPL_BUILD
 #ifdef CONFIG_VIDEO_IPUV3
