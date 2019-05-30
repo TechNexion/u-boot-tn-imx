@@ -471,6 +471,20 @@
 	status = "okay";
 };
 
+/* baseboard - SD card */
+&usdhc2 {
+       pinctrl-names = "default", "state_100mhz", "state_200mhz";
+       pinctrl-0 = <&pinctrl_usdhc2>;
+       pinctrl-1 = <&pinctrl_usdhc2_100mhz>;
+       pinctrl-2 = <&pinctrl_usdhc2_200mhz>;
+       bus-width = <4>;
+       no-1-8-v;
+       pm-ignore-notify;
+       keep-power-in-suspend;
+       non-removable;
+       status = "okay";
+};
+
 &usb3_phy0 {
 	status = "okay";
 };
