@@ -216,11 +216,34 @@ void setup_wifi(void)
 	gpio_set_value(BT_ON_PAD, 0);
 }
 
+#ifndef CONFIG_VIDEO_MXS
+#define DSI1_RST_PAD IMX_GPIO_NR(1, 11)
+#define DSI1_VDDEN_PAD IMX_GPIO_NR(1, 12)
+static iomux_v3_cfg_t const dsi1_ctrl_pads[] = {
+	IMX8MM_PAD_GPIO1_IO11_GPIO1_IO11 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	IMX8MM_PAD_GPIO1_IO12_GPIO1_IO12 | MUX_PAD_CTRL(NO_PAD_CTRL),
+};
+
+void setup_mipi_dsi(void)
+{
+	imx_iomux_v3_setup_multiple_pads(dsi1_ctrl_pads, ARRAY_SIZE(dsi1_ctrl_pads));
+
+	gpio_request(DSI1_RST_PAD, "dsi1_rst");
+	gpio_direction_output(DSI1_RST_PAD, 0);
+
+	gpio_request(DSI1_VDDEN_PAD, "dsi1_vdden");
+	gpio_direction_output(DSI1_VDDEN_PAD, 0);
+}
+#endif // #ifndef CONFIG_VIDEO_MXS
+
 int board_init(void)
 {
 	setup_wifi();
 #ifdef CONFIG_FEC_MXC
 	setup_fec();
+#endif
+#ifndef CONFIG_VIDEO_MXS
+	setup_mipi_dsi();
 #endif
 
 	return 0;
@@ -332,10 +355,10 @@ static const struct sec_mipi_dsim_plat_data imx8mm_mipi_dsim_plat_data = {
 
 void do_enable_mipi_led(struct display_info_t const *dev)
 {
-	gpio_request(IMX_GPIO_NR(1, 8), "DSI EN");
-	gpio_direction_output(IMX_GPIO_NR(1, 8), 0);
+	gpio_request(IMX_GPIO_NR(1, 12), "DSI VDDEN");
+	gpio_direction_output(IMX_GPIO_NR(1, 12), 0);
 	mdelay(100);
-	gpio_direction_output(IMX_GPIO_NR(1, 8), 1);
+	gpio_direction_output(IMX_GPIO_NR(1, 12), 1);
 
 	/* enable the dispmix & mipi phy power domain */
 	call_imx_sip(FSL_SIP_GPC, FSL_SIP_CONFIG_GPC_PM_DOMAIN, DISPMIX, true, 0);
@@ -355,8 +378,8 @@ void do_enable_mipi_led(struct display_info_t const *dev)
 
 void board_quiesce_devices(void)
 {
-	gpio_request(IMX_GPIO_NR(1, 8), "DSI EN");
-	gpio_direction_output(IMX_GPIO_NR(1, 8), 0);
+	gpio_request(IMX_GPIO_NR(1, 12), "DSI VDDEN");
+	gpio_direction_output(IMX_GPIO_NR(1, 12), 0);
 }
 
 struct display_info_t const displays[] = {{
