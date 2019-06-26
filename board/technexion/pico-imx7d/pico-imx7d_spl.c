@@ -253,6 +253,7 @@ static void spl_dram_init(void)
 	gpio_direction_input(DDR_TYPE_DET_2);
 
 	if (gpio_get_value(DDR_TYPE_DET_1)) {
+		ddr3_512mb_init();
 	} else if (gpio_get_value(DDR_TYPE_DET_2)) {
 		ddr3_2gb_init();
 	} else {
