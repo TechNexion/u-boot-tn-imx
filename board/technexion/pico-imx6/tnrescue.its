@@ -16,8 +16,8 @@
 			arch = "arm";
 			os = "linux";
 			compression = "none";
-			load = <0x19F00000>;
-			entry = <0x19F00000>;
+			load = <0x12000000>;
+			entry = <0x12000000>;
 			hash@2 {
 				algo = "sha1";
 			};
@@ -30,8 +30,8 @@
 			arch = "arm";
 			os = "linux";
 			compression = "none";
-			load = <0x1B000000>;
-			entry = <0x1B000000>;
+			load = <0x18100000>;
+			entry = <0x18100000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -43,7 +43,7 @@
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x19E00000>;
+			load = <0x18000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -54,7 +54,7 @@
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x19E00000>;
+			load = <0x18000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -65,7 +65,7 @@
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x19E00000>;
+			load = <0x18000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -76,7 +76,7 @@
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x19E00000>;
+			load = <0x18000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -88,7 +88,7 @@
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x19E00000>;
+			load = <0x18000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -99,7 +99,7 @@
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x19E00000>;
+			load = <0x18000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -110,7 +110,7 @@
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x19E00000>;
+			load = <0x18000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -121,7 +121,7 @@
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x19E00000>;
+			load = <0x18000000>;
 			hash@1 {
 				algo = "sha1";
 			};

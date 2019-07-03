@@ -235,7 +235,7 @@
 		"else " \
 			"bootz; " \
 		"fi;\0" \
-	"fit_addr=0x17880000\0" \
+	"fit_addr=0x21100000\0" \
 	"fit_high=0xffffffff\0" \
 	"fitargs=setenv bootargs console=${console},${baudrate} root=/dev/ram0 rootwait rw " \
 		"modules-load=g_acm_ms g_acm_ms.stall=0 g_acm_ms.removable=1 g_acm_ms.file=${mmcrootdev} " \
