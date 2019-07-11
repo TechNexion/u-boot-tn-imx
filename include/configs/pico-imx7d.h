@@ -195,10 +195,10 @@
 	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
 	"searchbootdev=" \
 		"if test ${bootdev} = SD0; then " \
-			"setenv mmcrootdev 2; " \
+			"setenv mmcrootdev /dev/mmcblk2; " \
 			"setenv mmcroot /dev/mmcblk2p2 rootwait rw; " \
 		"else " \
-			"setenv mmcrootdev 0; " \
+			"setenv mmcrootdev /dev/mmcblk0; " \
 			"setenv mmcroot /dev/mmcblk0p2 rootwait rw; " \
 		"fi\0" \
 	"mmcautodetect=yes\0" \
@@ -276,7 +276,7 @@
 	"fit_high=0xffffffff\0" \
 	"loadfit=fatload mmc ${mmcdev}:${mmcpart} ${fit_addr} tnrescue.itb\0" \
 	"fitargs=setenv bootargs console=${console},${baudrate} root=/dev/ram0 rootwait rw " \
-		"modules-load=g_acm_ms g_acm_ms.stall=0 g_acm_ms.removable=1 g_acm_ms.file=/dev/mmcblk${mmcrootdev} " \
+		"modules-load=g_acm_ms g_acm_ms.stall=0 g_acm_ms.removable=1 g_acm_ms.file=${mmcrootdev} " \
 		"g_acm_ms.iSerialNumber=${ethaddr} g_acm_ms.iManufacturer=TechNexion\0" \
 	"fitboot=echo Booting from FIT image...; " \
 		"run searchbootdev; run setfdt; run fitargs; " \
