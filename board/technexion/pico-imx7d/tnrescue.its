@@ -10,18 +10,15 @@
 
 	images {
 		kernel@1 {
-			description = "TechNexion IMX6/IMX7/IMX8 Linux Kernel";
+			description = "TechNexion IMX6/IMX7 Linux Kernel";
 			data = /incbin/("./zImage");
 			type = "kernel";
 			arch = "arm";
 			os = "linux";
 			compression = "none";
-			load = <0x89F00000>;
-			entry = <0x89F00000>;
+			load = <0x80800000>;
+			entry = <0x80800000>;
 			hash@1 {
-				algo = "md5";
-			};
-			hash@2 {
 				algo = "sha1";
 			};
 		};
@@ -32,8 +29,8 @@
 			arch = "arm";
 			os = "linux";
 			compression = "none";
-			load = <0x8B000000>;
-			entry = <0x8B000000>;
+			load = <0x83800000>;
+			entry = <0x83800000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -44,11 +41,8 @@
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x89E00000>;
+			load = <0x83000000>;
 			hash@1 {
-				algo = "crc32";
-			};
-			hash@2 {
 				algo = "sha1";
 			};
 		};
@@ -58,11 +52,8 @@
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x89E00000>;
+			load = <0x83000000>;
 			hash@1 {
-				algo = "crc32";
-			};
-			hash@2 {
 				algo = "sha1";
 			};
 		};
@@ -72,11 +63,8 @@
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x89E00000>;
+			load = <0x83000000>;
 			hash@1 {
-				algo = "crc32";
-			};
-			hash@2 {
 				algo = "sha1";
 			};
 		};
@@ -86,39 +74,74 @@
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x89E00000>;
+			load = <0x83000000>;
 			hash@1 {
-				algo = "crc32";
+				algo = "sha1";
 			};
-			hash@2 {
+		};
+		fdt@5 {
+			description = "imx7d-pico_pi-m4";
+			data = /incbin/("./dtb/imx7d-pico_pi-m4.dtb");
+			type = "flat_dt";
+			arch = "arm";
+			compression = "none";
+			load = <0x83000000>;
+			hash@1 {
+				algo = "sha1";
+			};
+		};
+		fdt@6 {
+			description = "imx7d-pico-qca_dwarf";
+			data = /incbin/("./dtb/imx7d-pico-qca_dwarf.dtb");
+			type = "flat_dt";
+			arch = "arm";
+			compression = "none";
+			load = <0x83000000>;
+			hash@1 {
+				algo = "sha1";
+			};
+		};
+		fdt@7 {
+			description = "imx7d-pico-qca_hobbit";
+			data = /incbin/("./dtb/imx7d-pico-qca_hobbit.dtb");
+			type = "flat_dt";
+			arch = "arm";
+			compression = "none";
+			load = <0x83000000>;
+			hash@1 {
+				algo = "sha1";
+			};
+		};
+		fdt@8 {
+			description = "imx7d-pico-qca_nymph";
+			data = /incbin/("./dtb/imx7d-pico-qca_nymph.dtb");
+			type = "flat_dt";
+			arch = "arm";
+			compression = "none";
+			load = <0x83000000>;
+			hash@1 {
 				algo = "sha1";
 			};
 		};
 		fdt@9 {
-			description = "imx7d-tep1";
-			data = /incbin/("./dtb/imx7d-tep1.dtb");
+			description = "imx7d-pico-qca_pi";
+			data = /incbin/("./dtb/imx7d-pico-qca_pi.dtb");
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x89E00000>;
+			load = <0x83000000>;
 			hash@1 {
-				algo = "crc32";
-			};
-			hash@2 {
 				algo = "sha1";
 			};
 		};
 		fdt@10 {
-			description = "imx7d-edm1-qca_gnome";
-			data = /incbin/("./dtb/imx7d-edm1-qca_gnome.dtb");
+			description = "imx7d-pico-qca_pi-m4";
+			data = /incbin/("./dtb/imx7d-pico-qca_pi-m4.dtb");
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x89E00000>;
+			load = <0x83000000>;
 			hash@1 {
-				algo = "crc32";
-			};
-			hash@2 {
 				algo = "sha1";
 			};
 		};
@@ -151,14 +174,38 @@
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@4";
 		};
-		config@imx7d-tep1_tep1 {
-			description = "TEP1-IMX7D";
+		config@imx7d-pico_pi-m4 {
+			description = "PICO-PI-M4-IMX7D";
+			kernel = "kernel@1";
+			ramdisk = "ramdisk@1";
+			fdt = "fdt@5";
+		};
+		config@imx7d-pico-qca_dwarf {
+			description = "PICO-QCA-DWARF-IMX7D";
+			kernel = "kernel@1";
+			ramdisk = "ramdisk@1";
+			fdt = "fdt@6";
+		};
+		config@imx7d-pico-qca_hobbit {
+			description = "PICO-QCA-HOBBIT-IMX7D";
+			kernel = "kernel@1";
+			ramdisk = "ramdisk@1";
+			fdt = "fdt@7";
+		};
+		config@imx7d-pico-qca_nymph {
+			description = "PICO-QCA-NYMPH-IMX7D";
+			kernel = "kernel@1";
+			ramdisk = "ramdisk@1";
+			fdt = "fdt@8";
+		};
+		config@imx7d-pico-qca_pi {
+			description = "PICO-QCA-PI-IMX7D";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@9";
 		};
-		config@imx7d-edm1-qca_gnome {
-			description = "EDM1-QCA-GNOME-IMX7D";
+		config@imx7d-pico-qca_pi-m4 {
+			description = "PICO-QCA-PI-M4-IMX7D";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@10";
