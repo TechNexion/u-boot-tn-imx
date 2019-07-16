@@ -26,6 +26,7 @@
 #include <spl.h>
 #include <usb.h>
 #include <dwc3-uboot.h>
+#include <dm/uclass.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -340,12 +341,34 @@ void board_late_mmc_env_init(void)
 	run_command(cmd, 0);
 }
 
+#define FT5336_TOUCH_I2C_BUS 2
+#define FT5336_TOUCH_I2C_ADDR 0x38
 int board_late_init(void)
 {
+	struct udevice *bus;
+	struct udevice *i2c_dev = NULL;
+	int ret;
+	char *fdt_file;
+
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	env_set("board_name", "PICO-IMX8MQ");
 	env_set("board_rev", "iMX8MQ");
 #endif
+
+	fdt_file = env_get("fdt_file");
+	if (fdt_file && !strcmp(fdt_file, "undefined")) {
+		ret = uclass_get_device_by_seq(UCLASS_I2C, FT5336_TOUCH_I2C_BUS, &bus);
+		if (ret) {
+			printf("%s: Can't find bus\n", __func__);
+			return -EINVAL;
+		}
+
+		ret = dm_i2c_probe(bus, FT5336_TOUCH_I2C_ADDR, 0, &i2c_dev);
+		if (ret)
+			env_set("fdt_file", "imx8mq-pico-pi.dtb");
+		else
+			env_set("fdt_file", "imx8mq-pico-pi-dcss-ili9881c.dtb");
+	}
 
 #ifdef CONFIG_ENV_IS_IN_MMC
 	board_late_mmc_env_init();
