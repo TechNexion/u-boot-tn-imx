@@ -296,4 +296,10 @@
 #define CONFIG_ENV_OFFSET		(6 * 64 * 1024)
 #define CONFIG_SYS_MMC_ENV_DEV		0
 
+#if defined(CONFIG_ANDROID_SUPPORT)
+#include "pico-imx6_android_common.h"
+#else
+#define CONFIG_USBD_HS
+#endif /* CONFIG_ANDROID_SUPPORT */
+
 #endif  /* __PICO_IMX6_CONFIG_H */
