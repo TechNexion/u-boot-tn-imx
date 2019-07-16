@@ -686,3 +686,17 @@ int board_usb_phy_mode(int port)
 {
        return USB_INIT_DEVICE;
 }
+
+#ifdef CONFIG_FSL_FASTBOOT
+#ifdef CONFIG_ANDROID_RECOVERY
+
+int is_recovery_key_pressing(void)
+{
+	int button_pressed = 0;
+	/* TODO recovery mode trigger function */
+
+	return  button_pressed;
+}
+
+#endif /*CONFIG_ANDROID_RECOVERY*/
+#endif /*CONFIG_FSL_FASTBOOT*/
