@@ -19,6 +19,8 @@
 #define CONFIG_CSF_SIZE			0x2000 /* 8K region */
 #endif
 
+#define CONFIG_SYS_BOOTM_LEN       0xA000000
+
 #define CONFIG_SPL_MAX_SIZE		(148 * 1024)
 #define CONFIG_SYS_MONITOR_LEN		(512 * 1024)
 #define CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_USE_SECTOR
@@ -198,20 +200,33 @@
 			"fi; " \
 		"else " \
 			"booti; " \
-		"fi;\0"
+		"fi;\0" \
+	"fitboard=flex_mipi\0" \
+	"fit_addr=0x45800000\0" \
+	"fit_high=0xffffffff\0" \
+	"fitargs=setenv bootargs ${jh_clk} console=${console} root=/dev/ram0 rootwait rw " \
+		"modules-load=g_acm_ms g_acm_ms.stall=0 g_acm_ms.removable=1 g_acm_ms.file=/dev/mmcblk2 " \
+		"g_acm_ms.iSerialNumber=${ethaddr} g_acm_ms.iManufacturer=TechNexion\0" \
+	"loadfit=fatload mmc ${mmcdev}:${mmcpart} ${fit_addr} tnrescue.itb\0" \
+	"fitboot=echo Booting from FIT image ...; " \
+		"run fitargs; " \
+		"bootm ${fit_addr}#config@${soc_type}-${fitboard}\0"
 
 #define CONFIG_BOOTCOMMAND \
 	   "mmc dev ${mmcdev}; if mmc rescan; then " \
 		   "if run loadbootscript; then " \
 			   "run bootscript; " \
-		   "else " \
-			   "if run loadimage; then " \
-				   "run m4boot; " \
-				   "run mmcboot; " \
-			   "else run netboot; " \
-			   "fi; " \
 		   "fi; " \
-	   "else booti ${loadaddr} - ${fdt_addr}; fi"
+		   "if run loadfit; then " \
+			   "run fitboot; " \
+		   "fi; " \
+		   "if run loadimage; then " \
+                           "run m4boot; " \
+			   "run mmcboot; " \
+		   "else " \
+			   "echo WARN: Cannot load kernel from boot media; " \
+		   "fi; " \
+	   "else run netboot; fi"
 
 /* Link Definitions */
 #define CONFIG_LOADADDR			0x40480000
