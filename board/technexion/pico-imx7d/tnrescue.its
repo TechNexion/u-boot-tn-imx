@@ -36,7 +36,7 @@
 			};
 		};
 		fdt@1 {
-			description = "imx7d pico dwarf";
+			description = "imx7d-pico + dwarf board";
 			data = /incbin/("./dtb/imx7d-pico-dwarf.dtb");
 			type = "flat_dt";
 			arch = "arm";
@@ -47,7 +47,7 @@
 			};
 		};
 		fdt@2 {
-			description = "imx7d pico hobbit";
+			description = "imx7d-pico + hobbit board";
 			data = /incbin/("./dtb/imx7d-pico-hobbit.dtb");
 			type = "flat_dt";
 			arch = "arm";
@@ -58,7 +58,7 @@
 			};
 		};
 		fdt@3 {
-			description = "imx7d pico nymph";
+			description = "imx7d-pico + nymph board";
 			data = /incbin/("./dtb/imx7d-pico-nymph.dtb");
 			type = "flat_dt";
 			arch = "arm";
@@ -69,52 +69,9 @@
 			};
 		};
 		fdt@4 {
-			description = "imx7d pico pi";
+
+			description = "imx7d-pico + pi board";
 			data = /incbin/("./dtb/imx7d-pico-pi.dtb");
-			type = "flat_dt";
-			arch = "arm";
-			compression = "none";
-			load = <0x83000000>;
-			hash@1 {
-				algo = "sha1";
-			};
-		};
-		fdt@6 {
-			description = "imx7d pico dwarf qca";
-			data = /incbin/("./dtb/imx7d-pico-dwarf-qca.dtb");
-			type = "flat_dt";
-			arch = "arm";
-			compression = "none";
-			load = <0x83000000>;
-			hash@1 {
-				algo = "sha1";
-			};
-		};
-		fdt@7 {
-			description = "imx7d pico hobbit qca";
-			data = /incbin/("./dtb/imx7d-pico-hobbit-qca.dtb");
-			type = "flat_dt";
-			arch = "arm";
-			compression = "none";
-			load = <0x83000000>;
-			hash@1 {
-				algo = "sha1";
-			};
-		};
-		fdt@8 {
-			description = "imx7d pico nymph qca";
-			data = /incbin/("./dtb/imx7d-pico-nymph-qca.dtb");
-			type = "flat_dt";
-			arch = "arm";
-			compression = "none";
-			load = <0x83000000>;
-			hash@1 {
-				algo = "sha1";
-			};
-		};
-		fdt@9 {
-			description = "imx7d pico pi qca";
-			data = /incbin/("./dtb/imx7d-pico-pi-qca.dtb");
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
@@ -126,53 +83,53 @@
 	};
 
 	configurations {
-		config@imx7d-pico-dwarf {
+		imx7d-pico-dwarf.dtb {
 			description = "PICO-DWARF-IMX7D";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@1";
 		};
-		config@imx7d-pico-hobbit {
+		imx7d-pico-hobbit.dtb {
 			description = "PICO-HOBBIT-IMX7D";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@2";
 		};
-		config@imx7d-pico-nymph {
+		imx7d-pico-nymph.dtb {
 			description = "PICO-NYMPH-IMX7D";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@3";
 		};
-		config@imx7d-pico-pi {
+		imx7d-pico-pi.dtb {
 			description = "PICO-PI-IMX7D";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@4";
 		};
-		config@imx7d-pico-dwarf-qca {
+		imx7d-pico-dwarf-qca.dtb {
 			description = "PICO-QCA-DWARF-IMX7D";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
-			fdt = "fdt@6";
+			fdt = "fdt@1";
 		};
-		config@imx7d-pico-hobbit-qca {
+		imx7d-pico-hobbit-qca.dtb {
 			description = "PICO-QCA-HOBBIT-IMX7D";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
-			fdt = "fdt@7";
+			fdt = "fdt@2";
 		};
-		config@imx7d-pico-nymph-qca {
+		imx7d-pico-nymph-qca.dtb {
 			description = "PICO-QCA-NYMPH-IMX7D";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
-			fdt = "fdt@8";
+			fdt = "fdt@3";
 		};
-		config@imx7d-pico-pi-qca {
+		imx7d-pico-pi-qca.dtb {
 			description = "PICO-QCA-PI-IMX7D";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
-			fdt = "fdt@9";
+			fdt = "fdt@4";
 		};
 	};
 };
