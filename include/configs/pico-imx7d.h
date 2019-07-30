@@ -451,7 +451,7 @@
 #define CONFIG_OF_SYSTEM_SETUP
 
 #if defined(CONFIG_ANDROID_SUPPORT)
-#include "mx7dsabresdandroid.h"
+#include "pico-imx7d_android.h"
 #endif
 
 /* SPL OS boot options - Falcon Mode */
@@ -475,5 +475,4 @@
 #define CONFIG_SYS_MMCSD_RAW_MODE_ARGS_SECTOR	2931712  /* CONFIG_ENV_OFFSET @ 64 * SZ_64K, CONFIG_ENV_SIZE = 0x1000 = 4K, 1st emmc partition starts at 16384 */
 #define CONFIG_SYS_MMCSD_RAW_MODE_ARGS_SECTORS	133      /* 133 * 512 = 68KB */
 #endif
-
 #endif	/* __PICO_IMX7D_CONFIG_H */
