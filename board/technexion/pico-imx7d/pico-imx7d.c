@@ -759,5 +759,19 @@ int board_ehci_hcd_init(int port)
 	}
 	return 0;
 }
+
+#ifdef CONFIG_FSL_FASTBOOT
+#ifdef CONFIG_ANDROID_RECOVERY
+int is_recovery_key_pressing(void)
+{
+	int button_pressed = 0;
+	/* TODO recovery mode trigger function */
+
+	return  button_pressed;
+}
+#endif /*CONFIG_ANDROID_RECOVERY*/
+#endif /*CONFIG_FSL_FASTBOOT*/
+
+
 #endif
 
