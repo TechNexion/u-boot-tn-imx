@@ -20,24 +20,11 @@
 #include "fsl-imx8mm.dtsi"
 
 / {
-	model = "TechNexion AXON-IMX8MM";
-	compatible = "fsl,imx8mm-axon", "fsl,imx8mm";
-
 	chosen {
 		bootargs = "console=ttymxc0,115200 earlycon=ec_imx6q,0x30860000,115200";
 		stdout-patch = &uart1;
 	};
 
-	reg_usdhc2_vmmc: regulator-usdhc2 {
-		compatible = "regulator-fixed";
-		regulator-name = "VSD_3V3";
-		regulator-min-microvolt = <3300000>;
-		regulator-max-microvolt = <3300000>;
-		gpio = <&gpio2 19 GPIO_ACTIVE_HIGH>;
-		enable-active-high;
-		startup-delay-us = <100>;
-		off-on-delay-us = <12000>;
-	};
 };
 
 &iomuxc {
@@ -298,7 +285,7 @@
 
 	pmic: bd71837@4b {
 		reg = <0x4b>;
-		compatible = "rohm,bd71837";
+		compatible = "rohm,bd71840", "rohm,bd71837";
 		/* PMIC BD71837 PMIC_nINT GPIO1_IO3 */
 		pinctrl-0 = <&pinctrl_pmic>;
 		gpio_intr = <&gpio1 3 GPIO_ACTIVE_LOW>;
@@ -507,7 +494,6 @@
 	pinctrl-2 = <&pinctrl_usdhc2_200mhz>, <&pinctrl_usdhc2_gpio>;
 	bus-width = <4>;
 	non-removable;
-	vmmc-supply = <&reg_usdhc2_vmmc>;
 	status = "okay";
 };
 
@@ -532,12 +518,3 @@
 	arm-supply = <&buck2_reg>;
 };
 
-&usbotg1 {
-	dr_mode = "peripheral";
-	status = "okay";
-};
-
-&usbotg2 {
-	dr_mode = "host";
-	status = "okay";
-};
