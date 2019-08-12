@@ -212,6 +212,11 @@ print_settings()
 	"
 }
 
+if [ $# -eq 0 ]; then
+	usage
+	exit 1
+fi
+
 while getopts "tchd:b:" OPTION
 do
     case $OPTION in
