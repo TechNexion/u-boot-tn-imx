@@ -70,6 +70,18 @@ install_firmware()
 	fi
 	cd imx-atf
 
+	if ( git diff-index --quiet HEAD -- plat/imx/imx8mm/imx8mm_bl31_setup.c ); then
+		if [ -z "${BOARD##*axon*}" ]; then
+			sed -i 's/(IMX_RDC_BASE + 0x518, 0xfc);/(IMX_RDC_BASE + 0x518, 0xf3);/g' plat/imx/imx8mm/imx8mm_bl31_setup.c
+			rm build/${PLATFORM}/release/bl31.bin
+		fi
+	else
+		if [ -n "${BOARD##*axon*}" ]; then
+			git checkout plat/imx/imx8mm/imx8mm_bl31_setup.c
+			rm build/${PLATFORM}/release/bl31.bin
+		fi
+	fi
+
 	if [ ! -f build/${PLATFORM}/release/bl31.bin ] ; then
 		rm -rf build
 		make PLAT=${PLATFORM} bl31 || printf "Fails to build ATF firmware \n"
@@ -165,7 +177,8 @@ usage()
     * This script is used to download required firmware files, generate and flash bootable u-boot binary
     *
     * [-d disk-path]: specify the disk to flash u-boot binary, e.g., /dev/sdd
-    * [-b dtb_name]: specify the name of dtb, e.g.imx8mm-pico-pi, imx8mm-flex-pi
+    * [-b dtb_name]: specify the name of dtb, support list: imx8mm-pico-pi, imx8mm-flex-pi, imx8mm-axon-pi
+    *                                                       imx8mq-pico-pi, imx8mq-edm-wizard
     * [-t]: target u-boot binary is without HDMI firmware
     * [-c]: clean temporary directory
     * [-h]: help
