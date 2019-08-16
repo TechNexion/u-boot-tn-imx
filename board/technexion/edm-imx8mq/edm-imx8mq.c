@@ -268,9 +268,9 @@ int board_usb_cleanup(int index, enum usb_init_type init)
 }
 #endif
 
-#define MIPI_RESET_PAD IMX_GPIO_NR(1, 10)
+#define MIPI_RESET_PAD IMX_GPIO_NR(3, 4)
 static iomux_v3_cfg_t const mipi_reset_pads[] = {
-	IMX8MQ_PAD_GPIO1_IO10__GPIO1_IO10 | MUX_PAD_CTRL(NO_PAD_CTRL),  /* DSI RST, GPIO_P264 */
+	IMX8MQ_PAD_NAND_CE3_B__GPIO3_IO4 | MUX_PAD_CTRL(NO_PAD_CTRL),  /* DSI RST, GPIO_P257 */
 };
 
 void reset_mipi_panel(void)
