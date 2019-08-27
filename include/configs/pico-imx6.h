@@ -174,11 +174,11 @@
 		"source\0" \
 	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
 	"setfdt=" \
+		"setenv fitconfig ${som}-${form}-${baseboard}; " \
 		"if test -n ${wifi_module} && test ${wifi_module} = qca; then " \
-			"setenv fdtfile ${som}-${form}-${wifi_module}_${baseboard}.dtb; " \
-			"setenv form ${form}-${wifi_module}; " \
+			"setenv fdtfile ${som}-${form}-${baseboard}-${wifi_module}.dtb; " \
 		"else " \
-			"setenv fdtfile ${som}-${form}_${baseboard}.dtb;" \
+			"setenv fdtfile ${som}-${form}-${baseboard}.dtb;" \
 		"fi\0" \
 	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdtfile}\0" \
 	"mmcboot=echo Booting from mmc ...; " \
@@ -243,7 +243,7 @@
 	"loadfit=fatload mmc ${mmcdev} ${fit_addr} tnrescue.itb\0" \
 	"fitboot=echo Booting from FIT image...; " \
 		"run searchbootdev; run setfdt; run fitargs; " \
-		"bootm ${fit_addr}#config@${som}-${form}_${baseboard};\0"
+		"bootm ${fit_addr}#config@${fitconfig};\0"
 
 #define CONFIG_BOOTCOMMAND \
 	   "mmc dev ${mmcdev}; if mmc rescan; then " \
