@@ -38,8 +38,8 @@
 		};
 		/* imx6dl */
 		fdt@1 {
-			description = "imx6dl-pico_dwarf";
-			data = /incbin/("./dtb/imx6dl-pico_dwarf.dtb");
+			description = "imx6dl pico dwarf";
+			data = /incbin/("./dtb/imx6dl-pico-dwarf.dtb");
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
@@ -49,8 +49,8 @@
 			};
 		};
 		fdt@2 {
-			description = "imx6dl-pico_hobbit";
-			data = /incbin/("./dtb/imx6dl-pico_hobbit.dtb");
+			description = "imx6dl pico hobbit";
+			data = /incbin/("./dtb/imx6dl-pico-hobbit.dtb");
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
@@ -60,8 +60,8 @@
 			};
 		};
 		fdt@3 {
-			description = "imx6dl-pico_nymph";
-			data = /incbin/("./dtb/imx6dl-pico_nymph.dtb");
+			description = "imx6dl pico nymph";
+			data = /incbin/("./dtb/imx6dl-pico-nymph.dtb");
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
@@ -71,8 +71,8 @@
 			};
 		};
 		fdt@4 {
-			description = "imx6dl-pico_pi";
-			data = /incbin/("./dtb/imx6dl-pico_pi.dtb");
+			description = "imx6dl pico pi";
+			data = /incbin/("./dtb/imx6dl-pico-pi.dtb");
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
@@ -83,8 +83,8 @@
 		};
 		/* imx6q */
 		fdt@9 {
-			description = "imx6q-pico_dwarf";
-			data = /incbin/("./dtb/imx6q-pico_dwarf.dtb");
+			description = "imx6q pico dwarf";
+			data = /incbin/("./dtb/imx6q-pico-dwarf.dtb");
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
@@ -94,8 +94,8 @@
 			};
 		};
 		fdt@10 {
-			description = "imx6q-pico_hobbit";
-			data = /incbin/("./dtb/imx6q-pico_hobbit.dtb");
+			description = "imx6q pico hobbit";
+			data = /incbin/("./dtb/imx6q-pico-hobbit.dtb");
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
@@ -105,8 +105,8 @@
 			};
 		};
 		fdt@11 {
-			description = "imx6q-pico_nymph";
-			data = /incbin/("./dtb/imx6q-pico_nymph.dtb");
+			description = "imx6q pico nymph";
+			data = /incbin/("./dtb/imx6q-pico-nymph.dtb");
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
@@ -116,8 +116,8 @@
 			};
 		};
 		fdt@12 {
-			description = "imx6q-pico_pi";
-			data = /incbin/("./dtb/imx6q-pico_pi.dtb");
+			description = "imx6q pico pi";
+			data = /incbin/("./dtb/imx6q-pico-pi.dtb");
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
@@ -129,52 +129,51 @@
 	};
 
 	configurations {
-		default = "config@imx6dl-pico_dwarf";
 		/* imx6dl */
-		config@imx6dl-pico_dwarf {
+		config@imx6dl-pico-dwarf {
 			description = "PICO-DWARF-IMX6DL";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@1";
 		};
-		config@imx6dl-pico_hobbit {
+		config@imx6dl-pico-hobbit {
 			description = "PICO-HOBBIT-IMX6DL";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@2";
 		};
-		config@imx6dl-pico_nymph {
+		config@imx6dl-pico-nymph {
 			description = "PICO-NYMPH-IMX6DL";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@3";
 		};
-		config@imx6dl-pico_pi {
+		config@imx6dl-pico-pi {
 			description = "PICO-PI-IMX6DL";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@4";
 		};
 		/* imx6q */
-		config@imx6q-pico_dwarf {
+		config@imx6q-pico-dwarf {
 			description = "PICO-DWARF-IMX6Q";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@9";
 		};
-		config@imx6q-pico_hobbit {
+		config@imx6q-pico-hobbit {
 			description = "PICO-HOBBIT-IMX6Q";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@10";
 		};
-		config@imx6q-pico_nymph {
+		config@imx6q-pico-nymph {
 			description = "PICO-NYMPH-IMX6Q";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@11";
 		};
-		config@imx6q-pico_pi {
+		config@imx6q-pico-pi {
 			description = "PICO-PI-IMX6Q";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
