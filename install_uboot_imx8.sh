@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -x
 #################################################################################
 # Copyright 2018 Technexion Ltd.
 #
@@ -18,8 +18,10 @@ DRIVE=/dev/sdX
 #BOARD="fsl-imx8mq-evk"
 #BOARD="pico-imx8m"
 
-BRANCH_VER="imx_4.14.98_2.0.0_ga"
-DDR_FW_VER="8.1"
+BRANCH_VER="imx_4.14.98_2.0.0_ga" #branch used by imx-mkimage and imx-atf
+MKIMAGE_SRC_GIT_ID='dd0234001713623c79be92b60fa88bc07b07f24f' #refer to 'imx-mkimage_git.inc' in Yocto
+ATF_SRC_GIT_ID='1cb68fa0a0dd8bc00b9871b51d4c4e1d0a827b2d' #refer to 'imx-atf_2.0.bb' in Yocto
+DDR_FW_VER="8.1.1"
 
 FSL_MIRROR="https://www.nxp.com/lgfiles/NMG/MAD/YOCTO"
 FIRMWARE_DIR="firmware_imx8"
@@ -54,9 +56,11 @@ install_firmware()
 	cd ${TWD}
 	#Get and Build NXP imx-mkimage tool
 	if [ ! -d ${MKIMAGE_DIR} ] ; then
-		git clone https://source.codeaurora.org/external/imx/imx-mkimage -b ${BRANCH_VER} || printf "Fails to fetch imx-mkimage source code \n" 
+		git clone https://source.codeaurora.org/external/imx/imx-mkimage -b ${BRANCH_VER} || printf "Fails to fetch imx-mkimage source code \n"
+		cd imx-mkimage
+		git checkout ${MKIMAGE_SRC_GIT_ID}
 	fi
-
+	cd ${TWD}
 	#Collect required firmware files to generate bootable binary
 	if [ ! -d ${FIRMWARE_DIR} ] ; then
 		mkdir ${FIRMWARE_DIR}
@@ -67,8 +71,9 @@ install_firmware()
 	#Get, build and copy the ARM Trusted Firmware
 	if [ ! -d imx-atf ] ; then
 		git clone https://source.codeaurora.org/external/imx/imx-atf -b ${BRANCH_VER} || printf "Fails to fetch ATF source code \n"
+		cd imx-atf
+		git checkout ${ATF_SRC_GIT_ID}
 	fi
-	cd imx-atf
 
 	if ( git diff-index --quiet HEAD -- plat/imx/imx8mm/imx8mm_bl31_setup.c ); then
 		if [ -z "${BOARD##*axon*}" ]; then
