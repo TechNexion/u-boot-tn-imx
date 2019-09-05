@@ -145,10 +145,13 @@
 	"silent=" __stringify(SILENT_ENABLE) "\0" \
 	"searchbootdev=" \
 		"if test ${bootdev} = MMC3; then " \
+			"setenv mmcrootdev /dev/mmcblk2; " \
 			"setenv mmcroot /dev/mmcblk2p2 rootwait rw; " \
 		"elif test ${bootdev} = SD1; then; " \
+			"setenv mmcrootdev /dev/mmcblk0; " \
 			"setenv mmcroot /dev/mmcblk0p2 rootwait rw; " \
 		"elif test ${bootdev} = SATA; then; " \
+			"setenv mmcrootdev /dev/sda; " \
 			"setenv mmcroot /dev/sda2 rootwait rw; " \
 		"fi\0" \
 	"mmcargs=setenv bootargs console=${console},${baudrate} " \
@@ -194,10 +197,12 @@
 		"source\0" \
 	"loadimage=fatload ${bootmedia} ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
 	"setfdt=" \
-		"if test ${wifi_module} = qca; then " \
-			"setenv fdtfile ${som}-${form}-${wifi_module}_${baseboard}.dtb; " \
+		"if test -n ${wifi_module} && test ${wifi_module} = qca; then " \
+			"setenv fitconf ${som}-${form}-${baseboard}-${wifi_module}; " \
+			"setenv fdtfile ${som}-${form}-${baseboard}-${wifi_module}.dtb; " \
 		"else " \
-			"setenv fdtfile ${som}-${form}_${baseboard}.dtb;" \
+			"setenv fitconf ${som}-${form}-${baseboard}; " \
+			"setenv fdtfile ${som}-${form}-${baseboard}.dtb;" \
 		"fi\0" \
 	"loadfdt=fatload ${bootmedia} ${mmcdev}:${mmcpart} ${fdt_addr} ${fdtfile}\0" \
 	"mmcboot=echo Booting from ${bootmedia} ...; " \
@@ -228,12 +233,15 @@
 	"loadbootenv=fatload ${bootmedia} ${mmcdev} ${loadaddr} ${bootenv}\0" \
 	"importbootenv=echo Importing environment from ${bootmedia} ...; " \
 		"env import -t -r $loadaddr $filesize\0" \
-	"loadfit=fatload mmc ${mmcdev}:${mmcpart} 0x17880000 tnrescue.itb\0" \
-	"fit_args=setenv bootargs console=${console},${baudrate} root=/dev/ram0 rootwait rw " \
-		"modules-load=g_acm_ms g_acm_ms.stall=0 g_acm_ms.removable=1 g_acm_ms.file=/dev/mmcblk${mmcdev} " \
-		"g_acm_ms.iSerialNumber=${ethaddr} g_acm_ms.iManufacturer=TechNexion; " \
-		"run videoargs\0" \
-	"fitboot=run fit_args; echo ${bootargs}; bootm 17880000#config@${som}-${form}_${baseboard}\0" \
+	"fit_addr=0x21100000\0" \
+	"fit_high=0xffffffff\0" \
+	"fitargs=setenv bootargs console=${console},${baudrate} root=/dev/ram0 rootwait rw " \
+		"modules-load=g_acm_ms g_acm_ms.stall=0 g_acm_ms.removable=1 g_acm_ms.file=${mmcrootdev} " \
+		"g_acm_ms.iSerialNumber=${ethaddr} g_acm_ms.iManufacturer=TechNexion; run videoargs\0" \
+	"loadfit=fatload mmc ${mmcdev} ${fit_addr} tnrescue.itb\0" \
+	"fitboot=echo Booting from FIT image...; " \
+		"run searchbootdev; run setfdt; run fitargs; " \
+		"bootm ${fit_addr}#config@${fitconf};\0"
 
 #define CONFIG_BOOTCOMMAND \
 	   "mmc dev ${mmcdev}; if mmc rescan; then " \
