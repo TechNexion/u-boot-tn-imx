@@ -1,0 +1,6 @@
+Technexion EDM-IMX6 board
+M:	Richard Hu <richard.hu@technexion.com> Po Cheng <po.cheng@technexion.com>
+S:	Maintained
+F:	board/edm-imx6/
+F:	include/configs/edm-imx6.h
+F:	configs/edm-imx6_spl_defconfig
