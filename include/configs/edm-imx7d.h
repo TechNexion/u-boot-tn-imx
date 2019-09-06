@@ -207,12 +207,12 @@
 		"source\0" \
 	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
 	"setfdt=" \
-		"if test ${wifi_module} = qca; then " \
-			"setenv fitboard -${wifi_module}_${baseboard}; " \
-			"setenv fdtfile ${som}-${form}-${wifi_module}_${baseboard}${mcu}.dtb; " \
+		"if test -n ${wifi_module} && test ${wifi_module} = qca; then " \
+			"setenv fitconf ${som}-${form}-${baseboard}-${wifi_module}${mcu}; " \
+			"setenv fdtfile ${som}-${form}-${baseboard}-${wifi_module}${mcu}.dtb; " \
 		"else " \
-			"setenv fitboard _${baseboard}; " \
-			"setenv fdtfile ${som}-${form}_${baseboard}${mcu}.dtb;" \
+			"setenv fitconf ${som}-${form}-${baseboard}${mcu}; " \
+			"setenv fdtfile ${som}-${form}-${baseboard}${mcu}.dtb;" \
 		"fi\0" \
 	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdtfile}\0" \
 	"mmcboot=echo Booting from mmc ...; " \
@@ -275,7 +275,7 @@
 	"fit_args=setenv bootargs console=${console},${baudrate} root=/dev/ram0 rootwait rw " \
 		"modules-load=g_acm_ms g_acm_ms.stall=0 g_acm_ms.removable=1 g_acm_ms.file=${mmcrootdev} " \
 		"g_acm_ms.iSerialNumber=${ethaddr} g_acm_ms.iManufacturer=TechNexion\0" \
-	"fitboot=run setfdt; run fit_args; echo ${bootargs}; bootm 87880000#config@${som}-${form}${fitboard};\0"
+	"fitboot=run setfdt; run fit_args; echo ${bootargs}; bootm 87880000#config@${fitconf};\0"
 
 #define CONFIG_BOOTCOMMAND \
 	   "mmc dev ${mmcdev}; if mmc rescan; then " \
