@@ -550,11 +550,14 @@ static int disable_cpu_nodes(void *blob, u32 disabled_cores)
 
 int ft_system_setup(void *blob, bd_t *bd)
 {
-#ifdef CONFIG_IMX8MQ
+	__maybe_unused u32 max_freq_khz;
+	int plen, len = 0;
+	u32 *prop, newprop[12];
 	int i = 0;
 	int rc;
 	int nodeoff;
 
+#ifdef CONFIG_IMX8MQ
 	if (get_boot_device() == USB_BOOT) {
 
 		disable_dcss_nodes(blob);
@@ -634,6 +637,33 @@ usb_modify_speed:
 	else if (is_imx8mms() || is_imx8mmsl())
 		disable_cpu_nodes(blob, 3);
 #endif
+	nodeoff = fdt_path_offset(blob, "/cpus/cpu@0");
+	if (nodeoff >= 0) {
+		prop = (u32 *)fdt_getprop(blob, nodeoff,
+					    "operating-points", &plen);
+		if (prop) {
+			max_freq_khz = get_cpu_speed_grade_hz() / 1000;
+			for(i=0; i<plen; i+=8) {
+				if(__be32_to_cpu(*prop) <= max_freq_khz) {
+					newprop[len] = *prop++;
+					newprop[len + 1] = *prop++;
+					len += 2;
+				}else
+					prop += 2;
+			}
+			rc = fdt_delprop(blob, nodeoff,
+					  "operating-points");
+			if (rc < 0)
+				puts("error deleting operating-points\n");
+			rc = fdt_setprop(blob, nodeoff,
+					  "operating-points",
+					  newprop,
+					  (len * sizeof(u32)));
+			if (rc < 0)
+				puts("error adding operating-points\n");
+		}
+	}
+
 
 	return ft_add_optee_node(blob, bd);
 }
