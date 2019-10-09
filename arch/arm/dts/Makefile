@@ -472,6 +472,7 @@ dtb-$(CONFIG_ARCH_IMX8M) += fsl-imx8mq-evk.dtb \
 		imx8mm-axon-pi.dtb \
 		imx8mm-pico-pi.dtb \
 		imx8mm-flex-pi.dtb \
+		imx8mm-xore-wizard.dtb \
 		imx8mq-edm-wizard.dtb \
 		imx8mq-pico-pi.dtb \
 		pico-imx8m.dtb

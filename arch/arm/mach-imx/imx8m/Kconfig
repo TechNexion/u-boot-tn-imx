@@ -96,6 +96,11 @@ config TARGET_PICO_IMX8MM
 	select SUPPORT_SPL
 	select IMX8M_LPDDR4
 
+config TARGET_XORE_IMX8MM
+	bool "xore-imx8mm"
+	select IMX8MM
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
 endchoice
 
 config SYS_SOC
@@ -112,5 +117,6 @@ source "board/technexion/pico-imx8mq/Kconfig"
 source "board/technexion/axon-imx8mm/Kconfig"
 source "board/technexion/flex-imx8mm/Kconfig"
 source "board/technexion/pico-imx8mm/Kconfig"
+source "board/technexion/xore-imx8mm/Kconfig"
 
 endif
