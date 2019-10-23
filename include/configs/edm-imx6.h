@@ -6,8 +6,8 @@
  * SPDX-License-Identifier:    GPL-2.0+
  */
 
-#ifndef __CONFIG_H
-#define __CONFIG_H
+#ifndef __EDM1_IMX6_CONFIG_H
+#define __EDM1_IMX6_CONFIG_H
 
 #include "mx6_common.h"
 #include <asm/arch/imx-regs.h>
@@ -293,4 +293,10 @@
 #define CONFIG_ENV_OFFSET		(6 * 64 * 1024)
 #define CONFIG_SYS_MMC_ENV_DEV		0
 
-#endif			       /* __CONFIG_H * */
+#if defined(CONFIG_ANDROID_SUPPORT)
+#include "edm-imx6_android_common.h"
+#else
+#define CONFIG_USBD_HS
+#endif /* CONFIG_ANDROID_SUPPORT */
+
+#endif			       /* __EDM1_IMX6_CONFIG_H * */
