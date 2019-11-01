@@ -1,0 +1,150 @@
+/*
+ * U-Boot uImage source file with multiple kernels, ramdisks and FDT blobs
+ */
+
+/dts-v1/;
+
+/ {
+	description = "Various kernels, ramdisks and FDT blobs";
+	#address-cells = <1>;
+
+	images {
+		kernel@1 {
+			description = "TechNexion IMX6/IMX7 Linux Kernel";
+			data = /incbin/("./zImage");
+			type = "kernel";
+			arch = "arm";
+			os = "linux";
+			compression = "none";
+			load = <0x12000000>;
+			entry = <0x12000000>;
+			hash@2 {
+				algo = "sha1";
+			};
+		};
+
+		ramdisk@1 {
+			description = "TechNexion Rescue/Installer Ramdisk with Qt";
+			data = /incbin/("./rootfs.cpio.xz");
+			type = "ramdisk";
+			arch = "arm";
+			os = "linux";
+			compression = "none";
+			load = <0x12C00000>;
+			entry = <0x1B000000>;
+			hash@1 {
+				algo = "sha1";
+			};
+		};
+		/* imx6dl */
+		fdt@41 {
+			description = "imx6dl-tek3";
+			data = /incbin/("./dtb/imx6dl-tek3.dtb");
+			type = "flat_dt";
+			arch = "arm";
+			compression = "none";
+			load = <0x12BE0000>;
+			hash@1 {
+				algo = "sha1";
+			};
+		};
+		fdt@42 {
+			description = "imx6dl-tep5_15inch";
+			data = /incbin/("./dtb/imx6dl-tep5_15inch.dtb");
+			type = "flat_dt";
+			arch = "arm";
+			compression = "none";
+			load = <0x12BE0000>;
+			hash@1 {
+				algo = "sha1";
+			};
+		};
+		fdt@43 {
+			description = "imx6dl-tep5";
+			data = /incbin/("./dtb/imx6dl-tep5.dtb");
+			type = "flat_dt";
+			arch = "arm";
+			compression = "none";
+			load = <0x12BE0000>;
+			hash@1 {
+				algo = "sha1";
+			};
+		};
+		/* imx6q */
+		fdt@44 {
+			description = "imx6q-tek3";
+			data = /incbin/("./dtb/imx6q-tek3.dtb");
+			type = "flat_dt";
+			arch = "arm";
+			compression = "none";
+			load = <0x12BE0000>;
+			hash@1 {
+				algo = "sha1";
+			};
+		};
+		fdt@45 {
+			description = "imx6q-tep5_15inch";
+			data = /incbin/("./dtb/imx6q-tep5_15inch.dtb");
+			type = "flat_dt";
+			arch = "arm";
+			compression = "none";
+			load = <0x12BE0000>;
+			hash@1 {
+				algo = "sha1";
+			};
+		};
+		fdt@46 {
+			description = "imx6q-tep5";
+			data = /incbin/("./dtb/imx6q-tep5.dtb");
+			type = "flat_dt";
+			arch = "arm";
+			compression = "none";
+			load = <0x12BE0000>;
+			hash@1 {
+				algo = "sha1";
+			};
+		};
+	};
+
+	configurations {
+		default = "config@imx6dl-pico_dwarf";
+		/* imx6dl */
+		config@imx6dl-tek3_tek3 {
+			description = "TEK3-IMX6DL";
+			kernel = "kernel@1";
+			ramdisk = "ramdisk@1";
+			fdt = "fdt@41";
+		};
+		config@imx6dl-tep5_15inch {
+			description = "TEP5-15INCH-IMX6DL";
+			kernel = "kernel@1";
+			ramdisk = "ramdisk@1";
+			fdt = "fdt@42";
+		};
+		config@imx6dl-tep5_tep5 {
+			description = "TEP5-IMX6DL";
+			kernel = "kernel@1";
+			ramdisk = "ramdisk@1";
+			fdt = "fdt@43";
+		};
+		/* imx6q */
+		config@imx6q-tek3_tek3 {
+			description = "TEK3-IMX6Q";
+			kernel = "kernel@1";
+			ramdisk = "ramdisk@1";
+			fdt = "fdt@44";
+		};
+		config@imx6q-tep5_15inch {
+			description = "TEP5-15INCH-IMX6Q";
+			kernel = "kernel@1";
+			ramdisk = "ramdisk@1";
+			fdt = "fdt@45";
+		};
+		config@imx6q-tep5_tep5 {
+			description = "TEP5-IMX6Q";
+			kernel = "kernel@1";
+			ramdisk = "ramdisk@1";
+			fdt = "fdt@46";
+		};
+	};
+};
