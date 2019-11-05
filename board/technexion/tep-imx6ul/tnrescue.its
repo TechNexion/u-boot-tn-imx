@@ -1,0 +1,80 @@
+/*
+ * U-Boot uImage source file with multiple kernels, ramdisks and FDT blobs
+ */
+
+/dts-v1/;
+
+/ {
+	description = "Various kernels, ramdisks and FDT blobs";
+	#address-cells = <1>;
+
+	images {
+		kernel@1 {
+			description = "TechNexion IMX6/IMX7/IMX8 Linux Kernel";
+			data = /incbin/("./zImage");
+			type = "kernel";
+			arch = "arm";
+			os = "linux";
+			compression = "none";
+			load = <0x89F00000>;
+			entry = <0x89F00000>;
+			hash@2 {
+				algo = "md5";
+			};
+		};
+
+		ramdisk@1 {
+			description = "TechNexion Rescue/Installer Ramdisk with Qt";
+			data = /incbin/("./rootfs.cpio.xz");
+			type = "ramdisk";
+			arch = "arm";
+			os = "linux";
+			compression = "none";
+			load = <0x8B000000>;
+			entry = <0x8B000000>;
+			hash@1 {
+				algo = "sha1";
+			};
+		};
+		/* imx6ul */
+		fdt@1 {
+			description = "imx6ul-tek3_tek3";
+			data = /incbin/("./dtb/imx6ul-tek3.dtb");
+			type = "flat_dt";
+			arch = "arm";
+			compression = "none";
+			load = <0x89E00000>;
+			hash@1 {
+				algo = "crc32";
+			};
+		};
+		fdt@2 {
+			description = "imx6ul-tep1_tep1";
+			data = /incbin/("./dtb/imx6ul-tep1.dtb");
+			type = "flat_dt";
+			arch = "arm";
+			compression = "none";
+			load = <0x89E00000>;
+			hash@1 {
+				algo = "crc32";
+			};
+		};
+	};
+
+	configurations {
+		default = "config@imx6ul-tep1_tep1";
+		/* imx6ul */
+		config@imx6ul-tek3_tek3 {
+			description = "TEK3-IMX6UL";
+			kernel = "kernel@1";
+			ramdisk = "ramdisk@1";
+			fdt = "fdt@1";
+		};
+		config@imx6ul-tep1_tep1 {
+			description = "TEP1-IMX6UL";
+			kernel = "kernel@1";
+			ramdisk = "ramdisk@1";
+			fdt = "fdt@2";
+		};
+	};
+};

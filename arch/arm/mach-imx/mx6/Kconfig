@@ -497,36 +497,36 @@ config TARGET_OT1200
 	imply CMD_SATA
 
 config TARGET_PICO_IMX6
-    bool "TechNexion pico-imx6 boards"
-    select MX6QDL
-    select BOARD_LATE_INIT
+	bool "TechNexion pico-imx6 boards"
+	select MX6QDL
+	select BOARD_LATE_INIT
 	select DM
 	select DM_THERMAL
 	select BOARD_EARLY_INIT_F
 	select SUPPORT_SPL
 
 config TARGET_AXON_IMX6
-    bool "pico axon-imx6 boards"
-    select MX6QDL
-    select BOARD_LATE_INIT
+	bool "TechNexion axon-imx6 boards"
+	select MX6QDL
+	select BOARD_LATE_INIT
 	select DM
 	select DM_THERMAL
 	select BOARD_EARLY_INIT_F
 	select SUPPORT_SPL
 
 config TARGET_EDM_IMX6
-    bool "TechNexion edm-imx6 boards"
-    select MX6QDL
-    select BOARD_LATE_INIT
+	bool "TechNexion edm-imx6 boards"
+	select MX6QDL
+	select BOARD_LATE_INIT
 	select DM
 	select DM_THERMAL
 	select BOARD_EARLY_INIT_F
 	select SUPPORT_SPL
 
 config TARGET_TEK_IMX6
-    bool "TechNexion tek-imx6 boards"
-    select MX6QDL
-    select BOARD_LATE_INIT
+	bool "TechNexion tek-imx6 boards"
+	select MX6QDL
+	select BOARD_LATE_INIT
 	select DM
 	select DM_THERMAL
 	select BOARD_EARLY_INIT_F
@@ -543,6 +543,15 @@ config TARGET_PICO_IMX6DL
 config TARGET_PICO_IMX6UL
 	bool "PICO-IMX6UL-EMMC"
 	select MX6UL
+
+config TARGET_TEP_IMX6UL
+	bool "TechNexion tep-imx6ul boards"
+	select MX6UL
+	select BOARD_LATE_INIT
+	select DM
+	select DM_THERMAL
+	select BOARD_EARLY_INIT_F
+	select SUPPORT_SPL
 
 config TARGET_PICOSOM_IMX6UL
 	bool "Support picosom-imx6ul"
@@ -704,6 +713,7 @@ source "board/technexion/axon-imx6/Kconfig"
 source "board/technexion/picosom-imx6ul/Kconfig"
 source "board/technexion/edm-imx6/Kconfig"
 source "board/technexion/tek-imx6/Kconfig"
+source "board/technexion/tep-imx6ul/Kconfig"
 source "board/tbs/tbs2910/Kconfig"
 source "board/tqc/tqma6/Kconfig"
 source "board/toradex/apalis_imx6/Kconfig"
