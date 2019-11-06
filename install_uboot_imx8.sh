@@ -75,6 +75,8 @@ install_firmware()
 		git checkout ${ATF_SRC_GIT_ID}
 	fi
 
+	PWD=$(pwd)
+	[ -n "${PWD##*imx-atf}" ] && cd imx-atf
 	if ( git diff-index --quiet HEAD -- plat/imx/imx8mm/imx8mm_bl31_setup.c ); then
 		if [ -z "${BOARD##*axon*}" ]; then
 			sed -i 's/(IMX_RDC_BASE + 0x518, 0xfc);/(IMX_RDC_BASE + 0x518, 0xf3);/g' plat/imx/imx8mm/imx8mm_bl31_setup.c
