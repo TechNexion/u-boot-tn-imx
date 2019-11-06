@@ -148,6 +148,7 @@
 	"console=ttymxc1,115200 earlycon=ec_imx6q,0x30890000,115200\0" \
 	"fdt_addr=0x43000000\0"			\
 	"fdt_high=0xffffffffffffffff\0"		\
+	"fdt_buffer=8192\0"	\
 	"boot_fdt=try\0" \
 	"fdt_file=undefined\0" \
 	"initrd_addr=0x43800000\0"		\
@@ -166,11 +167,21 @@
 	"bootscript=echo Running bootscript from mmc ...; " \
 		"source\0" \
 	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
-	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
+	"loadfdt=" \
+		"echo Loading fdt_file ${fdt_file}...; " \
+		"fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
+	"loadoverlay=" \
+		"fdt addr ${fdt_addr} && fdt resize ${fdt_buffer}; " \
+		"setexpr fdtovaddr ${fdt_addr} + 0xF0000; " \
+		"for ov in ${dtoverlay}; do " \
+			"echo Overlaying ${ov}...; " \
+			"fatload mmc ${mmcdev}:${mmcpart} ${fdtovaddr} imx8mm-pico-pi-${ov}.dtbo && fdt apply ${fdtovaddr}; " \
+		"done\0" \
 	"mmcboot=echo Booting from mmc ...; " \
 		"run mmcargs; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
 			"if run loadfdt; then " \
+				"run loadoverlay; " \
 				"booti ${loadaddr} - ${fdt_addr}; " \
 			"else " \
 				"echo WARN: Cannot load the DT; " \
