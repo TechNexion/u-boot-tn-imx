@@ -122,6 +122,10 @@
 	"emmc_dev=0\0"\
 	"sd_dev=1\0" \
 
+/* M4 specific */
+#define SYS_AUXCORE_BOOTDATA_DDR	0x80000000
+#define SYS_AUXCORE_BOOTDATA_TCM	0x007E0000
+
 /* Initial environment variables */
 #define CONFIG_EXTRA_ENV_SETTINGS		\
 	CONFIG_MFG_ENV_SETTINGS \
@@ -136,6 +140,10 @@
 	"fdt_file=imx8mq-edm-wizard.dtb\0" \
 	"initrd_addr=0x43800000\0"		\
 	"initrd_high=0xffffffffffffffff\0" \
+	"m4image=hello_world.bin\0" \
+	"m4loadaddr="__stringify(SYS_AUXCORE_BOOTDATA_TCM)"\0" \
+	"m4boot=fatload mmc ${mmcdev}:${mmcpart} ${m4loadaddr} ${m4image}; " \
+	"dcache flush; bootaux ${m4loadaddr}\0" \
 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
 	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
 	"mmcroot=" CONFIG_MMCROOT " rootwait rw\0" \
