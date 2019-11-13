@@ -155,6 +155,13 @@ static iomux_v3_cfg_t const wdog_pads[] = {
 	MX7D_PAD_GPIO1_IO00__WDOG1_WDOG_B | MUX_PAD_CTRL(NO_PAD_CTRL),
 };
 
+/* Console pinout for rev A1 of TEP1-IMX7 hardware */
+static iomux_v3_cfg_t const uart2_pads[] = {
+	MX7D_PAD_UART2_TX_DATA__UART2_DCE_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
+	MX7D_PAD_UART2_RX_DATA__UART2_DCE_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
+};
+
+/* Console pinout for rev A2 of TEP1-IMX7 hardware */
 static iomux_v3_cfg_t const uart3_pads[] = {
 	MX7D_PAD_UART3_TX_DATA__UART3_DCE_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
 	MX7D_PAD_UART3_RX_DATA__UART3_DCE_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
@@ -416,9 +423,20 @@ static iomux_v3_cfg_t const ccm_clko_pads[] = {
 	MX7D_PAD_GPIO1_IO02__CCM_CLKO1 | MUX_PAD_CTRL(NO_PAD_CTRL),
 };
 
+size_t uart_base_reg_addr = UART2_IPS_BASE_ADDR;
+
 static void setup_iomux_uart(void)
 {
-	imx_iomux_v3_setup_multiple_pads(uart3_pads, ARRAY_SIZE(uart3_pads));
+	// USB HUB Revision Detect
+	imx_iomux_v3_setup_multiple_pads(usb_hub_rev_pads, ARRAY_SIZE(usb_hub_rev_pads));
+	gpio_direction_input(USB_HUB_REV_GPIO);
+	if (gpio_get_value(USB_HUB_REV_GPIO) != 0) {
+		uart_base_reg_addr = UART3_IPS_BASE_ADDR;
+		imx_iomux_v3_setup_multiple_pads(uart3_pads, ARRAY_SIZE(uart3_pads));
+	} else {
+		uart_base_reg_addr = UART2_IPS_BASE_ADDR;
+		imx_iomux_v3_setup_multiple_pads(uart2_pads, ARRAY_SIZE(uart2_pads));
+	}
 }
 
 #ifdef CONFIG_FSL_ESDHC
@@ -727,13 +745,12 @@ int board_late_init(void)
 
 	env_set("som", get_som_type());
 	
-	// USB HUB Revision Detect	
-	imx_iomux_v3_setup_multiple_pads(usb_hub_rev_pads, ARRAY_SIZE(usb_hub_rev_pads));
-	gpio_direction_input(USB_HUB_REV_GPIO);
-	if (gpio_get_value(USB_HUB_REV_GPIO) == 1) {
+	// USB HUB Revision Detect
+	if (gpio_get_value(USB_HUB_REV_GPIO) != 0) {
 		env_set("baseboard", "tep1-a2");
-	}	
-	
+		env_set("console", "ttymxc2");
+	}
+
 	return 0;
 }
 

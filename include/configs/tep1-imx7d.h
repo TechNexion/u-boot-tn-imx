@@ -36,7 +36,10 @@
 
 #define CONFIG_MXC_UART
 #undef CONFIG_MXC_UART_BASE
-#define CONFIG_MXC_UART_BASE            UART3_IPS_BASE_ADDR
+#define CONFIG_MXC_UART_BASE            uart_base_reg_addr
+#ifndef __ASSEMBLY__
+extern size_t uart_base_reg_addr;
+#endif
 
 /* allow to overwrite serial and ethaddr */
 #define CONFIG_ENV_OVERWRITE
@@ -176,7 +179,7 @@
 	"script=boot.scr\0" \
 	"image=zImage\0" \
 	"stdout=serial\0" \
-	"console=ttymxc2\0" \
+	"console=ttymxc1\0" \
 	"splashpos=m,m\0" \
 	"som=imx7d\0" \
 	"form=tep1\0" \
