@@ -183,9 +183,7 @@ extern size_t uart_base_reg_addr;
 	"splashpos=m,m\0" \
 	"som=imx7d\0" \
 	"form=tep1\0" \
-	"baseboard=gnome\0" \
-	"wifi_module=qca\0" \
-	"default_baseboard=fairy\0" \
+	"baseboard=tep1\0" \
 	"fdt_high=0xffffffff\0" \
 	"initrd_high=0xffffffff\0" \
 	"fdt_addr=0x83000000\0" \
@@ -209,14 +207,7 @@ extern size_t uart_base_reg_addr;
 	"bootscript=echo Running bootscript from mmc ...; " \
 		"source\0" \
 	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
-	"setfdt=" \
-		"if test -n ${wifi_module} && test ${wifi_module} = qca; then " \
-			"setenv fitconf ${som}-${form}-${baseboard}-${wifi_module}${mcu}; " \
-			"setenv fdtfile ${som}-${form}-${baseboard}-${wifi_module}${mcu}.dtb; " \
-		"else " \
-			"setenv fitconf ${som}-${form}-${baseboard}${mcu}; " \
-			"setenv fdtfile ${som}-${form}-${baseboard}${mcu}.dtb;" \
-		"fi\0" \
+	"setfdt=setenv fdtfile ${som}-${baseboard}.dtb; setenv fitboard _${baseboard};\0" \
 	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdtfile}\0" \
 	"mmcboot=echo Booting from mmc ...; " \
 		"run m4boot; " \
@@ -229,12 +220,7 @@ extern size_t uart_base_reg_addr;
 				"bootz ${loadaddr} - ${fdt_addr}; " \
 			"else " \
 				"if test ${boot_fdt} = try; then " \
-					"echo WARN: Cannot load the DT; " \
-					"echo fall back to load the default DT; " \
-					"setenv baseboard ${default_baseboard}; " \
-					"run setfdt; " \
-					"run loadfdt; " \
-					"bootz ${loadaddr} - ${fdt_addr}; " \
+					"bootz; " \
 				"else " \
 					"echo WARN: Cannot load the DT; " \
 				"fi; " \
