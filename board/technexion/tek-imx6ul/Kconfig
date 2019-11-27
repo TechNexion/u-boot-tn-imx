@@ -1,0 +1,15 @@
+if TARGET_TEK_IMX6UL
+
+config SYS_BOARD
+	default "tek-imx6ul"
+
+config SYS_VENDOR
+	default "technexion"
+
+config SYS_SOC
+	default "mx6"
+
+config SYS_CONFIG_NAME
+	default "tek-imx6ul"
+
+endif

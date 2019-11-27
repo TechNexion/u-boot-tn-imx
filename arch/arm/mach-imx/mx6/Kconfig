@@ -553,6 +553,15 @@ config TARGET_TEP_IMX6UL
 	select BOARD_EARLY_INIT_F
 	select SUPPORT_SPL
 
+config TARGET_TEK_IMX6UL
+	bool "TechNexion tek-imx6ul boards"
+	select MX6UL
+	select BOARD_LATE_INIT
+	select DM
+	select DM_THERMAL
+	select BOARD_EARLY_INIT_F
+	select SUPPORT_SPL
+
 config TARGET_PICOSOM_IMX6UL
 	bool "Support picosom-imx6ul"
 	select BOARD_LATE_INIT
@@ -714,6 +723,7 @@ source "board/technexion/picosom-imx6ul/Kconfig"
 source "board/technexion/edm-imx6/Kconfig"
 source "board/technexion/tek-imx6/Kconfig"
 source "board/technexion/tep-imx6ul/Kconfig"
+source "board/technexion/tek-imx6ul/Kconfig"
 source "board/tbs/tbs2910/Kconfig"
 source "board/tqc/tqma6/Kconfig"
 source "board/toradex/apalis_imx6/Kconfig"

@@ -1,0 +1,6 @@
+Technexion TEK3-IMX6UL board
+M:	Richard Hu <richard.hu@technexion.com>
+S:	Maintained
+F:	board/technexion/tek-imx6ul/
+F:	include/configs/tek-imx6ul.h
+F:	configs/tek-imx6ul_spl_defconfig
