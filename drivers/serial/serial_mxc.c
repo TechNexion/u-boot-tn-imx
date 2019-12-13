@@ -8,6 +8,7 @@
 #include <dm.h>
 #include <errno.h>
 #include <watchdog.h>
+#include <asm/mach-imx/sys_proto.h>
 #include <asm/arch/imx-regs.h>
 #include <asm/arch/clock.h>
 #include <dm/platform_data/serial_mxc.h>

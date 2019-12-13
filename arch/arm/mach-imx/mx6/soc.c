@@ -853,8 +853,10 @@ void set_wdog_reset(struct wdog_regs *wdog)
 
 void reset_misc(void)
 {
+#ifndef CONFIG_SPL_BUILD
 #ifdef CONFIG_VIDEO_MXS
 	lcdif_power_down();
+#endif
 #endif
 }
 
