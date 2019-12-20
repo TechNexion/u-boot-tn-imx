@@ -28,18 +28,16 @@
 DECLARE_GLOBAL_DATA_PTR;
 
 static iomux_v3_cfg_t const ver_det_pads[] = {
-	IMX8MM_PAD_SAI5_RXD0_GPIO3_IO21 | MUX_PAD_CTRL(NO_PAD_CTRL),	/* BOARD ID0 */
-	IMX8MM_PAD_SAI5_RXD1_GPIO3_IO22 | MUX_PAD_CTRL(NO_PAD_CTRL),	/* BOARD ID1 */
-	IMX8MM_PAD_SAI5_RXD2_GPIO3_IO23 | MUX_PAD_CTRL(NO_PAD_CTRL),	/* BOARD ID2 */
-	IMX8MM_PAD_SAI5_RXD3_GPIO3_IO24 | MUX_PAD_CTRL(NO_PAD_CTRL),	/* BOARD ID3 */
-	IMX8MM_PAD_SAI5_RXC_GPIO3_IO20 | MUX_PAD_CTRL(NO_PAD_CTRL),	/* BOARD ID4 */
-	IMX8MM_PAD_SAI5_RXFS_GPIO3_IO19 | MUX_PAD_CTRL(NO_PAD_CTRL),	/* BOARD ID5 */
-	IMX8MM_PAD_SAI5_MCLK_GPIO3_IO25 | MUX_PAD_CTRL(NO_PAD_CTRL),	/* BOARD ID6 */
+	IMX8MM_PAD_NAND_DATA00_GPIO3_IO6 | MUX_PAD_CTRL(NO_PAD_CTRL),	/* BOARD ID0 */
+	IMX8MM_PAD_NAND_DATA02_GPIO3_IO8 | MUX_PAD_CTRL(NO_PAD_CTRL),	/* BOARD ID1 */
+	IMX8MM_PAD_NAND_DATA03_GPIO3_IO9 | MUX_PAD_CTRL(NO_PAD_CTRL),	/* BOARD ID2 */
+	IMX8MM_PAD_NAND_ALE_GPIO3_IO0 | MUX_PAD_CTRL(NO_PAD_CTRL),	/* BOARD ID3 */
+	IMX8MM_PAD_NAND_READY_B_GPIO3_IO16 | MUX_PAD_CTRL(NO_PAD_CTRL),	/* BOARD ID4 */
 };
 
-#define BOARD_ID0		IMX_GPIO_NR(3, 21)
-#define BOARD_ID1		IMX_GPIO_NR(3, 22)
-#define BOARD_ID2		IMX_GPIO_NR(3, 23)
+#define BOARD_ID0		IMX_GPIO_NR(3, 6)
+#define BOARD_ID1		IMX_GPIO_NR(3, 8)
+#define BOARD_ID2		IMX_GPIO_NR(3, 9)
 
 static void setup_iomux_ver_det(void)
 {
@@ -55,16 +53,46 @@ static void setup_iomux_ver_det(void)
 
 /***********************************************
 BOARD_ID0    BOARD_ID1   BOARD_ID2
-   0            0            1       4G LPDDR4
-   1            1            1       3G LPDDR4
-   1            1            0       2G LPDDR4
-   1            0            1       1G LPDDR4
+   0            1            1       4G LPDDR4
+   1            0            0       3G LPDDR4
+   0            1            0       2G LPDDR4
+   0            0            1       1G LPDDR4
 ************************************************/
 
 void spl_dram_init(void)
 {
-	puts("dram_init: LPDDR4: 32bits 2GB\n");
-	ddr_init(&dram_timing_2gb);
+        setup_iomux_ver_det();
+
+        /*************************************************
+        ToDo: It's a dirty workaround to store the
+        information of DDR size into start address of TCM.
+        U-boot would extract this information in dram_init().
+        **************************************************/
+
+        if (!gpio_get_value(BOARD_ID0) && gpio_get_value(BOARD_ID1) && gpio_get_value(BOARD_ID2)) {
+                puts("dram_init: LPDDR4 4GB\n");
+                ddr_init(&dram_timing_4gb);
+                writel(0x4, M4_BOOTROM_BASE_ADDR);
+        }
+#if defined(LPDDR4_3GB_EXIST)
+        else if (gpio_get_value(BOARD_ID0) && !gpio_get_value(BOARD_ID1) && !gpio_get_value(BOARD_ID2)) {
+                puts("dram_init: LPDDR4 3GB\n");
+                ddr_init(&dram_timing_3gb);
+                writel(0x3, M4_BOOTROM_BASE_ADDR);
+        }
+#endif
+        else if (!gpio_get_value(BOARD_ID0) && gpio_get_value(BOARD_ID1) && !gpio_get_value(BOARD_ID2)) {
+                puts("dram_init: LPDDR4: 2GB\n");
+                ddr_init(&dram_timing_2gb);
+                writel(0x2, M4_BOOTROM_BASE_ADDR);
+        }
+        else if (!gpio_get_value(BOARD_ID0) && !gpio_get_value(BOARD_ID1) && gpio_get_value(BOARD_ID2)) {
+                puts("dram_init: LPDDR4: 1GB\n");
+                ddr_init(&dram_timing_1gb);
+                writel(0x1, M4_BOOTROM_BASE_ADDR);
+        }
+        else
+                puts("Unknown DDR type!!!\n");
 }
 
 #define I2C_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_HYS | PAD_CTL_PUE | PAD_CTL_PE)
