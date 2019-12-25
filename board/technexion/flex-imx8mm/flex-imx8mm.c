@@ -127,18 +127,29 @@ int ft_board_setup(void *blob, bd_t *bd)
 
 #ifdef CONFIG_FEC_MXC
 #define FEC_RST_PAD IMX_GPIO_NR(2, 10)
-static iomux_v3_cfg_t const fec1_rst_pads[] = {
+#define FEC_PWD_PAD IMX_GPIO_NR(3, 1)
+static iomux_v3_cfg_t const fec1_ctrl_pads[] = {
 	IMX8MM_PAD_SD1_RESET_B_GPIO2_IO10 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	IMX8MM_PAD_NAND_CE0_B_GPIO3_IO1 | MUX_PAD_CTRL(NO_PAD_CTRL),
 };
 
 static void setup_iomux_fec(void)
 {
-	imx_iomux_v3_setup_multiple_pads(fec1_rst_pads,
-					 ARRAY_SIZE(fec1_rst_pads));
+	imx_iomux_v3_setup_multiple_pads(fec1_ctrl_pads,
+					 ARRAY_SIZE(fec1_ctrl_pads));
 
 	gpio_request(FEC_RST_PAD, "fec1_rst");
 	gpio_direction_output(FEC_RST_PAD, 0);
-	udelay(500);
+	udelay(1000);
+
+	gpio_request(FEC_PWD_PAD, "fec1_pwd");
+	gpio_direction_output(FEC_PWD_PAD, 1);
+	udelay(2000);
+
+	gpio_direction_output(FEC_RST_PAD, 1);
+	udelay(5000);
+	gpio_direction_output(FEC_RST_PAD, 0);
+	udelay(5000);
 	gpio_direction_output(FEC_RST_PAD, 1);
 }
 
