@@ -363,6 +363,7 @@ int board_video_skip(void)
 static iomux_v3_cfg_t const fec1_pads[] = {
 	MX7D_PAD_SD2_CD_B__ENET2_MDIO | MUX_PAD_CTRL(ENET_PAD_CTRL_MII),
 	MX7D_PAD_SD2_WP__ENET2_MDC | MUX_PAD_CTRL(ENET_PAD_CTRL_MII),
+	MX7D_PAD_GPIO1_IO01__CCM_ENET_REF_CLK3 | MUX_PAD_CTRL(ENET_PAD_CTRL),
 	MX7D_PAD_ENET1_RGMII_TXC__ENET1_RGMII_TXC | MUX_PAD_CTRL(ENET_PAD_CTRL),
 	MX7D_PAD_ENET1_RGMII_TD0__ENET1_RGMII_TD0 | MUX_PAD_CTRL(ENET_PAD_CTRL),
 	MX7D_PAD_ENET1_RGMII_TD1__ENET1_RGMII_TD1 | MUX_PAD_CTRL(ENET_PAD_CTRL),
@@ -385,6 +386,10 @@ static iomux_v3_cfg_t const fec1_pads[] = {
 static void setup_iomux_fec(void)
 {
 	imx_iomux_v3_setup_multiple_pads(fec1_pads, ARRAY_SIZE(fec1_pads));
+
+	gpio_direction_output(FEC1_RST_GPIO, 0);
+	udelay(500);
+	gpio_set_value(FEC1_RST_GPIO, 1);
 }
 #endif
 
@@ -530,10 +535,6 @@ int board_eth_init(bd_t *bis)
 		CONFIG_FEC_MXC_PHYADDR, IMX_FEC_BASE);
 	if (ret)
 		printf("FEC1 MXC: %s:failed\n", __func__);
-
-	gpio_direction_output(FEC1_RST_GPIO, 0);
-	udelay(500);
-	gpio_set_value(FEC1_RST_GPIO, 1);
 
 	return ret;
 }
