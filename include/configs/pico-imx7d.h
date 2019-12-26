@@ -150,7 +150,7 @@
 		"\0" \
 	"initrd_addr=0x83800000\0" \
 	"initrd_high=0xffffffff\0" \
-	"bootcmd_mfg=run mfgtool_args; run fbcmd\0" /*bootz ${loadaddr} ${initrd_addr} ${fdt_addr};\0" \*/
+	"bootcmd_mfg=run mfgtool_args; sleep 3; run fbcmd\0" /*bootz ${loadaddr} ${initrd_addr} ${fdt_addr};\0" \*/
 
 #if defined(CONFIG_SYS_BOOT_NAND)
 #define CONFIG_EXTRA_ENV_SETTINGS \
