@@ -127,13 +127,20 @@
 	"jh_netboot=setenv fdt_file fsl-imx8mm-evk-root.dtb; setenv jh_clk clk_ignore_unused; run netboot\0 "
 
 /* Boot M4 */
-#define CONFIG_SYS_AUXCORE_BOOTDATA 0x7E0000 /* Set to TCML address */
+#define SYS_AUXCORE_BOOTDATA_DDR	0x80000000
+#define SYS_AUXCORE_BOOTDATA_TCM	0x007E0000
 
 #define M4_BOOT_ENV \
-	"m4_image=m4.bin\0" \
-	"loadm4image=fatload mmc ${mmcdev}:${mmcpart} "__stringify(CONFIG_SYS_AUXCORE_BOOTDATA)" ${m4_image}\0" \
-	"updatem4fdtfile=setexpr fdt_file sub \"\\\\.\" -m4.\0" \
-	"m4boot=if run loadm4image; then dcache flush; bootaux "__stringify(CONFIG_SYS_AUXCORE_BOOTDATA)"; run updatem4fdtfile; fi;\0" \
+	"m4image=m4.bin\0" \
+	"m4loadaddr="__stringify(SYS_AUXCORE_BOOTDATA_TCM)"\0" \
+	"m4loadfdt=" \
+		"if test ${dtoverlay} = \"\"; then " \
+			"setenv dtoverlay m4; " \
+		"else " \
+			"if setexpr dtoverlay sub m4 m4; then ; else setenv dtoverlay \"${dtoverlay} m4\"; fi; " \
+		"fi\0" \
+	"m4boot=if fatload mmc ${mmcdev}:${mmcpart} ${m4loadaddr} ${m4image}; then " \
+		"dcache flush; bootaux ${m4loadaddr}; run m4loadfdt; fi\0" \
 
 #ifdef CONFIG_NAND_BOOT
 #define MFG_NAND_PARTITION "mtdparts=gpmi-nand:64m(nandboot),16m(nandfit),32m(nandkernel),16m(nanddtb),8m(nandtee),-(nandrootfs) "
