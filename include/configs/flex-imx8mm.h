@@ -174,17 +174,24 @@
 	"loadfdt=" \
 		"echo Loading fdt_file ${fdt_file}...; " \
 		"fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
+	"checkbaseboard=" \
+		"if test ${fdt_file} = imx8mm-flex-wizard.dtb; then " \
+			"setenv baseboard wizard; " \
+		"else " \
+			"setenv baseboard pi; " \
+		"fi;\0" \
 	"loadoverlay=" \
 		"fdt addr ${fdt_addr} && fdt resize ${fdt_buffer}; " \
 		"setexpr fdtovaddr ${fdt_addr} + 0xF0000; " \
 		"for ov in ${dtoverlay}; do " \
 			"echo Overlaying ${ov}...; " \
-			"fatload mmc ${mmcdev}:${mmcpart} ${fdtovaddr} imx8mm-flex-${ov}.dtbo && fdt apply ${fdtovaddr}; " \
+			"fatload mmc ${mmcdev}:${mmcpart} ${fdtovaddr} imx8mm-flex-${baseboard}-${ov}.dtbo && fdt apply ${fdtovaddr}; " \
 		"done\0" \
 	"mmcboot=echo Booting from mmc ...; " \
 		"run mmcargs; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
 			"if run loadfdt; then " \
+				"run checkbaseboard; " \
 				"run loadoverlay; " \
 				"booti ${loadaddr} - ${fdt_addr}; " \
 			"else " \
