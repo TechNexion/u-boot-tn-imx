@@ -5,3 +5,5 @@
 #
 
 obj-y  := pico-imx6ul.o
+obj-$(CONFIG_SPL_BUILD) += pico-imx6ul_spl.o
+

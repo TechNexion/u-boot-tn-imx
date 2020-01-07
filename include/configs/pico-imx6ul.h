@@ -14,6 +14,10 @@
 #include "mx6_common.h"
 #include <asm/mach-imx/gpio.h>
 
+#ifdef CONFIG_SPL
+#include "imx6_spl.h"
+#endif
+
 /* Network support */
 
 #define CONFIG_FEC_MXC

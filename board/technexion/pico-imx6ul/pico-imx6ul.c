@@ -270,6 +270,43 @@ int board_ehci_hcd_init(int port)
 	return 0;
 }
 
+#ifdef CONFIG_LDO_BYPASS_CHECK
+void ldo_mode_set(int ldo_bypass)
+{
+        unsigned int value;
+        u32 vddarm;
+
+        struct pmic *p = pfuze;
+
+        if (!p) {
+                printf("No PMIC found!\n");
+                return;
+        }
+
+        /* switch to ldo_bypass mode */
+        if (ldo_bypass) {
+                prep_anatop_bypass();
+                /* decrease VDDARM to 1.275V */
+                pmic_reg_read(pfuze, PFUZE3000_SW1BVOLT, &value);
+                value &= ~0x1f;
+                value |= PFUZE3000_SW1AB_SETP(12750);
+                pmic_reg_write(pfuze, PFUZE3000_SW1BVOLT, value);
+
+                set_anatop_bypass(1);
+                vddarm = PFUZE3000_SW1AB_SETP(11750);
+
+                pmic_reg_read(pfuze, PFUZE3000_SW1BVOLT, &value);
+                value &= ~0x1f;
+                value |= vddarm;
+                pmic_reg_write(pfuze, PFUZE3000_SW1BVOLT, value);
+
+                finish_anatop_bypass();
+         
+                printf("switch to ldo_bypass mode!\n");
+        }
+}
+#endif/* CONFIG_LDO_BYPASS_CHECK */
+
 int board_init(void)
 {
 	/* Address of boot parameters */
@@ -285,9 +322,73 @@ int board_init(void)
 	return 0;
 }
 
+int check_mmc_autodetect(void)
+{
+        char *autodetect_str = env_get("mmcautodetect");
+
+        if ((autodetect_str != NULL) && 
+                (strcmp(autodetect_str, "yes") == 0)) {
+                return 1;
+        }
+
+        return 0;
+}
+
+int mmc_map_to_kernel_blk(int dev_no)
+{
+        return dev_no;
+}
+
+void board_late_mmc_init(void)
+{
+        char cmd[32];
+        char mmcblk[32];
+        u32 dev_no = mmc_get_env_dev();
+
+        if (!check_mmc_autodetect())
+                return;
+
+        env_set_ulong("mmcdev", dev_no);
+
+        /* Set mmcblk env */
+        sprintf(mmcblk, "/dev/mmcblk%dp2 rootwait rw",
+                mmc_map_to_kernel_blk(dev_no));
+        env_set("mmcroot", mmcblk);
+
+        sprintf(cmd, "mmc dev %d", dev_no);
+        run_command(cmd, 0);
+}
+
+int board_late_init(void)
+{
+#ifdef CONFIG_CMD_BMODE
+        add_board_boot_modes(board_boot_modes);
+#endif /* CONFIG_CMD_BMODE */
+
+#ifdef CONFIG_ENV_IS_IN_MMC
+        board_late_mmc_init();
+#endif /* CONFIG_ENV_IS_IN_MMC */
+
+        set_wdog_reset((struct wdog_regs *)WDOG1_BASE_ADDR);
+
+#ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
+        env_set("som", get_som_type());
+
+        setup_iomux_ddr_type_detection();
+        gpio_direction_input(DDR_TYPE_DET);
+
+        if (gpio_get_value(DDR_TYPE_DET))
+                env_set("memdet", "512MB");
+        else
+                env_set("memdet", "256MB");
+#endif
+
+        return 0;
+}
+
 int checkboard(void)
 {
-	puts("Board: PICO-IMX6UL-EMMC\n");
+	puts("Board: TechNexion PICO-IMX6UL-EMMC\n");
 
 	return 0;
 }
