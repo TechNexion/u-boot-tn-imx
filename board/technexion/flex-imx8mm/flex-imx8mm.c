@@ -421,13 +421,23 @@ size_t display_count = ARRAY_SIZE(displays);
 
 #define FT5336_TOUCH_I2C_BUS 0
 #define FT5336_TOUCH_I2C_ADDR 0x38
+#define DISPLAY_DTOVERLAY	"mipi5"
+
+#define BOARD_DETECT_PAD IMX_GPIO_NR(4, 29)
+static iomux_v3_cfg_t const board_detect_pads[] = {
+	IMX8MM_PAD_SAI3_RXC_GPIO4_IO29 | MUX_PAD_CTRL(NO_PAD_CTRL),
+};
 
 int board_late_init(void)
 {
 	struct udevice *bus;
 	struct udevice *i2c_dev = NULL;
 	int ret;
-	char *fdt_file;
+	char *fdt_file, *dtoverlay;
+
+	imx_iomux_v3_setup_multiple_pads(board_detect_pads, ARRAY_SIZE(board_detect_pads));
+	gpio_request(BOARD_DETECT_PAD, "board_detect");
+	gpio_direction_input(BOARD_DETECT_PAD);
 
 	fdt_file = env_get("fdt_file");
 	if (fdt_file && !strcmp(fdt_file, "undefined")) {
@@ -437,11 +447,23 @@ int board_late_init(void)
 			return -EINVAL;
 		}
 
-		ret = dm_i2c_probe(bus, FT5336_TOUCH_I2C_ADDR, 0, &i2c_dev);
-		if (ret)
+		if (!gpio_get_value(BOARD_DETECT_PAD))
 			env_set("fdt_file", "imx8mm-flex-pi.dtb");
 		else
-			env_set("fdt_file", "imx8mm-flex-pi-ili9881c.dtb");
+			env_set("fdt_file", "imx8mm-flex-wizard.dtb");
+
+		ret = dm_i2c_probe(bus, FT5336_TOUCH_I2C_ADDR, 0, &i2c_dev);
+		if (!ret) {
+			dtoverlay = env_get("dtoverlay");
+			if (dtoverlay == NULL)
+				env_set("dtoverlay", DISPLAY_DTOVERLAY);
+			else {
+				if (strstr(dtoverlay, DISPLAY_DTOVERLAY) == NULL) {
+					strncat(dtoverlay, " " DISPLAY_DTOVERLAY, 7);
+					env_set("dtoverlay", dtoverlay);
+				}
+			}
+		}
 	}
 
 #ifdef CONFIG_ENV_IS_IN_MMC
