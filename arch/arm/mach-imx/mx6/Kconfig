@@ -542,7 +542,7 @@ config TARGET_PICO_IMX6DL
 
 config TARGET_PICO_IMX6UL
 	bool "TechNexion pico-imx6ul boards"
-	select MX6UL
+	select MX6ULL
 	select BOARD_LATE_INIT
 	select DM
 	select DM_THERMAL
