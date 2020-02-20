@@ -38,8 +38,8 @@
 		};
 
 		fdt@1 {
-			description = "Edm imx8mq with no display";
-			data = /incbin/("./dtb/imx8mq-edm-wizard.dtb");
+			description = "Edm imx8mq fairy with no display";
+			data = /incbin/("./dtb/imx8mq-edm-fairy.dtb");
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
@@ -50,8 +50,8 @@
 		};
 
 		fdt@2 {
-			description = "Edm imx8mm for MIPI 5 inch panel via dcss interface";
-			data = /incbin/("./dtb/imx8mq-edm-wizard-dcss-ili9881c.dtb");
+			description = "Edm imx8mq gnome with no display";
+			data = /incbin/("./dtb/imx8mq-edm-gnome.dtb");
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
@@ -62,8 +62,8 @@
 		};
 
 		fdt@3 {
-			description = "Edm imx8mq for MIPI 8 inch panel via dcss interface";
-			data = /incbin/("./dtb/imx8mq-edm-wizard-dcss-g080uan01.dtb");
+			description = "Edm imx8mq wizard with no display";
+			data = /incbin/("./dtb/imx8mq-edm-wizard.dtb");
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
@@ -74,8 +74,8 @@
 		};
 
 		fdt@4 {
-			description = "Edm imx8mq for MIPI 10 inch panel via dcss interface";
-			data = /incbin/("./dtb/imx8mq-edm-wizard-dcss-g101uan02.dtb");
+			description = "Edm imx8mm wizard for MIPI 5 inch panel";
+			data = /incbin/("./dtb/imx8mq-edm-wizard-dcss-ili9881c.dtb");
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
@@ -86,8 +86,8 @@
 		};
 
 		fdt@5 {
-			description = "Edm imx8mq for MIPI 5 inch via lcdif interface";
-			data = /incbin/("./dtb/imx8mq-edm-wizard-lcdif-adv7535.dtb");
+			description = "Edm imx8mq wizard for MIPI 8 inch panel";
+			data = /incbin/("./dtb/imx8mq-edm-wizard-dcss-g080uan01.dtb");
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
@@ -98,8 +98,20 @@
 		};
 
 		fdt@6 {
-			description = "Edm imx8mq with voicehat";
-			data = /incbin/("./dtb/imx8mq-edm-wizard-voicehat.dtb");
+			description = "Edm imx8mq wizard for MIPI 10 inch panel";
+			data = /incbin/("./dtb/imx8mq-edm-wizard-dcss-g101uan02.dtb");
+			type = "flat_dt";
+			arch = "arm64";
+			compression = "none";
+			load = <0x43000000>;
+			hash@1 {
+				algo = "sha1";
+			};
+		};
+
+		fdt@7 {
+			description = "Edm imx8mq wizard for MIPI to HDMI bridge";
+			data = /incbin/("./dtb/imx8mq-edm-wizard-lcdif-adv7535.dtb");
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
@@ -111,43 +123,47 @@
 	};
 
 	configurations {
-
-		config@imx8mq-edm-wizard {
-			description = "Boot IMX8mq with no display";
+		imx8mq-edm-fairy.dtb {
+			description = "Boot IMX8mq fairy with no display";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@1";
 		};
-
-		config@imx8mq-edm-wizard-dcss-ili9881c {
-			description = "Boot IMX8mq with dcss 5 inch panel";
+		imx8mq-edm-gnome.dtb {
+			description = "Boot IMX8mq gnome with no display";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@2";
 		};
-		config@imx8mq-edm-wizard-dcss-g080uan01 {
-			description = "Boot IMX8mq with dcss 8 inch panel";
+		imx8mq-edm-wizard.dtb {
+			description = "Boot IMX8mq wizard with no display";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@3";
 		};
-		config@imx8mq-edm-wizard-dcss-g101uan02 {
-			description = "Boot IMX8mq with dcss 10 inch panel";
+		imx8mq-edm-wizard-dcss-ili9881c.dtb {
+			description = "Boot IMX8mq with dcss 5 inch panel";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@4";
 		};
-		config@imx8mq-edm-wizard-lcdif-adv7535 {
-			description = "Boot IMX8mq with lcdif and mipi to hdmi bridge";
+		imx8mq-edm-wizard-dcss-g080uan01.dtb {
+			description = "Boot IMX8mq with dcss 8 inch panel";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@5";
 		};
-		config@imx8mq-edm-wizard-voicehat {
-			description = "Boot IMX8mq with VoiceHat";
+		imx8mq-edm-wizard-dcss-g101uan02.dtb {
+			description = "Boot IMX8mq with dcss 10 inch panel";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@6";
+		};
+		imx8mq-edm-wizard-lcdif-adv7535.dtb {
+			description = "Boot IMX8mq with lcdif and mipi to hdmi bridge";
+			kernel = "kernel@1";
+			ramdisk = "ramdisk@1";
+			fdt = "fdt@7";
 		};
 	};
 };
