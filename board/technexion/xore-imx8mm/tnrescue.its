@@ -50,18 +50,6 @@
 		};
 
 		fdt@2 {
-			description = "Xore imx8mm flat device tree blob for no display with MCU";
-			data = /incbin/("./dtb/imx8mm-xore-wizard-m4.dtb");
-			type = "flat_dt";
-			arch = "arm64";
-			compression = "none";
-			load = <0x43000000>;
-			hash@1 {
-				algo = "sha1";
-			};
-		};
-
-		fdt@3 {
 			description = "Xore imx8mm flat device tree blob for MIPI 5 inch panel";
 			data = /incbin/("./dtb/imx8mm-xore-wizard-ili9881c.dtb");
 			type = "flat_dt";
@@ -73,7 +61,7 @@
 			};
 		};
 
-		fdt@4 {
+		fdt@3 {
 			description = "Xore imx8mm flat device tree blob for MIPI 8 inch panel";
 			data = /incbin/("./dtb/imx8mm-xore-wizard-g080uan01.dtb");
 			type = "flat_dt";
@@ -85,7 +73,7 @@
 			};
 		};
 
-		fdt@5 {
+		fdt@4 {
 			description = "Xore imx8mm flat device tree blob for MIPI 10 inch panel";
 			data = /incbin/("./dtb/imx8mm-xore-wizard-g101uan02.dtb");
 			type = "flat_dt";
@@ -97,19 +85,7 @@
 			};
 		};
 
-		fdt@6 {
-			description = "Xore imx8mm flat device tree blob for voicehat";
-			data = /incbin/("./dtb/imx8mm-xore-wizard-voicehat.dtb");
-			type = "flat_dt";
-			arch = "arm64";
-			compression = "none";
-			load = <0x43000000>;
-			hash@1 {
-				algo = "sha1";
-			};
-		};
-		
-		fdt@7 {
+		fdt@5 {
 			description = "Xore imx8mm flat device tree blob for MIPI to HDMI bridge";
 			data = /incbin/("./dtb/imx8mm-xore-wizard-adv7535.dtb");
 			type = "flat_dt";
@@ -123,50 +99,35 @@
 	};
 
 	configurations {
-
-		config@imx8mm-xore-wizard {
-			description = "Boot IMX8mm with no display";
+		imx8mm-xore-wizard.dtb {
+			description = "Boot IMX8mm xore wizard with no display";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@1";
 		};
-
-		config@imx8mm-xore-wizard-m4 {
-			description = "Boot IMX8mm with no display";
+		imx8mm-xore-wizard-ili9881c.dtb {
+			description = "Boot IMX8mm xore wizard with mipi 5' panel";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@2";
 		};
-
-		config@imx8mm-xore-wizard-ili9881c {
-			description = "Boot IMX8mm with 5' MIPI";
+		imx8mm-xore-wizard-g080uan01.dtb {
+			description = "Boot IMX8mm xore wizard with MIPI 8' panel";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@3";
 		};
-		config@imx8mm-xore-wizard-g080uan01 {
-			description = "Boot IMX8mm with 8' MIPI";
+		imx8mm-xore-wizard-g101uan02.dtb {
+			description = "Boot IMX8mm xore wizard with MIPI 10' panel";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@4";
 		};
-		config@imx8mm-xore-g101uan02 {
-			description = "Boot IMX8mm with 10' MIPI";
+		imx8mm-xore-wizard-adv7535.dtb {
+			description = "Boot IMX8mm xore with MIPI to HDMI bridge";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@5";
-		};
-		config@imx8mm-xore-wizard-voicehat {
-			description = "Boot IMX8mm with VoiceHat";
-			kernel = "kernel@1";
-			ramdisk = "ramdisk@1";
-			fdt = "fdt@6";
-		};
-		config@imx8mm-xore-wizard-adv7535 {
-			description = "Boot IMX8mm with MIPI to HDMI bridge";
-			kernel = "kernel@1";
-			ramdisk = "ramdisk@1";
-			fdt = "fdt@7";
 		};
 	};
 };
