@@ -1,0 +1,6 @@
+Technexion SBC-IMX6 board
+M:	Andy Lin <andy.lin@technexion.com>
+S:	Maintained
+F:	board/sbc-imx6/
+F:	include/configs/sbc-imx6.h
+F:	configs/sbc-imx6_defconfig

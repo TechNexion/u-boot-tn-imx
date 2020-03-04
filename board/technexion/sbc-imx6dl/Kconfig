@@ -1,0 +1,18 @@
+if TARGET_SBC_IMX6DL
+
+config SYS_CPU
+	default "armv7"
+
+config SYS_BOARD
+	default "sbc-imx6dl"
+
+config SYS_VENDOR
+	default "technexion"
+
+config SYS_SOC
+	default "mx6"
+
+config SYS_CONFIG_NAME
+	default "sbc-imx6dl"
+
+endif
