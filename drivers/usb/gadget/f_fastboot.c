@@ -28,6 +28,8 @@
 #include "../lib/avb/fsl/utils.h"
 #ifdef CONFIG_FASTBOOT_FLASH_MMC_DEV
 #include <fb_mmc.h>
+#include <fdt_support.h>
+#include <linux/libfdt.h>
 #endif
 
 #ifdef CONFIG_IMX_TRUSTY_OS
@@ -2476,6 +2478,29 @@ int do_boota(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]) {
 	} else {
 		addr = (ulong)(hdr->kernel_addr - hdr->page_size);
 	}
+
+#ifdef CONFIG_OF_LIBFDT_OVERLAY
+	ulong *dtbo_addr = NULL;
+	struct dt_table_entry *dt_entry_overlay = NULL;
+	u32 dtbo_idx = 0;
+	u32 fdt_overlay_size = 0;
+
+	/* idx 0 is the main dtb file, dtbo files starting from idx 1 */
+	for (dtbo_idx = 1; dtbo_idx < be32_to_cpu(dt_img->dt_entry_count); dtbo_idx++) {
+
+		dt_entry_overlay = (struct dt_table_entry *)((ulong)dt_img +
+				be32_to_cpu(dt_img->dt_entries_offset) + dtbo_idx * be32_to_cpu(dt_img->dt_entry_size));
+
+		fdt_overlay_size = be32_to_cpu(dt_entry_overlay->dt_size);
+
+		memcpy((void *)(ulong)dtbo_addr, (void *)((ulong)dt_img +
+					be32_to_cpu(dt_entry_overlay->dt_offset)), fdt_overlay_size);
+
+		fdt_increase_size(hdr->second_addr, fdt_totalsize((void *)dtbo_addr));
+		fdt_overlay_apply(hdr->second_addr, (void *)dtbo_addr);
+	}
+#endif
+
 	printf("kernel   @ %08x (%d)\n", hdr->kernel_addr, hdr->kernel_size);
 	printf("ramdisk  @ %08x (%d)\n", hdr->ramdisk_addr, hdr->ramdisk_size);
 #ifdef CONFIG_OF_LIBFDT
