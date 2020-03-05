@@ -35,6 +35,17 @@
 		#reset-cells = <0>;
 	};
 
+	reg_usdhc2_vmmc: regulator-usdhc2 {
+		compatible = "regulator-fixed";
+		regulator-name = "SD_3V3";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		gpio = <&gpio5 20 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+		startup-delay-us = <100>;
+		off-on-delay-us = <120000>;
+	};
+
 	regulators {
 		compatible = "simple-bus";
 		#address-cells = <1>;
@@ -179,6 +190,7 @@
 		pinctrl_usdhc2_gpio: usdhc2grpgpio {
 			fsl,pins = <
 				MX8MM_IOMUXC_SD2_CD_B_GPIO2_IO12	0x1c4
+				MX8MM_IOMUXC_I2C4_SCL_GPIO5_IO20	0x41
 			>;
 		};
 
@@ -529,6 +541,7 @@
 	pinctrl-2 = <&pinctrl_usdhc2_200mhz>, <&pinctrl_usdhc2_gpio>;
 	cd-gpios = <&gpio2 12 GPIO_ACTIVE_LOW>;
 	bus-width = <4>;
+	vmmc-supply = <&reg_usdhc2_vmmc>;
 	status = "okay";
 };
 
