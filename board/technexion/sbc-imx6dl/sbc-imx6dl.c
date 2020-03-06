@@ -60,6 +60,7 @@ DECLARE_GLOBAL_DATA_PTR;
 #define BT_NRST		IMX_GPIO_NR(7, 12)
 #define LVDS0_EN	IMX_GPIO_NR(2, 8)
 #define LVDS0_BL_EN	IMX_GPIO_NR(2, 9)
+#define PCIE_RST	IMX_GPIO_NR(6, 31)
 
 int dram_init(void)
 {
@@ -126,6 +127,11 @@ static iomux_v3_cfg_t const wifi_pads[] = {
 static iomux_v3_cfg_t const bt_pads[] = {
 	/* bluetooth BT_nRST */
 	IOMUX_PADS(PAD_GPIO_17__GPIO7_IO12 | MUX_PAD_CTRL(NO_PAD_CTRL)),
+};
+
+static iomux_v3_cfg_t const pcie_pads[] = {
+	/* PCIE_nRST */
+	IOMUX_PADS(PAD_EIM_BCLK__GPIO6_IO31 | MUX_PAD_CTRL(NO_PAD_CTRL)),
 };
 
 #ifndef CONFIG_SPL_BUILD
@@ -597,6 +603,11 @@ int board_late_init(void)
 	gpio_direction_output(BT_NRST, 0);
 	mdelay(10);
 	gpio_set_value(BT_NRST, 1);
+
+	/* set pcie reset as high level by default */
+	SETUP_IOMUX_PADS(pcie_pads);
+	gpio_direction_output(PCIE_RST, 1);
+	gpio_set_value(PCIE_RST, 1);
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	env_set("som", get_som_type());
