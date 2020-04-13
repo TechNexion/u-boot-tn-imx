@@ -111,7 +111,6 @@
 	"console=ttymxc0\0" \
 	"splashpos=m,m\0" \
 	"splashsource=mmc_fs\0" \
-	"splashimage=" __stringify(CONFIG_LOADADDR) "\0" \
 	"som=autodetect\0" \
 	"baseboard=pi\0" \
 	"default_baseboard=pi\0" \
