@@ -2,7 +2,7 @@
  * Copyright (C) 2018 Technexion Ltd.
  *
  * Author: Richard Hu <richard.hu@technexion.com>
-//  *
+ *
  * SPDX-License-Identifier:	GPL-2.0+
  */
 
@@ -186,7 +186,7 @@ int board_mmc_init(bd_t *bis)
 	/*
 	 * Following map is done:
 	 * (USDHC)	(Physical Port)
-	 * usdhc3	SOM MicroSD/MMC
+	 * usdhc3	SOM eMMC
 	 * usdhc1	Carrier board MicroSD
 	 * Always set boot USDHC as mmc0
 	 */
@@ -429,8 +429,8 @@ struct display_info_t const displays[] = {{
 		.sync           = FB_SYNC_EXT,
 		.vmode          = FB_VMODE_NONINTERLACED
 } }, {
-	.bus	= -1,
-	.addr	= 0,
+	.bus	= 1,
+	.addr	= 0x38,
 	.pixfmt	= IPU_PIX_FMT_RGB24,
 	.detect	= detect_i2c,
 	.enable	= enable_ft5x06_wvga,
@@ -580,52 +580,6 @@ static const struct boot_mode board_boot_modes[] = {
 };
 #endif
 
-/*
-int board_mmc_get_env_dev(int devno)
-{
-	return devno;
-}
-*/
-/*
-static int check_mmc_autodetect(void)
-{
-	char *autodetect_str = env_get("mmcautodetect");
-
-	if ((autodetect_str != NULL) &&
-		(strcmp(autodetect_str, "yes") == 0)) {
-		return 1;
-	}
-
-	return 0;
-} */
-
-/* This should be defined for each board */
-/*
-__weak int mmc_map_to_kernel_blk(int dev_no)
-{
-	return dev_no;
-}
-
-void board_late_mmc_env_init(void)
-{
-	char cmd[32];
-	char mmcblk[32];
-	u32 dev_no = mmc_get_env_dev();
-
-	if (!check_mmc_autodetect())
-		return;
-
-	env_set_ulong ("mmcdev", dev_no);
-
-	/* Set mmcblk env */ /*
-	sprintf(mmcblk, "/dev/mmcblk%dp2 rootwait rw",
-		mmc_map_to_kernel_blk(dev_no));
-	env_set ("mmcroot", mmcblk);
-
-	sprintf(cmd, "mmc dev %d", dev_no);
-	run_command(cmd, 0);
-}
-*/
 
 int board_late_init(void)
 {
@@ -676,12 +630,6 @@ int board_late_init(void)
 #ifdef CONFIG_CMD_BMODE
 	add_board_boot_modes(board_boot_modes);
 #endif
-/*
-#ifdef CONFIG_ENV_IS_IN_MMC
-	board_late_mmc_env_init();
-#endif
-*/
-
 	return 0;
 }
 
@@ -708,7 +656,7 @@ int checkboard(void)
 {
 	printf("Board: axon-imx6\n");
 
-	printf("Available baseboard: pi\n");
+	printf("Available baseboard: pi, wizard\n");
 
 	return 0;
 }
