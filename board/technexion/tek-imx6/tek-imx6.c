@@ -454,6 +454,7 @@ struct touth_device {
 static struct touth_device touch_matches[] = {
 	{0x0eef, "eGalaxTouch EXC3146-10"},
 	{0x0eef, "eGalaxTouch EXC3160-15"},
+	{0x0eef, "eGalaxTouch P80H60 1563"},
 };
 
 static char usb_inited = -1;
@@ -578,6 +579,26 @@ struct display_info_t const displays[] = {{
 	.enable = enable_lvds,
 	.mode	= {
 		.name           = "LVDS_SIN_1368x768",
+		.refresh        = 60,
+		.xres           = 1368,
+		.yres           = 768,
+		.pixclock       = 13158,
+		.left_margin    = 90,
+		.right_margin   = 90,
+		.upper_margin   = 17,
+		.lower_margin   = 17,
+		.hsync_len      = 20,
+		.vsync_len      = 4,
+		.sync           = FB_SYNC_EXT,
+		.vmode          = FB_VMODE_NONINTERLACED
+} }, {
+	.bus	= 1,
+	.addr	= 2,
+	.pixfmt = IPU_PIX_FMT_RGB24,
+	.detect = detect_usb,
+	.enable = enable_lvds,
+	.mode	= {
+		.name           = "LVDS_VXT_VL156-13676YL",
 		.refresh        = 60,
 		.xres           = 1368,
 		.yres           = 768,
@@ -740,7 +761,7 @@ int board_late_init(void)
 
 	if ((s = env_get ("fdtfile_autodetect")) != NULL) {
 		if (strncmp (s, "off", 3) != 0) {
-			if(detect_usb(&displays[2])) {		// detect 15-inch panel
+			if(detect_usb(&displays[2]) || detect_usb(&displays[3])) {		// detect 15-inch panel
 				strncpy(s, "_15inch", 7);
 			} else
 				s[0] = 0;
