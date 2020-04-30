@@ -603,7 +603,7 @@ int board_early_init_f(void)
 	return 0;
 }
 
-#define BT_RST_GPIO		IMX_GPIO_NR(4, 18)
+#define BT_RST_GPIO		IMX_GPIO_NR(4, 17)
 #define WIFI_RST_GPIO	IMX_GPIO_NR(4, 16)
 
 int board_init(void)
