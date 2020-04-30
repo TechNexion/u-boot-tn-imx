@@ -551,6 +551,46 @@ int board_eth_init(bd_t *bis)
 	return cpu_eth_init(bis);
 }
 
+#ifdef CONFIG_USB_EHCI_MX6
+
+#define USB_CDET_GPIO		IMX_GPIO_NR(1, 24)
+static iomux_v3_cfg_t const usb_cdet_pads[] = {
+	IOMUX_PADS(PAD_ENET_RX_ER__GPIO1_IO24 | MUX_PAD_CTRL(NO_PAD_CTRL)),
+};
+
+int board_ehci_hcd_init(int port)
+{
+	switch (port) {
+	case 0:
+		SETUP_IOMUX_PADS(usb_cdet_pads);
+		break;
+	case 1:
+		break;
+	default:
+		printf("MXC USB port %d not yet supported\n", port);
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
+int board_ehci_power(int port, int on)
+{
+	switch (port) {
+	case 0:
+		/* TODO: Add Power GPIO here, but requires fabric initialization */
+		break;
+	case 1:
+		break;
+	default:
+		printf("MXC USB port %d not yet supported\n", port);
+		return -EINVAL;
+	}
+
+	return 0;
+}
+#endif
+
 int board_early_init_f(void)
 {
 	setup_iomux_uart();
@@ -663,5 +703,14 @@ int checkboard(void)
 
 int board_usb_phy_mode(int port)
 {
-       return USB_INIT_DEVICE;
+	switch (port) {
+	case 0:
+		if (gpio_get_value(USB_CDET_GPIO))
+			return USB_INIT_DEVICE;
+		else
+			return USB_INIT_HOST;
+	case 1:
+	default:
+		return USB_INIT_HOST;
+	}
 }
