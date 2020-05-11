@@ -473,6 +473,7 @@ struct mipi_panel_id {
 static const struct mipi_panel_id mipi_panel_mapping[] = {
 	{"MIPI2HDMI", 0, "mipi2hdmi"},
 	{"ILI9881C_LCD", 0x54, "mipi5"},
+	{"G101UAN02_LCD", 0x59, "mipi10"},
 };
 
 static int display_dtoverlay_indx = -1;
@@ -519,6 +520,13 @@ struct mipi_dsi_client_dev ili9881c_dev = {
 	.format  = MIPI_DSI_FMT_RGB888,
 	.mode_flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_SYNC_PULSE |
 			  MIPI_DSI_CLOCK_NON_CONTINUOUS | MIPI_DSI_MODE_VIDEO_HSE,
+};
+
+struct mipi_dsi_client_dev g101uan02_dev = {
+	.channel	= 0,
+	.lanes = 4,
+	.format  = MIPI_DSI_FMT_RGB888,
+	.mode_flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_SYNC_PULSE,
 };
 
 #define FSL_SIP_GPC			0xC2000000
@@ -577,9 +585,17 @@ void do_enable_mipi_lcd(struct display_info_t const *dev)
 	/* Setup mipi dsim */
 	sec_mipi_dsim_setup(&imx8mm_mipi_dsim_plat_data);
 
-	ili9881c_init();
-	ili9881c_dev.name = displays[1].mode.name;
-	imx_mipi_dsi_bridge_attach(&ili9881c_dev); /* attach ili9881c device */
+	switch(display_dtoverlay_indx) {
+		case 1:
+			ili9881c_init();
+			ili9881c_dev.name = displays[display_dtoverlay_indx].mode.name;
+			imx_mipi_dsi_bridge_attach(&ili9881c_dev); /* attach ili9881c device */
+			break;
+		case 2:
+			g101uan02_dev.name = displays[display_dtoverlay_indx].mode.name;
+			imx_mipi_dsi_bridge_attach(&g101uan02_dev);
+			break;
+	};
 }
 
 void board_quiesce_devices(void)
@@ -627,6 +643,27 @@ struct display_info_t const displays[] = {{
 		.lower_margin	= 10,
 		.hsync_len		= 20,
 		.vsync_len		= 10,
+		.sync			= FB_SYNC_EXT,
+		.vmode			= FB_VMODE_NONINTERLACED
+
+} }, {
+	.bus = LCDIF_BASE_ADDR,
+	.addr = FT5336_TOUCH_I2C_ADDR,
+	.pixfmt = 24,
+	.detect = detect_i2c,
+	.enable	= do_enable_mipi_lcd,
+	.mode	= {
+		.name			= "G101UAN02_LCD",
+		.refresh		= 60,
+		.xres			= 1920,
+		.yres			= 1200,
+		.pixclock		= 6671, /* 899400  kHz */
+		.left_margin	= 60,
+		.right_margin	= 60,
+		.upper_margin	= 5,
+		.lower_margin	= 5,
+		.hsync_len		= 18,
+		.vsync_len		= 2,
 		.sync			= FB_SYNC_EXT,
 		.vmode			= FB_VMODE_NONINTERLACED
 
