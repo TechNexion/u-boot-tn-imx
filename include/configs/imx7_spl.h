@@ -19,10 +19,10 @@
  *  - Set the stack at the end of the free area section, at 0x00946BB8.
  *  - The BOOT ROM loads what they consider the firmware image
  *    which consists of a 4K header in front of us that contains the IVT, DCD
- *    and some padding thus 'our' max size is really 0x00946BB8 - 0x00911000.
+ *    and some padding thus 'our' max size is really 0x00946BB8 - 0x00911500.
  *    64KB is more then enough for the SPL.
  */
-#define CONFIG_SPL_TEXT_BASE		0x00911000
+#define CONFIG_SPL_TEXT_BASE		0x00911500
 #define CONFIG_SPL_MAX_SIZE		0x10000
 #define CONFIG_SPL_STACK		0x00946BB8
 /*
