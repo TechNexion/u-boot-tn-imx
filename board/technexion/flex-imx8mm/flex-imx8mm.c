@@ -473,6 +473,7 @@ struct mipi_panel_id {
 static const struct mipi_panel_id mipi_panel_mapping[] = {
 	{"MIPI2HDMI", 0, "mipi2hdmi"},
 	{"ILI9881C_LCD", 0x54, "mipi5"},
+	{"G080UAN01_LCD", 0x58, "mipi8"},
 	{"G101UAN02_LCD", 0x59, "mipi10"},
 };
 
@@ -520,6 +521,13 @@ struct mipi_dsi_client_dev ili9881c_dev = {
 	.format  = MIPI_DSI_FMT_RGB888,
 	.mode_flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_SYNC_PULSE |
 			  MIPI_DSI_CLOCK_NON_CONTINUOUS | MIPI_DSI_MODE_VIDEO_HSE,
+};
+
+struct mipi_dsi_client_dev g080uan01_dev = {
+	.channel	= 0,
+	.lanes = 4,
+	.format  = MIPI_DSI_FMT_RGB888,
+	.mode_flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_SYNC_PULSE,
 };
 
 struct mipi_dsi_client_dev g101uan02_dev = {
@@ -592,6 +600,10 @@ void do_enable_mipi_lcd(struct display_info_t const *dev)
 			imx_mipi_dsi_bridge_attach(&ili9881c_dev); /* attach ili9881c device */
 			break;
 		case 2:
+			g080uan01_dev.name = displays[display_dtoverlay_indx].mode.name;
+			imx_mipi_dsi_bridge_attach(&g080uan01_dev);
+			break;
+		case 3:
 			g101uan02_dev.name = displays[display_dtoverlay_indx].mode.name;
 			imx_mipi_dsi_bridge_attach(&g101uan02_dev);
 			break;
@@ -643,6 +655,27 @@ struct display_info_t const displays[] = {{
 		.lower_margin	= 10,
 		.hsync_len		= 20,
 		.vsync_len		= 10,
+		.sync			= FB_SYNC_EXT,
+		.vmode			= FB_VMODE_NONINTERLACED
+
+} }, {
+	.bus = LCDIF_BASE_ADDR,
+	.addr = FT5336_TOUCH_I2C_ADDR,
+	.pixfmt = 24,
+	.detect = detect_i2c,
+	.enable	= do_enable_mipi_lcd,
+	.mode	= {
+		.name			= "G080UAN01_LCD",
+		.refresh		= 60,
+		.xres			= 1200,
+		.yres			= 1920,
+		.pixclock		= 6273, /* 956400  kHz */
+		.left_margin	= 60,
+		.right_margin	= 60,
+		.upper_margin	= 25,
+		.lower_margin	= 35,
+		.hsync_len		= 2,
+		.vsync_len		= 1,
 		.sync			= FB_SYNC_EXT,
 		.vmode			= FB_VMODE_NONINTERLACED
 
