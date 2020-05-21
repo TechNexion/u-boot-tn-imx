@@ -389,14 +389,7 @@ struct mipi_dsi_client_dev ili9881c_dev = {
 			  MIPI_DSI_CLOCK_NON_CONTINUOUS | MIPI_DSI_MODE_VIDEO_HSE,
 };
 
-struct mipi_dsi_client_dev g080uan01_dev = {
-	.channel	= 0,
-	.lanes = 4,
-	.format  = MIPI_DSI_FMT_RGB888,
-	.mode_flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_SYNC_PULSE,
-};
-
-struct mipi_dsi_client_dev g101uan02_dev = {
+struct mipi_dsi_client_dev gxxxuan_dev = {
 	.channel	= 0,
 	.lanes = 4,
 	.format  = MIPI_DSI_FMT_RGB888,
@@ -466,12 +459,9 @@ void do_enable_mipi_lcd(struct display_info_t const *dev)
 			imx_mipi_dsi_bridge_attach(&ili9881c_dev); /* attach ili9881c device */
 			break;
 		case 2:
-			g080uan01_dev.name = displays[display_dtoverlay_indx].mode.name;
-			imx_mipi_dsi_bridge_attach(&g080uan01_dev);
-			break;
 		case 3:
-			g101uan02_dev.name = displays[display_dtoverlay_indx].mode.name;
-			imx_mipi_dsi_bridge_attach(&g101uan02_dev);
+			gxxxuan_dev.name = displays[display_dtoverlay_indx].mode.name;
+			imx_mipi_dsi_bridge_attach(&gxxxuan_dev);
 			break;
 	};
 }
