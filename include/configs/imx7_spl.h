@@ -22,7 +22,12 @@
  *    and some padding thus 'our' max size is really 0x00946BB8 - 0x00911500.
  *    64KB is more then enough for the SPL.
  */
-#define CONFIG_SPL_TEXT_BASE		0x00911500
+#ifdef CONFIG_SECURE_BOOT
+#define CONFIG_SPL_TEXT_BASE	0x00911000
+#else
+#define CONFIG_SPL_TEXT_BASE	0x00911500
+#endif
+
 #define CONFIG_SPL_MAX_SIZE		0x10000
 #define CONFIG_SPL_STACK		0x00946BB8
 /*
