@@ -762,7 +762,7 @@ int board_late_init(void)
 	if ((s = env_get ("fdtfile_autodetect")) != NULL) {
 		if (strncmp (s, "off", 3) != 0) {
 			if(detect_usb(&displays[2]) || detect_usb(&displays[3])) {		// detect 15-inch panel
-				strncpy(s, "_15inch", 7);
+				strncpy(s, "-15inch", 7);
 			} else
 				s[0] = 0;
 
