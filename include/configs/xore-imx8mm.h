@@ -159,6 +159,7 @@
 	"script=boot.scr\0" \
 	"image=Image\0" \
 	"console=ttymxc1,115200 earlycon=ec_imx6q,0x30890000,115200\0" \
+	"splashpos=m,m\0" \
 	"fdt_addr=0x43000000\0"			\
 	"fdt_high=0xffffffffffffffff\0"		\
 	"boot_fdt=try\0" \
@@ -361,7 +362,8 @@
 #define CONFIG_VIDEO_BMP_RLE8
 #define CONFIG_VIDEO_BMP_LOGO
 #define CONFIG_IMX_VIDEO_SKIP
-#define CONFIG_RM67191
+#define CONFIG_ADV75353
+#define CONFIG_ILI9881C
 #endif
 
 #define CONFIG_OF_SYSTEM_SETUP
