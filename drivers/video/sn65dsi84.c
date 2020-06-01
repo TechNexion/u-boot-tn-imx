@@ -1,0 +1,157 @@
+/*
+ * Copyright 2020 TechNexion
+ *
+ * SPDX-License-Identifier:	GPL-2.0+
+ */
+
+#include <common.h>
+#include <i2c.h>
+#include <dm/uclass.h>
+
+#define SN65DSI84_I2C_ADDR 0x2d
+
+#define DISPLAY_NAME_MIPI2LVDS10 "M101NWWB_LCD"
+#define DISPLAY_NAME_MIPI2LVDS15 "G156XW01_LCD"
+#define DISPLAY_NAME_MIPI2LVDS21 "G215HVN01_LCD"
+
+struct dsi84_instr_t {
+	uint8_t addr;
+	uint8_t value;
+};
+
+static struct dsi84_instr_t ivo_m101nwwb[] = {
+	/* reset and clock registers */
+	{0x09, 0x00}, {0x0A, 0x05}, {0x0B, 0x10}, {0x0D, 0x00},
+	/* DSI registers */
+	{0x10, 0x26}, {0x11, 0x00}, {0x12, 0x2d}, {0x13, 0x00},
+	/* LVDS registers */
+	{0x18, 0x78}, {0x19, 0x00}, {0x1A, 0x03}, {0x1B, 0x00},
+	/* video registers */
+	/* cha-al-len-l, cha-al-len-h, chb-al-len-l, chb-al-len-h */
+	{0x20, 0x56}, {0x21, 0x05}, {0x22, 0x00}, {0x23, 0x00},
+	/* cha-v-ds-l, cha-v-ds-h, chb-v-ds-l, chb-v-ds-h */
+	{0x24, 0x00}, {0x25, 0x00}, {0x26, 0x00}, {0x27, 0x00},
+	/* cha-sdl, cha-sdh, chb-sdl, chb-sdh */
+	{0x28, 0x21}, {0x29, 0x00}, {0x2A, 0x00}, {0x2B, 0x00},
+	/* cha-hs-pwl, cha-hs-pwh, chb-hs-pwl, chb-hs-pwh */
+	{0x2C, 0x64}, {0x2D, 0x00}, {0x2E, 0x00}, {0x2F, 0x00},
+	/* cha-vs-pwl, cha-vs-pwh, chb-vs-pwl, chb-vs-pwh */
+	{0x30, 0x14}, {0x31, 0x00}, {0x32, 0x00}, {0x33, 0x00},
+	/*cha-hbp, chb-hbp, cha-vbp, chb-vbp*/
+	{0x34, 0x2f}, {0x35, 0x00}, {0x36, 0x00}, {0x37, 0x00},
+	/* cha-hfp, chb-hfp, cha-vfp, chb-vfp*/
+	{0x38, 0x00}, {0x39, 0x00}, {0x3A, 0x00}, {0x3B, 0x00},
+	{0x3C, 0x00}, {0x3D, 0x00}, {0x3E, 0x00}, {0x0D, 0x01},
+};
+
+static struct dsi84_instr_t auo_g156xw01[] = {
+	/* reset and clock registers */
+	{0x09, 0x00}, {0x0A, 0x05}, {0x0B, 0x10}, {0x0D, 0x00},
+	/* DSI registers */
+	{0x10, 0x26}, {0x11, 0x00}, {0x12, 0x2d}, {0x13, 0x00},
+	/* LVDS registers */
+	{0x18, 0x78}, {0x19, 0x00}, {0x1A, 0x03}, {0x1B, 0x00},
+	/* video registers */
+	/* cha-al-len-l, cha-al-len-h, chb-al-len-l, chb-al-len-h */
+	{0x20, 0x56}, {0x21, 0x05}, {0x22, 0x00}, {0x23, 0x00},
+	/* cha-v-ds-l, cha-v-ds-h, chb-v-ds-l, chb-v-ds-h */
+	{0x24, 0x00}, {0x25, 0x00}, {0x26, 0x00}, {0x27, 0x00},
+	/* cha-sdl, cha-sdh, chb-sdl, chb-sdh */
+	{0x28, 0x21}, {0x29, 0x00}, {0x2A, 0x00}, {0x2B, 0x00},
+	/* cha-hs-pwl, cha-hs-pwh, chb-hs-pwl, chb-hs-pwh */
+	{0x2C, 0x64}, {0x2D, 0x00}, {0x2E, 0x00}, {0x2F, 0x00},
+	/* cha-vs-pwl, cha-vs-pwh, chb-vs-pwl, chb-vs-pwh */
+	{0x30, 0x14}, {0x31, 0x00}, {0x32, 0x00}, {0x33, 0x00},
+	/*cha-hbp, chb-hbp, cha-vbp, chb-vbp*/
+	{0x34, 0x2f}, {0x35, 0x00}, {0x36, 0x00}, {0x37, 0x00},
+	/* cha-hfp, chb-hfp, cha-vfp, chb-vfp*/
+	{0x38, 0x00}, {0x39, 0x00}, {0x3A, 0x00}, {0x3B, 0x00},
+	{0x3C, 0x00}, {0x3D, 0x00}, {0x3E, 0x00}, {0x0D, 0x01},
+};
+
+static struct dsi84_instr_t auo_g215hvn01[] = {
+	/* reset and clock registers */
+	{0x09, 0x00}, {0x0A, 0x03}, {0x0B, 0x20}, {0x0D, 0x00},
+	/* DSI registers */
+	{0x10, 0x26}, {0x11, 0x00}, {0x12, 0x35}, {0x13, 0x00},
+	/* LVDS registers */
+	{0x18, 0x6c}, {0x19, 0x00}, {0x1A, 0x03}, {0x1B, 0x00},
+	/* video registers */
+	/* cha-al-len-l, cha-al-len-h, chb-al-len-l, chb-al-len-h */
+	{0x20, 0x80}, {0x21, 0x07}, {0x22, 0x00}, {0x23, 0x00},
+	/* cha-v-ds-l, cha-v-ds-h, chb-v-ds-l, chb-v-ds-h */
+	{0x24, 0x00}, {0x25, 0x00}, {0x26, 0x00}, {0x27, 0x00},
+	/* cha-sdl, cha-sdh, chb-sdl, chb-sdh */
+	{0x28, 0xbd}, {0x29, 0x01}, {0x2A, 0x00}, {0x2B, 0x00},
+	/* cha-hs-pwl, cha-hs-pwh, chb-hs-pwl, chb-hs-pwh */
+	{0x2C, 0x14}, {0x2D, 0x00}, {0x2E, 0x00}, {0x2F, 0x00},
+	/* cha-vs-pwl, cha-vs-pwh, chb-vs-pwl, chb-vs-pwh */
+	{0x30, 0x04}, {0x31, 0x00}, {0x32, 0x00}, {0x33, 0x00},
+	/*cha-hbp, chb-hbp, cha-vbp, chb-vbp*/
+	{0x34, 0x46}, {0x35, 0x00}, {0x36, 0x00}, {0x37, 0x00},
+	/* cha-hfp, chb-hfp, cha-vfp, chb-vfp*/
+	{0x38, 0x00}, {0x39, 0x00}, {0x3A, 0x00}, {0x3B, 0x00},
+	{0x3C, 0x00}, {0x3D, 0x00}, {0x3E, 0x00}, {0x0D, 0x01},
+};
+
+void sn65dsi84_init(int i2c_bus, const char *panel)
+{
+	struct udevice *bus, *dev;
+	uint8_t chipid[] = { 0x35, 0x38, 0x49, 0x53, 0x44, 0x20, 0x20, 0x20, 0x01 }; /* 58isd */
+	struct dsi84_instr_t *instr;
+	int ret, i, reg_size;
+	uint8_t val;
+
+	ret = uclass_get_device_by_seq(UCLASS_I2C, i2c_bus, &bus);
+	if (ret) {
+		printf("%s: No bus %d\n", __func__, i2c_bus);
+		return;
+	}
+
+	ret = dm_i2c_probe(bus, SN65DSI84_I2C_ADDR, 0, &dev);
+	if (ret) {
+		printf("%s: Can't find device id=0x%x, on bus %d\n",
+			__func__, SN65DSI84_I2C_ADDR, i2c_bus);
+		return;
+	}
+
+	/* check for the MAGIC String on sn65dsi84/5 */
+	for (i = 0; i < sizeof(chipid) / sizeof(uint8_t); i++) {
+		ret = dm_i2c_read(dev, i, &val, 1);
+		if (ret < 0) {
+			printf("%s: Failed to read chip id\n", __func__);
+			return;
+		}
+		if (val != chipid[i]) {
+			printf("%s: chip id is not correct\n", __func__);
+			return;
+		}
+	}
+	debug("%s: Valid sn65dsi84 chip id\n", __func__);
+
+	if (!strcmp(panel, DISPLAY_NAME_MIPI2LVDS15)) {
+		instr = auo_g156xw01;
+		reg_size = ARRAY_SIZE(auo_g156xw01);
+	} else if (!strcmp(panel, DISPLAY_NAME_MIPI2LVDS21)) {
+		instr = auo_g215hvn01;
+		reg_size = ARRAY_SIZE(auo_g215hvn01);
+	} else {
+		instr = ivo_m101nwwb;
+		reg_size = ARRAY_SIZE(ivo_m101nwwb);
+	}
+
+	/* write data via I2C to the sn65dsi84 dsi2lvds chip */
+	for (i = 0; i < reg_size; i++) {
+		dm_i2c_write(dev, instr->addr, &instr->value, 1);
+		if (ret < 0) {
+			printf("%s: Failed to write data to the chip\n", __func__);
+			return;
+		}
+		instr++;
+	}
+	mdelay(10);
+	/* soft reset via the i2c register 0x9.0 */
+	val = 1;
+	dm_i2c_write(dev, 0x9, &val, 1);
+	debug("%s: Soft reset to default\n", __func__);
+}

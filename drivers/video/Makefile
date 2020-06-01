@@ -71,6 +71,7 @@ obj-$(CONFIG_HX8363) += hx8363_wvga.o
 obj-$(CONFIG_ILI9881C) += ili9881c.o
 obj-$(CONFIG_RM67191) += rm67191.o
 obj-$(CONFIG_RM68200) += rm68200.o
+obj-$(CONFIG_SN65DSI84) += sn65dsi84.o
 
 obj-y += bridge/
 obj-y += sunxi/
