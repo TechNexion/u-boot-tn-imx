@@ -49,6 +49,7 @@ extern void trusty_os_init(void);
 #include <asm/mach-imx/sys_proto.h>
 #include <fsl_fastboot.h>
 #include <mmc.h>
+#include <sata.h>
 #include <android_image.h>
 #include <asm/bootm.h>
 #include <nand.h>
