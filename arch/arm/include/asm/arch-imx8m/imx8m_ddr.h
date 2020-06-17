@@ -52,9 +52,12 @@ struct dram_timing_info {
 
 extern struct dram_timing_info dram_timing;
 extern struct dram_timing_info dram_timing_1gb;
+extern struct dram_timing_info dram_timing_1gb_b1;
 extern struct dram_timing_info dram_timing_2gb;
+extern struct dram_timing_info dram_timing_2gb_b1;
 extern struct dram_timing_info dram_timing_3gb;
 extern struct dram_timing_info dram_timing_4gb;
+extern struct dram_timing_info dram_timing_4gb_b1;
 void ddr_load_train_firmware(enum fw_type type);
 void ddr_init(struct dram_timing_info *timing_info);
 void ddr_cfg_phy(struct dram_timing_info *timing_info);
