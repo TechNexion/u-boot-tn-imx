@@ -68,26 +68,26 @@ void spl_dram_init(void)
 	
 	if (!gpio_get_value(DDR_DET_1) && !gpio_get_value(DDR_DET_2) && gpio_get_value(DDR_DET_3)) {
 		puts("dram_init: LPDDR4 4GB\n");
-		ddr_init(&dram_timing_4gb);
+		if ((get_cpu_rev() & 0xfff) == CHIP_REV_2_1) {
+			ddr_init(&dram_timing_4gb_b1);
+		} else {
+			ddr_init(&dram_timing_4gb);
+		}
 		writel(0x4, M4_BOOTROM_BASE_ADDR);
-	}
-	else if (gpio_get_value(DDR_DET_1) && gpio_get_value(DDR_DET_2) && gpio_get_value(DDR_DET_3)) {
-		puts("dram_init: LPDDR4 3GB\n");
-		ddr_init(&dram_timing_3gb);
-		writel(0x3, M4_BOOTROM_BASE_ADDR);
-	}
-	else if (gpio_get_value(DDR_DET_1) && gpio_get_value(DDR_DET_2) && !gpio_get_value(DDR_DET_3)) {
+
+	} else if (gpio_get_value(DDR_DET_1) && gpio_get_value(DDR_DET_2) && !gpio_get_value(DDR_DET_3)) {
 		puts("dram_init: LPDDR4 2GB\n");
 		ddr_init(&dram_timing_2gb);
 		writel(0x2, M4_BOOTROM_BASE_ADDR);
-	}
-	else if (gpio_get_value(DDR_DET_1) && !gpio_get_value(DDR_DET_2) && gpio_get_value(DDR_DET_3)) {
+	} else if (gpio_get_value(DDR_DET_1) && !gpio_get_value(DDR_DET_2) && gpio_get_value(DDR_DET_3)) {
 		puts("dram_init: LPDDR4 1GB\n");
-		ddr_init(&dram_timing_1gb);
+		if ((get_cpu_rev() & 0xfff) == CHIP_REV_2_1) {
+			ddr_init(&dram_timing_1gb_b1);
+		} else {
+			ddr_init(&dram_timing_1gb);
+		}
 		writel(0x1, M4_BOOTROM_BASE_ADDR);
-	}	
-
-	else
+	} else
 		puts("Unknown DDR type!!!\n");
 }
 
