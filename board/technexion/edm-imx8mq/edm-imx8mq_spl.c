@@ -68,22 +68,17 @@ void spl_dram_init(void)
 	
 	if (!gpio_get_value(DDR_DET_1) && !gpio_get_value(DDR_DET_2) && gpio_get_value(DDR_DET_3)) {
 		puts("dram_init: LPDDR4 4GB\n");
-		ddr_init(&dram_timing_4gb);
+		ddr_init(&dram_timing_4gb_b1);
 		writel(0x4, M4_BOOTROM_BASE_ADDR);
-	}
-	else if (gpio_get_value(DDR_DET_1) && gpio_get_value(DDR_DET_2) && gpio_get_value(DDR_DET_3)) {
-		puts("dram_init: LPDDR4 3GB\n");
-		ddr_init(&dram_timing_3gb);
-		writel(0x3, M4_BOOTROM_BASE_ADDR);
 	}
 	else if (gpio_get_value(DDR_DET_1) && gpio_get_value(DDR_DET_2) && !gpio_get_value(DDR_DET_3)) {
 		puts("dram_init: LPDDR4 2GB\n");
-		ddr_init(&dram_timing_2gb);
+		ddr_init(&dram_timing_2gb_b1);
 		writel(0x2, M4_BOOTROM_BASE_ADDR);
 	}
 	else if (gpio_get_value(DDR_DET_1) && !gpio_get_value(DDR_DET_2) && gpio_get_value(DDR_DET_3)) {
 		puts("dram_init: LPDDR4 1GB\n");
-		ddr_init(&dram_timing_1gb);
+		ddr_init(&dram_timing_1gb_b1);
 		writel(0x1, M4_BOOTROM_BASE_ADDR);
 	}	
 
