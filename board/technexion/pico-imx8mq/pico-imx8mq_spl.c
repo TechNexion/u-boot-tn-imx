@@ -20,7 +20,7 @@
 #include <asm/mach-imx/mxc_i2c.h>
 #include <fsl_esdhc.h>
 #include <mmc.h>
-#include <asm/arch/imx8m_ddr.h>
+#include "lpddr4_timing_base_b1.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -69,26 +69,44 @@ void spl_dram_init(void)
 	if (!gpio_get_value(DDR_DET_1) && !gpio_get_value(DDR_DET_2) && gpio_get_value(DDR_DET_3)) {
 		puts("dram_init: LPDDR4 4GB\n");
 		if ((get_cpu_rev() & 0xfff) == CHIP_REV_2_1) {
+			dram_timing_4gb_b1.ddrphy_cfg = ddr_ddrphy_cfg_b1;
+			dram_timing_4gb_b1.ddrphy_cfg_num = ELEMENTS_IN(ddr_ddrphy_cfg_b1);
+			dram_timing_4gb_b1.ddrphy_trained_csr = ddr_ddrphy_trained_csr_b1;
+			dram_timing_4gb_b1.ddrphy_trained_csr_num = ELEMENTS_IN(ddr_ddrphy_trained_csr_b1);
+			dram_timing_4gb_b1.ddrphy_pie = ddr_phy_pie_b1;
+			dram_timing_4gb_b1.ddrphy_pie_num = ELEMENTS_IN(ddr_phy_pie_b1);
 			ddr_init(&dram_timing_4gb_b1);
 		} else {
-			ddr_init(&dram_timing_4gb_b1);
+			ddr_init(&dram_timing_4gb);
 		}
 		writel(0x4, M4_BOOTROM_BASE_ADDR);
 
 	} else if (gpio_get_value(DDR_DET_1) && gpio_get_value(DDR_DET_2) && !gpio_get_value(DDR_DET_3)) {
 		puts("dram_init: LPDDR4 2GB\n");
 		if ((get_cpu_rev() & 0xfff) == CHIP_REV_2_1) {
+			dram_timing_2gb_b1.ddrphy_cfg = ddr_ddrphy_cfg_b1;
+			dram_timing_2gb_b1.ddrphy_cfg_num = ELEMENTS_IN(ddr_ddrphy_cfg_b1);
+			dram_timing_2gb_b1.ddrphy_trained_csr = ddr_ddrphy_trained_csr_b1;
+			dram_timing_2gb_b1.ddrphy_trained_csr_num = ELEMENTS_IN(ddr_ddrphy_trained_csr_b1);
+			dram_timing_2gb_b1.ddrphy_pie = ddr_phy_pie_b1;
+			dram_timing_2gb_b1.ddrphy_pie_num = ELEMENTS_IN(ddr_phy_pie_b1);
 			ddr_init(&dram_timing_2gb_b1);
 		} else {
-			ddr_init(&dram_timing_2gb_b1);
+			ddr_init(&dram_timing_2gb);
 		}
 		writel(0x2, M4_BOOTROM_BASE_ADDR);
 	} else if (gpio_get_value(DDR_DET_1) && !gpio_get_value(DDR_DET_2) && gpio_get_value(DDR_DET_3)) {
 		puts("dram_init: LPDDR4 1GB\n");
 		if ((get_cpu_rev() & 0xfff) == CHIP_REV_2_1) {
+			dram_timing_1gb_b1.ddrphy_cfg = ddr_ddrphy_cfg_b1;
+			dram_timing_1gb_b1.ddrphy_cfg_num = ELEMENTS_IN(ddr_ddrphy_cfg_b1);
+			dram_timing_1gb_b1.ddrphy_trained_csr = ddr_ddrphy_trained_csr_b1;
+			dram_timing_1gb_b1.ddrphy_trained_csr_num = ELEMENTS_IN(ddr_ddrphy_trained_csr_b1);
+			dram_timing_1gb_b1.ddrphy_pie = ddr_phy_pie_b1;
+			dram_timing_1gb_b1.ddrphy_pie_num = ELEMENTS_IN(ddr_phy_pie_b1);
 			ddr_init(&dram_timing_1gb_b1);
 		} else {
-			ddr_init(&dram_timing_1gb_b1);
+			ddr_init(&dram_timing_1gb);
 		}
 		writel(0x1, M4_BOOTROM_BASE_ADDR);
 	} else
