@@ -23,6 +23,7 @@
 #include <common.h>
 #include <splash.h>
 #include <lcd.h>
+#include <mmc.h>
 
 static struct splash_location default_splash_locations[] = {
 	{
@@ -53,6 +54,7 @@ static struct splash_location default_splash_locations[] = {
 
 __weak int splash_screen_prepare(void)
 {
+	default_splash_locations[1].devpart[0] = mmc_get_env_dev() + '0';
 	return splash_source_load(default_splash_locations,
 				  ARRAY_SIZE(default_splash_locations));
 }
