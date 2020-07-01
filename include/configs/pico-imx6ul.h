@@ -81,6 +81,7 @@
 	"ip_dyn=no\0" \
 	"console=ttymxc5\0" \
 	"splashpos=m,m\0" \
+	"splashsource=mmc_fs\0" \
 	"baseboard=pi\0" \
 	"form=pico\0" \
 	"wifi_module=qca\0" \
@@ -270,6 +271,7 @@
 #define CONFIG_VIDEO_LOGO
 #define CONFIG_SPLASH_SCREEN
 #define CONFIG_SPLASH_SCREEN_ALIGN
+#define CONFIG_SPLASH_SOURCE
 #define CONFIG_CMD_BMP
 #define CONFIG_BMP_16BPP
 #define CONFIG_VIDEO_BMP_RLE8
