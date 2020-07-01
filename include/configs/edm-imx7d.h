@@ -132,6 +132,7 @@
 #define	CONFIG_VIDEO_LOGO
 #define	CONFIG_SPLASH_SCREEN
 #define CONFIG_SPLASH_SCREEN_ALIGN
+#define CONFIG_SPLASH_SOURCE
 #define	CONFIG_CMD_BMP
 #define	CONFIG_BMP_16BPP
 #define	CONFIG_VIDEO_BMP_RLE8
@@ -178,6 +179,7 @@
 	"stdout=serial\0" \
 	"console=ttymxc2\0" \
 	"splashpos=m,m\0" \
+	"splashsource=mmc_fs\0" \
 	"som=imx7d\0" \
 	"form=edm1\0" \
 	"baseboard=gnome\0" \
