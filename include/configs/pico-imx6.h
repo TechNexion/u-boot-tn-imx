@@ -244,11 +244,11 @@
 		"done; echo fit conf: ${fdtfile}${fitov};\0" \
 	"fitargs=setenv bootargs console=${console},${baudrate} root=/dev/ram0 rootwait rw " \
 		"modules-load=g_acm_ms g_acm_ms.stall=0 g_acm_ms.removable=1 g_acm_ms.file=${mmcrootdev} " \
-		"g_acm_ms.iSerialNumber=${ethaddr} g_acm_ms.iManufacturer=TechNexion; run videoargs\0" \
+		"g_acm_ms.iSerialNumber=00:00:00:00:00:00 g_acm_ms.iManufacturer=TechNexion; run videoargs\0" \
 	"loadfit=fatload mmc ${mmcdev} ${fit_addr} tnrescue.itb\0" \
 	"fitboot=echo Booting from FIT image...; " \
 		"run searchbootdev; run setfdt; run fit_overlay; run fitargs; " \
-		"bootm ${fit_addr}#config@${fdtfile}${fitov};\0"
+		"bootm ${fit_addr}#conf@${fdtfile}${fitov};\0"
 
 #define CONFIG_BOOTCOMMAND \
 	   "mmc dev ${mmcdev}; if mmc rescan; then " \

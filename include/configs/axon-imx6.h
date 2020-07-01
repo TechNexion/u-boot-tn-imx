@@ -227,13 +227,19 @@
 		"else " \
 			"bootz; " \
 		"fi;\0" \
+	"fitov=\"\"\0" \
+	"fit_addr=0x17880000\0" \
+	"fit_high=0xffffffff\0" \
+	"fit_overlay=for ov in ${dtoverlay}; do " \
+			"echo Overlaying ${ov}...; setenv fitov \"${fitov}#${ov}\"; " \
+		"done; echo fit conf: ${fdtfile}${fitov};\0" \
 	"fitargs=setenv bootargs console=${console},${baudrate} root=/dev/ram0 rootwait rw " \
 		"modules-load=g_acm_ms g_acm_ms.stall=0 g_acm_ms.removable=1 g_acm_ms.file=/dev/mmcblk${mmcdev} " \
-		"g_acm_ms.iSerialNumber=${ethaddr} g_acm_ms.iManufacturer=TechNexion; run videoargs\0" \
-	"loadfit=fatload mmc ${mmcdev} 0x17880000 tnrescue.itb\0" \
+		"g_acm_ms.iSerialNumber=00:00:00:00:00:00 g_acm_ms.iManufacturer=TechNexion; run videoargs\0" \
+	"loadfit=fatload mmc ${mmcdev} ${fit_addr} tnrescue.itb\0" \
 	"fitboot=echo Booting from FIT image...; " \
-		"run fitargs; echo ${bootargs}; " \
-		"bootm 17880000#config@${som}-${form}_${baseboard};\0"
+		"run fit_overlay; run fitargs; " \
+		"bootm ${fit_addr}#conf@${fdtfile}${fitov};\0"
 
 #define CONFIG_BOOTCOMMAND \
 	"mmc dev ${mmcdev}; if mmc rescan; then " \

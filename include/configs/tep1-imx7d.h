@@ -209,7 +209,7 @@ extern size_t uart_base_reg_addr;
 	"bootscript=echo Running bootscript from mmc ...; " \
 		"source\0" \
 	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
-	"setfdt=setenv fdtfile ${som}-${baseboard}.dtb; setenv fitboard _${baseboard};\0" \
+	"setfdt=setenv fdtfile ${som}-${baseboard}.dtb;\0" \
 	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdtfile}\0" \
 	"mmcboot=echo Booting from mmc ...; " \
 		"run m4boot; " \
@@ -262,11 +262,19 @@ extern size_t uart_base_reg_addr;
 		"else " \
 			"bootz; " \
 		"fi;\0" \
-	"loadfit=fatload mmc ${mmcdev}:${mmcpart} 0x87880000 tnrescue.itb\0" \
-	"fit_args=setenv bootargs console=${console},${baudrate} root=/dev/ram0 rootwait rw " \
+	"fitov=\"\"\0" \
+	"fit_addr=0x87880000\0" \
+	"fit_high=0xffffffff\0" \
+	"fit_overlay=for ov in ${dtoverlay}; do " \
+			"echo Overlaying ${ov}...; setenv fitov \"${fitov}#${ov}\"; " \
+		"done; echo fit conf: ${fdtfile}${fitov};\0" \
+	"fitargs=setenv bootargs console=${console},${baudrate} root=/dev/ram0 rootwait rw " \
 		"modules-load=g_acm_ms g_acm_ms.stall=0 g_acm_ms.removable=1 g_acm_ms.file=${mmcrootdev} " \
-		"g_acm_ms.iSerialNumber=${ethaddr} g_acm_ms.iManufacturer=TechNexion\0" \
-	"fitboot=run setfdt; run fit_args; echo ${bootargs}; bootm 87880000#config@${fitconf};\0"
+		"g_acm_ms.iSerialNumber=00:00:00:00:00:00 g_acm_ms.iManufacturer=TechNexion\0" \
+	"loadfit=fatload mmc ${mmcdev}:${mmcpart} ${fit_addr} tnrescue.itb\0" \
+	"fitboot=echo Booting from FIT image...; " \
+		"run fit_overlay; run fitargs; " \
+		"bootm ${fit_addr}#conf@${fdtfile}${fitov};\0"
 
 #define CONFIG_BOOTCOMMAND \
 	   "mmc dev ${mmcdev}; if mmc rescan; then " \

@@ -201,10 +201,8 @@
 	"loadimage=fatload ${bootmedia} ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
 	"setfdt=" \
 		"if test -n ${wifi_module} && test ${wifi_module} = qca; then " \
-			"setenv fitconf ${som}-${form}-${baseboard}-${wifi_module}; " \
 			"setenv fdtfile ${som}-${form}-${baseboard}-${wifi_module}.dtb; " \
 		"else " \
-			"setenv fitconf ${som}-${form}-${baseboard}; " \
 			"setenv fdtfile ${som}-${form}-${baseboard}.dtb;" \
 		"fi\0" \
 	"loadfdt=fatload ${bootmedia} ${mmcdev}:${mmcpart} ${fdt_addr} ${fdtfile}\0" \
@@ -236,15 +234,19 @@
 	"loadbootenv=fatload ${bootmedia} ${mmcdev} ${loadaddr} ${bootenv}\0" \
 	"importbootenv=echo Importing environment from ${bootmedia} ...; " \
 		"env import -t -r $loadaddr $filesize\0" \
+	"fitov=\"\"\0" \
 	"fit_addr=0x21100000\0" \
 	"fit_high=0xffffffff\0" \
+	"fit_overlay=for ov in ${dtoverlay}; do " \
+			"echo Overlaying ${ov}...; setenv fitov \"${fitov}#${ov}\"; " \
+		"done; echo fit conf: ${fdtfile}${fitov};\0" \
 	"fitargs=setenv bootargs console=${console},${baudrate} root=/dev/ram0 rootwait rw " \
 		"modules-load=g_acm_ms g_acm_ms.stall=0 g_acm_ms.removable=1 g_acm_ms.file=${mmcrootdev} " \
-		"g_acm_ms.iSerialNumber=${ethaddr} g_acm_ms.iManufacturer=TechNexion; run videoargs\0" \
+		"g_acm_ms.iSerialNumber=00:00:00:00:00:00 g_acm_ms.iManufacturer=TechNexion; run videoargs\0" \
 	"loadfit=fatload mmc ${mmcdev} ${fit_addr} tnrescue.itb\0" \
 	"fitboot=echo Booting from FIT image...; " \
-		"run searchbootdev; run setfdt; run fitargs; " \
-		"bootm ${fit_addr}#config@${fitconf};\0"
+		"run searchbootdev; run setfdt; run fit_overlay; run fitargs; " \
+		"bootm ${fit_addr}#conf@${fdtfile}${fitov};\0"
 
 #define CONFIG_BOOTCOMMAND \
 	   "mmc dev ${mmcdev}; if mmc rescan; then " \
