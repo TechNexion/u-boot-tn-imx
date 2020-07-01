@@ -92,6 +92,7 @@
 #define CONFIG_VIDEO_BMP_RLE8
 #define CONFIG_SPLASH_SCREEN
 #define CONFIG_SPLASH_SCREEN_ALIGN
+#define CONFIG_SPLASH_SOURCE
 #define CONFIG_BMP_16BPP
 #define CONFIG_VIDEO_LOGO
 #define CONFIG_VIDEO_BMP_LOGO
@@ -111,6 +112,7 @@
 	"image=zImage\0" \
 	"console=ttymxc0\0" \
 	"splashpos=m,m\0" \
+	"splashsource=mmc_fs\0" \
 	"som=autodetect\0" \
 	"form=pico\0" \
 	"baseboard=pi\0" \
