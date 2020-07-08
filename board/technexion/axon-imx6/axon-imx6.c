@@ -260,6 +260,30 @@ int board_phy_config(struct phy_device *phydev)
 	return 0;
 }
 
+/* setup board specific PMIC */
+int power_init_board(void)
+{
+	struct pmic *p;
+	u32 reg;
+
+	/* configure PFUZE100 PMIC */
+	power_pfuze100_init(I2C_PMIC_BUS);
+	p = pmic_get("PFUZE100");
+	if (p && !pmic_probe(p)) {
+		pmic_reg_read(p, PFUZE100_DEVICEID, &reg);
+		printf("PMIC:  PFUZE100 ID=0x%02x\n", reg);
+
+		/* Set VGEN2 to 1.5V and enable */
+		pmic_reg_read(p, PFUZE100_VGEN2VOL, &reg);
+		reg &= ~(LDO_VOL_MASK);
+		reg |= (LDOA_1_50V | (1 << (LDO_EN)));
+		pmic_reg_write(p, PFUZE100_VGEN2VOL, reg);
+	}
+
+	return 0;
+}
+
+
 #ifdef CONFIG_VIDEO_IPUV3
 struct i2c_pads_info mx6q_i2c2_pad_info = {
 	.scl = {

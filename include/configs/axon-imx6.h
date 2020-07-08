@@ -63,6 +63,7 @@
 #define CONFIG_POWER_I2C
 #define CONFIG_POWER_PFUZE100
 #define CONFIG_POWER_PFUZE100_I2C_ADDR	0x08
+#define I2C_PMIC_BUS			2
 
 /* MMC Configuration */
 #define CONFIG_SYS_FSL_USDHC_NUM	2
