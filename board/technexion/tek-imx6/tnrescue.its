@@ -30,8 +30,6 @@
 			arch = "arm";
 			os = "linux";
 			compression = "none";
-			load = <0x12C00000>;
-			entry = <0x1B000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -43,7 +41,6 @@
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x12BE0000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -54,7 +51,6 @@
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x12BE0000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -65,7 +61,6 @@
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x12BE0000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -77,7 +72,6 @@
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x12BE0000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -88,7 +82,6 @@
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x12BE0000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -99,7 +92,6 @@
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x12BE0000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -107,40 +99,39 @@
 	};
 
 	configurations {
-		default = "config@imx6dl-pico_dwarf";
 		/* imx6dl */
-		config@imx6dl-tek3_tek3 {
+		conf@imx6dl-tek3.dtb {
 			description = "TEK3-IMX6DL";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@41";
 		};
-		config@imx6dl-tep5_15inch {
+		conf@imx6dl-tep5_15inch.dtb {
 			description = "TEP5-15INCH-IMX6DL";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@42";
 		};
-		config@imx6dl-tep5_tep5 {
+		conf@imx6dl-tep5.dtb {
 			description = "TEP5-IMX6DL";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@43";
 		};
 		/* imx6q */
-		config@imx6q-tek3_tek3 {
+		conf@imx6q-tek3.dtb {
 			description = "TEK3-IMX6Q";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@44";
 		};
-		config@imx6q-tep5_15inch {
+		conf@imx6q-tep5_15inch.dtb {
 			description = "TEP5-15INCH-IMX6Q";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@45";
 		};
-		config@imx6q-tep5_tep5 {
+		config@imx6q-tep5.dtb {
 			description = "TEP5-IMX6Q";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";

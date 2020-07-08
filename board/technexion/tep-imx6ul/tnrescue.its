@@ -30,8 +30,6 @@
 			arch = "arm";
 			os = "linux";
 			compression = "none";
-			load = <0x8B000000>;
-			entry = <0x8B000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -43,7 +41,6 @@
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x89E00000>;
 			hash@1 {
 				algo = "crc32";
 			};
@@ -54,7 +51,6 @@
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x89E00000>;
 			hash@1 {
 				algo = "crc32";
 			};
@@ -62,15 +58,14 @@
 	};
 
 	configurations {
-		default = "config@imx6ul-tep1_tep1";
 		/* imx6ul */
-		config@imx6ul-tek3_tek3 {
+		conf@imx6ul-tek3.dtb {
 			description = "TEK3-IMX6UL";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@1";
 		};
-		config@imx6ul-tep1_tep1 {
+		conf@imx6ul-tep1.dtb {
 			description = "TEP1-IMX6UL";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";

@@ -30,8 +30,6 @@
 			arch = "arm64";
 			os = "linux";
 			compression = "none";
-			load = <0x43800000>;
-			entry = <0x43800000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -43,7 +41,6 @@
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
-			load = <0x43000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -55,7 +52,6 @@
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
-			load = <0x43000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -67,7 +63,6 @@
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
-			load = <0x43000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -79,7 +74,6 @@
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
-			load = <0x43100000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -91,7 +85,6 @@
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
-			load = <0x43110000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -103,7 +96,6 @@
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
-			load = <0x43120000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -115,7 +107,6 @@
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
-			load = <0x43130000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -127,7 +118,6 @@
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
-			load = <0x43140000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -139,7 +129,6 @@
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
-			load = <0x43150000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -147,25 +136,25 @@
 	};
 
 	configurations {
-		imx8mm-flex-pi.dtb {
+		conf@imx8mm-flex-pi.dtb {
 			description = "Boot IMX8mm pi with no display";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@1";
 		};
-		imx8mm-flex-wizard.dtb {
+		conf@imx8mm-flex-wizard.dtb {
 			description = "Boot IMX8mm wizard with no display";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@2";
 		};
-		imx8mm-flex-pi-ili9881c.dtb {
+		conf@imx8mm-flex-pi-ili9881c.dtb {
 			description = "Boot IMX8mm with MIPI 5' panel";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@3";
 		};
-		imx8mm-flex-pi-mipi5.dtb {
+		conf@imx8mm-flex-pi-mipi5.dtb {
 			description = "Flex IMX8M PI with MIPI 5' overlay";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";

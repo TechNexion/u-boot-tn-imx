@@ -29,8 +29,6 @@
 			arch = "arm";
 			os = "linux";
 			compression = "none";
-			load = <0x83800000>;
-			entry = <0x83800000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -41,7 +39,6 @@
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x83000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -52,7 +49,6 @@
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x83000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -60,13 +56,13 @@
 	};
 
 	configurations {
-		config@imx7d-edm1-gnome-qca {
+		conf@imx7d-edm1-gnome-qca.dtb {
 			description = "IMX7D EDM1 GNOME QCA";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@1";
 		};
-		config@imx7d-edm1-gnome-qca-m4 {
+		conf@imx7d-edm1-gnome-qca-m4.dtb {
 			description = "IMX7D EDM1 QCA GNOME M4";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";

@@ -32,8 +32,6 @@
 			arch = "arm";
 			os = "linux";
 			compression = "none";
-			load = <0x83800000>;
-			entry = <0x83800000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -44,7 +42,6 @@
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x83000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -52,9 +49,7 @@
 	};
 
 	configurations {
-		default = "config@imx7d-tep1_tep1";
-
-		config@imx7d-tep1_tep1 {
+		conf@imx7d-tep1.dtb {
 			description = "TEP1-IMX7D";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";

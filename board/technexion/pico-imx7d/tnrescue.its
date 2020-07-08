@@ -29,8 +29,6 @@
 			arch = "arm";
 			os = "linux";
 			compression = "none";
-			load = <0x83800000>;
-			entry = <0x83800000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -41,7 +39,6 @@
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x83000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -52,7 +49,6 @@
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x83000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -63,7 +59,6 @@
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x83000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -75,7 +70,6 @@
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x83000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -83,49 +77,49 @@
 	};
 
 	configurations {
-		imx7d-pico-dwarf.dtb {
+		conf@imx7d-pico-dwarf.dtb {
 			description = "PICO-DWARF-IMX7D";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@1";
 		};
-		imx7d-pico-hobbit.dtb {
+		conf@imx7d-pico-hobbit.dtb {
 			description = "PICO-HOBBIT-IMX7D";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@2";
 		};
-		imx7d-pico-nymph.dtb {
+		conf@imx7d-pico-nymph.dtb {
 			description = "PICO-NYMPH-IMX7D";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@3";
 		};
-		imx7d-pico-pi.dtb {
+		conf@imx7d-pico-pi.dtb {
 			description = "PICO-PI-IMX7D";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@4";
 		};
-		imx7d-pico-dwarf-qca.dtb {
+		conf@imx7d-pico-dwarf-qca.dtb {
 			description = "PICO-QCA-DWARF-IMX7D";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@1";
 		};
-		imx7d-pico-hobbit-qca.dtb {
+		conf@imx7d-pico-hobbit-qca.dtb {
 			description = "PICO-QCA-HOBBIT-IMX7D";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@2";
 		};
-		imx7d-pico-nymph-qca.dtb {
+		conf@imx7d-pico-nymph-qca.dtb {
 			description = "PICO-QCA-NYMPH-IMX7D";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@3";
 		};
-		imx7d-pico-pi-qca.dtb {
+		conf@imx7d-pico-pi-qca.dtb {
 			description = "PICO-QCA-PI-IMX7D";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";

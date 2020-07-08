@@ -30,8 +30,6 @@
 			arch = "arm";
 			os = "linux";
 			compression = "none";
-			load = <0x18100000>;
-			entry = <0x18100000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -43,7 +41,6 @@
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x18000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -54,7 +51,6 @@
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x18000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -65,7 +61,6 @@
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x18000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -77,7 +72,6 @@
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x18000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -88,7 +82,6 @@
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x18000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -99,7 +92,6 @@
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x18000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -111,7 +103,6 @@
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x18000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -122,7 +113,6 @@
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x18000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -133,7 +123,6 @@
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x18000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -145,7 +134,6 @@
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x18000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -156,7 +144,6 @@
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x18000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -167,7 +154,6 @@
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
-			load = <0x18000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -176,75 +162,75 @@
 
 	configurations {
 		/* imx6dl */
-		config@imx6dl-edm1-fairy-qca {
+		conf@imx6dl-edm1-fairy-qca.dtb {
 			description = "IMX6DL EDM1 FAIRY QCA";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@11";
 		};
-		config@imx6dl-edm1-gnome-qca {
+		conf@imx6dl-edm1-gnome-qca.dtb {
 			description = "IMX6DL EDM1 GNOME QCA";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@12";
 		};
-		config@imx6dl-edm1-tc0700-qca {
+		conf@imx6dl-edm1-tc0700-qca.dtb {
 			description = "IMX6DL EDM1 TC0700 QCA";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@13";
 		};
-		config@imx6dl-edm1-tc1000-qca {
+		conf@imx6dl-edm1-tc1000-qca.dtb {
 			description = "IMX6DL EDM1 TC1000 QCA";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@14";
 		};
 		/* imx6q */
-		config@imx6q-edm1-fairy-qca {
+		conf@imx6q-edm1-fairy-qca.dtb {
 			description = "IMX6Q EDM1 FAIRY QCA";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@21";
 		};
-		config@imx6q-edm1-gnome-qca {
+		conf@imx6q-edm1-gnome-qca.dtb {
 			description = "IMX6Q EDM1 GNOME QCA";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@22";
 		};
-		config@imx6q-edm1-tc0700-qca {
+		conf@imx6q-edm1-tc0700-qca.dtb {
 			description = "IMX6Q EDM1 TC0700 QCA";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@23";
 		};
-		config@imx6q-edm1-tc1000-qca {
+		conf@imx6q-edm1-tc1000-qca.dtb {
 			description = "IMX6Q EDM1 TC1000 QCA";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@24";
 		};
 		/* imx6qp */
-		config@imx6qp-edm1-fairy-qca {
+		conf@imx6qp-edm1-fairy-qca.dtb {
 			description = "IMX6QP EDM1 FAIRY QCA";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@31";
 		};
-		config@imx6qp-edm1-gnome-qca {
+		conf@imx6qp-edm1-gnome-qca.dtb {
 			description = "IMX6QP EDM1 GNOME QCA";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@32";
 		};
-		config@imx6qp-edm1-tc0700-qca {
+		conf@imx6qp-edm1-tc0700-qca.dtb {
 			description = "IMX6QP EDM1 TC0700 QCA";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@33";
 		};
-		config@imx6qp-edm1-tc1000-qca {
+		conf@imx6qp-edm1-tc1000-qca.dtb {
 			description = "IMX6QP EDM1 TC1000 QCA";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";

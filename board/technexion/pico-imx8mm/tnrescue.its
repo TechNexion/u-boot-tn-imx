@@ -30,8 +30,6 @@
 			arch = "arm64";
 			os = "linux";
 			compression = "none";
-			load = <0x43800000>;
-			entry = <0x43800000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -43,7 +41,6 @@
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
-			load = <0x43000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -55,7 +52,6 @@
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
-			load = <0x43000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -67,7 +63,6 @@
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
-			load = <0x43000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -79,7 +74,6 @@
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
-			load = <0x43000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -91,7 +85,6 @@
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
-			load = <0x43000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -103,7 +96,6 @@
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
-			load = <0x43000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -115,7 +107,83 @@
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
-			load = <0x43100000>;
+			hash@1 {
+				algo = "sha1";
+			};
+		};
+
+		fdt@8 {
+			description = "Pico imx8mm flat device tree blob for MIPI to HDMI";
+			data = /incbin/("./dtb/imx8mm-pico-wizard-adv7535.dtb");
+			type = "flat_dt";
+			arch = "arm64";
+			compression = "none";
+			hash@1 {
+				algo = "sha1";
+			};
+		};
+
+		fdt@9 {
+			description = "Pico imx8mm flat device tree blob for MIPI 5 inch";
+			data = /incbin/("./dtb/imx8mm-pico-wizard-ili9881c.dtb");
+			type = "flat_dt";
+			arch = "arm64";
+			compression = "none";
+			hash@1 {
+				algo = "sha1";
+			};
+		};
+
+		fdt@10 {
+			description = "Pico imx8mm flat device tree blob for MIPI 8 inch";
+			data = /incbin/("./dtb/imx8mm-pico-wizard-g080uan01.dtb");
+			type = "flat_dt";
+			arch = "arm64";
+			compression = "none";
+			hash@1 {
+				algo = "sha1";
+			};
+		};
+
+		fdt@11 {
+			description = "Pico imx8mm flat device tree blob for MIPI 10 inch";
+			data = /incbin/("./dtb/imx8mm-pico-wizard-g101uan02.dtb");
+			type = "flat_dt";
+			arch = "arm64";
+			compression = "none";
+			hash@1 {
+				algo = "sha1";
+			};
+		};
+
+		fdt@12 {
+			description = "Pico imx8mm flat device tree blob for MIPI LVDS BRIDGE 10 inch";
+			data = /incbin/("./dtb/imx8mm-pico-wizard-sn65dsi84-m101nwwb.dtb");
+			type = "flat_dt";
+			arch = "arm64";
+			compression = "none";
+			hash@1 {
+				algo = "sha1";
+			};
+		};
+
+		fdt@13 {
+			description = "Pico imx8mm flat device tree blob for MIPI LVDS BRIDGE 15 inch";
+			data = /incbin/("./dtb/imx8mm-pico-wizard-sn65dsi84-g156xw01.dtb");
+			type = "flat_dt";
+			arch = "arm64";
+			compression = "none";
+			hash@1 {
+				algo = "sha1";
+			};
+		};
+
+		fdt@14 {
+			description = "Pico imx8mm flat device tree blob for MIPI LVDS BRIDGE 21 inch";
+			data = /incbin/("./dtb/imx8mm-pico-wizard-sn65dsi84-g215hvn01.dtb");
+			type = "flat_dt";
+			arch = "arm64";
+			compression = "none";
 			hash@1 {
 				algo = "sha1";
 			};
@@ -123,44 +191,44 @@
 	};
 
 	configurations {
-		imx8mm-pico-pi.dtb {
-			description = "Boot IMX8mm with MIPI";
+		conf@imx8mm-pico-pi.dtb {
+			description = "Boot IMX8mm PI with MIPI";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@1";
 		};
-		imx8mm-pico-pi-ili9881c.dtb {
-			description = "Boot IMX8mm with 5' mipi";
+		conf@imx8mm-pico-pi-ili9881c.dtb {
+			description = "Boot IMX8mm PI with 5' mipi";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@2";
 		};
-		imx8mm-pico-pi-g080uan01.dtb {
-			description = "Boot IMX8mm with 8' mipi";
+		conf@imx8mm-pico-pi-g080uan01.dtb {
+			description = "Boot IMX8mm PI with 8' mipi";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@3";
 		};
-		imx8mm-pico-pi-g101uan02.dtb {
-			description = "Boot IMX8mm with 10' mipi";
+		conf@imx8mm-pico-pi-g101uan02.dtb {
+			description = "Boot IMX8mm PI with 10' mipi";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@4";
 		};
-		imx8mm-pico-pi-sn65dsi84-hj070na.dtb {
-			description = "Boot IMX8mm with bridged lvds 7' panel";
+		conf@imx8mm-pico-pi-sn65dsi84-hj070na.dtb {
+			description = "Boot IMX8mm PI with bridged lvds 7' panel";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@5";
 		};
-		imx8mm-pico-pi-sn65dsi84-m101nwwb.dtb {
-			description = "Boot IMX8mm with bridged lvds 10' panel";
+		conf@imx8mm-pico-pi-sn65dsi84-m101nwwb.dtb {
+			description = "Boot IMX8mm PI with bridged lvds 10' panel";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@6";
 		};
-		imx8mm-pico-pi-mipi5.dtb {
-			description = "Boot IMX8mm with bridged lvds 10' panel";
+		conf@imx8mm-pico-pi-mipi5.dtb {
+			description = "Boot IMX8mm PI with bridged lvds 10' panel";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@1", "fdt@7";
@@ -168,6 +236,48 @@
 		mipi5 {
 			description = "5 inch panel overlay";
 			fdt = "fdt@7";
+		};
+		conf@imx8mm-pico-wizard-adv7535.dtb {
+			description = "Boot IMX8mm WIZARD with HDMI bridge";
+			kernel = "kernel@1";
+			ramdisk = "ramdisk@1";
+			fdt = "fdt@8";
+		};
+		conf@imx8mm-pico-wizard-ili9881c.dtb {
+			description = "Boot IMX8mm WIZARD with MIPI 5' panel";
+			kernel = "kernel@1";
+			ramdisk = "ramdisk@1";
+			fdt = "fdt@9";
+		};
+		conf@imx8mm-pico-wizard-g080uan01.dtb {
+			description = "Boot IMX8mm WIZARD with MIPI 8' panel";
+			kernel = "kernel@1";
+			ramdisk = "ramdisk@1";
+			fdt = "fdt@10";
+		};
+		conf@imx8mm-pico-wizard-g101uan02.dtb {
+			description = "Boot IMX8mm WIZARD with MIPI 10' panel";
+			kernel = "kernel@1";
+			ramdisk = "ramdisk@1";
+			fdt = "fdt@11";
+		};
+		conf@imx8mm-pico-wizard-sn65dsi84-m101nwwb.dtb {
+			description = "Boot IMX8mm WIZARD with MIPI to LVDS Bridge 10' panel";
+			kernel = "kernel@1";
+			ramdisk = "ramdisk@1";
+			fdt = "fdt@12";
+		};
+		conf@imx8mm-pico-wizard-sn65dsi84-g156xw01.dtb {
+			description = "Boot IMX8mm WIZARD with MIPI to LVDS Bridge 15' panel";
+			kernel = "kernel@1";
+			ramdisk = "ramdisk@1";
+			fdt = "fdt@13";
+		};
+		conf@imx8mm-pico-wizard-sn65dsi84-g215hvn01.dtb {
+			description = "Boot IMX8mm WIZARD with MIPI to LVDS Bridge 15' panel";
+			kernel = "kernel@1";
+			ramdisk = "ramdisk@1";
+			fdt = "fdt@14";
 		};
 	};
 };

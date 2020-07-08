@@ -30,8 +30,6 @@
 			arch = "arm64";
 			os = "linux";
 			compression = "none";
-			load = <0x43800000>;
-			entry = <0x43800000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -43,7 +41,6 @@
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
-			load = <0x43000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -55,7 +52,6 @@
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
-			load = <0x43000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -67,7 +63,6 @@
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
-			load = <0x43000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -79,7 +74,6 @@
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
-			load = <0x43000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -91,7 +85,6 @@
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
-			load = <0x43000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -99,31 +92,31 @@
 	};
 
 	configurations {
-		imx8mm-xore-wizard.dtb {
+		conf@imx8mm-xore-wizard.dtb {
 			description = "Boot IMX8mm xore wizard with no display";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@1";
 		};
-		imx8mm-xore-wizard-ili9881c.dtb {
+		conf@imx8mm-xore-wizard-ili9881c.dtb {
 			description = "Boot IMX8mm xore wizard with mipi 5' panel";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@2";
 		};
-		imx8mm-xore-wizard-g080uan01.dtb {
+		conf@imx8mm-xore-wizard-g080uan01.dtb {
 			description = "Boot IMX8mm xore wizard with MIPI 8' panel";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@3";
 		};
-		imx8mm-xore-wizard-g101uan02.dtb {
+		conf@imx8mm-xore-wizard-g101uan02.dtb {
 			description = "Boot IMX8mm xore wizard with MIPI 10' panel";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@4";
 		};
-		imx8mm-xore-wizard-adv7535.dtb {
+		conf@imx8mm-xore-wizard-adv7535.dtb {
 			description = "Boot IMX8mm xore with MIPI to HDMI bridge";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";

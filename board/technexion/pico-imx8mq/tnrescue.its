@@ -30,8 +30,6 @@
 			arch = "arm64";
 			os = "linux";
 			compression = "none";
-			load = <0x43800000>;
-			entry = <0x43800000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -43,7 +41,6 @@
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
-			load = <0x43000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -55,7 +52,6 @@
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
-			load = <0x43000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -67,7 +63,6 @@
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
-			load = <0x43000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -79,7 +74,6 @@
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
-			load = <0x43000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -91,7 +85,6 @@
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
-			load = <0x43000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -103,7 +96,6 @@
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
-			load = <0x43000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -115,7 +107,6 @@
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
-			load = <0x43000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -127,7 +118,6 @@
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
-			load = <0x43000000>;
 			hash@1 {
 				algo = "sha1";
 			};
@@ -135,56 +125,56 @@
 	};
 
 	configurations {
-		imx8mq-pico-pi.dtb {
+		conf@imx8mq-pico-pi.dtb {
 			description = "Boot IMX8mq with HDMI";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@1";
 		};
 
-		imx8mq-pico-pi-dcss-ili9881c.dtb {
+		conf@imx8mq-pico-pi-dcss-ili9881c.dtb {
 			description = "Boot IMX8mq with MIPI DSI";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@2";
 		};
 
-		imx8mq-pico-pi-dual.dtb {
+		conf@imx8mq-pico-pi-dual.dtb {
 			description = "Boot IMX8mq with DUAL Display";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@3";
 		};
 
-		imx8mq-pico-pi-m4.dtb {
+		conf@imx8mq-pico-pi-m4.dtb {
 			description = "Boot IMX8mq with m4 MCU";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@4";
 		};
 
-		imx8mq-pico-pi-voicehat.dtb {
+		conf@imx8mq-pico-pi-voicehat.dtb {
 			description = "Boot IMX8mq with voicehat";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@5";
 		};
 
-		imx8mq-pico-pi-dcss-sn65dsi84-hj070na.dtb {
+		conf@imx8mq-pico-pi-dcss-sn65dsi84-hj070na.dtb {
 			description = "Boot IMX8mq with lcdif to mipi-lvds bridge 7' panel";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@6";
 		};
 
-		imx8mq-pico-pi-dcss-g080uan01.dtb {
+		conf@imx8mq-pico-pi-dcss-g080uan01.dtb {
 			description = "Boot IMX8mq with 8' MIPI";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@7";
 		};
 
-		imx8mq-pico-pi-dcss-g101uan02.dtb {
+		conf@imx8mq-pico-pi-dcss-g101uan02.dtb {
 			description = "Boot IMX8mq with 10' MIPI";
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
