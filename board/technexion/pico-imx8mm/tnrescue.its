@@ -166,28 +166,6 @@
 				algo = "sha1";
 			};
 		};
-
-		fdt@13 {
-			description = "Pico imx8mm flat device tree blob for MIPI LVDS BRIDGE 15 inch";
-			data = /incbin/("./dtb/imx8mm-pico-wizard-sn65dsi84-g156xw01.dtb");
-			type = "flat_dt";
-			arch = "arm64";
-			compression = "none";
-			hash@1 {
-				algo = "sha1";
-			};
-		};
-
-		fdt@14 {
-			description = "Pico imx8mm flat device tree blob for MIPI LVDS BRIDGE 21 inch";
-			data = /incbin/("./dtb/imx8mm-pico-wizard-sn65dsi84-g215hvn01.dtb");
-			type = "flat_dt";
-			arch = "arm64";
-			compression = "none";
-			hash@1 {
-				algo = "sha1";
-			};
-		};
 	};
 
 	configurations {
@@ -266,18 +244,6 @@
 			kernel = "kernel@1";
 			ramdisk = "ramdisk@1";
 			fdt = "fdt@12";
-		};
-		conf@imx8mm-pico-wizard-sn65dsi84-g156xw01.dtb {
-			description = "Boot IMX8mm WIZARD with MIPI to LVDS Bridge 15' panel";
-			kernel = "kernel@1";
-			ramdisk = "ramdisk@1";
-			fdt = "fdt@13";
-		};
-		conf@imx8mm-pico-wizard-sn65dsi84-g215hvn01.dtb {
-			description = "Boot IMX8mm WIZARD with MIPI to LVDS Bridge 15' panel";
-			kernel = "kernel@1";
-			ramdisk = "ramdisk@1";
-			fdt = "fdt@14";
 		};
 	};
 };
