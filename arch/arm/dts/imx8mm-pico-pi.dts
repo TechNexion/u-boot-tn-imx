@@ -360,12 +360,12 @@
 
 &usbotg1 {
 	status = "okay";
-	extcon = <&ptn5110>;
+	dr_mode = "peripheral";
 };
 
 &usbotg2 {
 	status = "okay";
-	extcon = <&ptn5110_2>;
+	dr_mode = "host";
 };
 
 &usdhc2 {
