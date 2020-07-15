@@ -67,8 +67,8 @@ struct i2c_pads_info i2c_pad_info1 = {
 	},
 };
 
-#define USDHC2_CD_GPIO	IMX_GPIO_NR(2, 18)
-#define USDHC2_PWR_GPIO IMX_GPIO_NR(2, 19)
+#define USDHC2_CD_GPIO	IMX_GPIO_NR(2, 12)
+#define USDHC2_PWR_GPIO IMX_GPIO_NR(5, 20)
 
 #define USDHC_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_HYS | PAD_CTL_PUE |PAD_CTL_PE | \
 			 PAD_CTL_FSEL2)
@@ -94,7 +94,7 @@ static iomux_v3_cfg_t const usdhc2_pads[] = {
 	IMX8MM_PAD_SD2_DATA1_USDHC2_DATA1 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	IMX8MM_PAD_SD2_DATA2_USDHC2_DATA2 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	IMX8MM_PAD_SD2_DATA3_USDHC2_DATA3 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	IMX8MM_PAD_SD2_RESET_B_GPIO2_IO19 | MUX_PAD_CTRL(USDHC_GPIO_PAD_CTRL),
+	IMX8MM_PAD_I2C4_SCL_GPIO5_IO20 | MUX_PAD_CTRL(USDHC_GPIO_PAD_CTRL),
 };
 
 /*
@@ -102,12 +102,7 @@ static iomux_v3_cfg_t const usdhc2_pads[] = {
  * in u-boot we mux the pin to GPIO when doing board_mmc_getcd.
  */
 static iomux_v3_cfg_t const usdhc2_cd_pad =
-	IMX8MM_PAD_SD2_DATA3_GPIO2_IO18 | MUX_PAD_CTRL(USDHC_GPIO_PAD_CTRL);
-
-static iomux_v3_cfg_t const usdhc2_dat3_pad =
-	IMX8MM_PAD_SD2_DATA3_USDHC2_DATA3 |
-	MUX_PAD_CTRL(USDHC_PAD_CTRL);
-
+	IMX8MM_PAD_SD2_CD_B_GPIO2_IO12 | MUX_PAD_CTRL(USDHC_GPIO_PAD_CTRL);
 
 static struct fsl_esdhc_cfg usdhc_cfg[2] = {
 	{USDHC2_BASE_ADDR, 0, 4},
@@ -169,13 +164,8 @@ int board_mmc_getcd(struct mmc *mmc)
 		gpio_request(USDHC2_CD_GPIO, "usdhc2 cd");
 		gpio_direction_input(USDHC2_CD_GPIO);
 
-		/*
-		 * Since it is the DAT3 pin, this pin is pulled to
-		 * low voltage if no card
-		 */
-		ret = gpio_get_value(USDHC2_CD_GPIO);
+		ret = !gpio_get_value(USDHC2_CD_GPIO);
 
-		imx_iomux_v3_setup_pad(usdhc2_dat3_pad);
 		return ret;
 	}
 
