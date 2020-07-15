@@ -6,8 +6,8 @@
   *
   */
 
-#ifndef __IMX8MM_EVK_H
-#define __IMX8MM_EVK_H
+#ifndef __PICO_IMX8MM_H
+#define __PICO_IMX8MM_H
 
 #include <linux/sizes.h>
 #include <asm/arch/imx-regs.h>
@@ -38,20 +38,6 @@
 #define CONFIG_POWER_BD71837
 
 #define CONFIG_SYS_I2C
-
-#if defined(CONFIG_NAND_BOOT)
-#define CONFIG_SPL_NAND_SUPPORT
-#define CONFIG_SPL_DMA
-#define CONFIG_SPL_NAND_MXS
-#define CONFIG_SPL_NAND_BASE
-#define CONFIG_SPL_NAND_IDENT
-#define CONFIG_SYS_NAND_U_BOOT_OFFS 	0x4000000 /* Put the FIT out of first 64MB boot area */
-
-/* Set a redundant offset in nand FIT mtdpart. The new uuu will burn full boot image (not only FIT part) to the mtdpart, so we check both two offsets */
-#define CONFIG_SYS_NAND_U_BOOT_OFFS_REDUND \
-	(CONFIG_SYS_NAND_U_BOOT_OFFS + CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR * 512 - 0x8400)
-#endif
-
 #endif
 
 #define CONFIG_CMD_READ
@@ -66,14 +52,10 @@
 #define PHY_ANEG_TIMEOUT 20000
 
 #define CONFIG_FEC_XCV_TYPE             RGMII
-#define CONFIG_FEC_MXC_PHYADDR          0
+#define CONFIG_FEC_MXC_PHYADDR          1
 #define FEC_QUIRK_ENET_MAC
 
 #define IMX_FEC_BASE			0x30BE0000
-#endif
-
-#ifdef CONFIG_NAND_BOOT
-#define MFG_NAND_PARTITION "mtdparts=gpmi-nand:64m(nandboot),16m(nandfit),32m(nandkernel),16m(nanddtb),8m(nandtee),-(nandrootfs)"
 #endif
 
 /*
@@ -97,24 +79,6 @@
 	"emmc_dev=2\0"\
 	"sd_dev=1\0" \
 
-/* Initial environment variables */
-#if defined(CONFIG_NAND_BOOT)
-#define CONFIG_EXTRA_ENV_SETTINGS \
-	CONFIG_MFG_ENV_SETTINGS \
-	"splashimage=0x50000000\0" \
-	"fdt_addr=0x43000000\0"			\
-	"fdt_high=0xffffffffffffffff\0" \
-	"mtdparts=" MFG_NAND_PARTITION "\0" \
-	"console=ttymxc1,115200 earlycon=ec_imx6q,0x30890000,115200\0" \
-	"bootargs=console=ttymxc1,115200 earlycon=ec_imx6q,0x30890000,115200 ubi.mtd=nandrootfs "  \
-		"root=ubi0:nandrootfs rootfstype=ubifs "		     \
-		MFG_NAND_PARTITION \
-		"\0" \
-	"bootcmd=nand read ${loadaddr} 0x5000000 0x2000000;"\
-		"nand read ${fdt_addr} 0x7000000 0x100000;"\
-		"booti ${loadaddr} - ${fdt_addr}"
-
-#else
 #define CONFIG_EXTRA_ENV_SETTINGS		\
 	CONFIG_MFG_ENV_SETTINGS \
 	JAILHOUSE_ENV \
@@ -181,7 +145,6 @@
 			   "fi; " \
 		   "fi; " \
 	   "fi;"
-#endif
 
 /* Link Definitions */
 #define CONFIG_LOADADDR			0x40480000
@@ -196,12 +159,7 @@
 	(CONFIG_SYS_INIT_RAM_ADDR + CONFIG_SYS_INIT_SP_OFFSET)
 
 #define CONFIG_ENV_OVERWRITE
-#if defined(CONFIG_ENV_IS_IN_SPI_FLASH)
-#define CONFIG_ENV_SPI_BUS		CONFIG_SF_DEFAULT_BUS
-#define CONFIG_ENV_SPI_CS		CONFIG_SF_DEFAULT_CS
-#define CONFIG_ENV_SPI_MODE		CONFIG_SF_DEFAULT_MODE
-#define CONFIG_ENV_SPI_MAX_HZ		CONFIG_SF_DEFAULT_SPEED
-#endif
+
 #define CONFIG_SYS_MMC_ENV_DEV		1   /* USDHC2 */
 #define CONFIG_MMCROOT			"/dev/mmcblk1p2"  /* USDHC2 */
 
@@ -230,35 +188,11 @@
 /* USDHC */
 #define CONFIG_FSL_USDHC
 
-#ifdef CONFIG_TARGET_IMX8MM_DDR4_EVK
-#define CONFIG_SYS_FSL_USDHC_NUM	1
-#else
+
 #define CONFIG_SYS_FSL_USDHC_NUM	2
-#endif
 #define CONFIG_SYS_FSL_ESDHC_ADDR       0
 
 #define CONFIG_SYS_MMC_IMG_LOAD_PART	1
-
-#ifdef CONFIG_FSL_FSPI
-#define FSL_FSPI_FLASH_SIZE		SZ_32M
-#define FSL_FSPI_FLASH_NUM		1
-#define FSPI0_BASE_ADDR			0x30bb0000
-#define FSPI0_AMBA_BASE			0x0
-#define CONFIG_FSPI_QUAD_SUPPORT
-
-#define CONFIG_SYS_FSL_FSPI_AHB
-#endif
-
-#ifdef CONFIG_NAND_MXS
-#define CONFIG_CMD_NAND_TRIMFFS
-
-/* NAND stuff */
-#define CONFIG_SYS_MAX_NAND_DEVICE     1
-#define CONFIG_SYS_NAND_BASE           0x20000000
-#define CONFIG_SYS_NAND_5_ADDR_CYCLE
-#define CONFIG_SYS_NAND_ONFI_DETECTION
-#define CONFIG_SYS_NAND_USE_FLASH_BBT
-#endif /* CONFIG_NAND_MXS */
 
 #define CONFIG_SYS_I2C_SPEED		100000
 
