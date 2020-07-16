@@ -100,11 +100,28 @@ ulong board_get_usable_ram_top(ulong total_size)
 }
 
 #if IS_ENABLED(CONFIG_FEC_MXC)
+#define FEC_RST_PAD IMX_GPIO_NR(2, 10)
+static iomux_v3_cfg_t const fec1_rst_pads[] = {
+	IMX8MM_PAD_SD1_RESET_B_GPIO2_IO10 | MUX_PAD_CTRL(NO_PAD_CTRL),
+};
+
+static void setup_iomux_fec(void)
+{
+	imx_iomux_v3_setup_multiple_pads(fec1_rst_pads,
+					 ARRAY_SIZE(fec1_rst_pads));
+
+	gpio_request(FEC_RST_PAD, "fec1_rst");
+	gpio_direction_output(FEC_RST_PAD, 0);
+	udelay(500);
+	gpio_direction_output(FEC_RST_PAD, 1);
+}
+
 static int setup_fec(void)
 {
 	struct iomuxc_gpr_base_regs *gpr =
 		(struct iomuxc_gpr_base_regs *)IOMUXC_GPR_BASE_ADDR;
 
+	setup_iomux_fec();
 	/* Use 125M anatop REF_CLK1 for ENET1, not from external */
 	clrsetbits_le32(&gpr->gpr[1], 0x2000, 0);
 
