@@ -167,6 +167,30 @@ int board_usb_cleanup(int index, enum usb_init_type init)
 	return ret;
 }
 
+#define WL_REG_ON_PAD IMX_GPIO_NR(1, 11)
+static iomux_v3_cfg_t const wl_reg_on_pads[] = {
+	IMX8MM_PAD_GPIO1_IO11_GPIO1_IO11 | MUX_PAD_CTRL(NO_PAD_CTRL),
+};
+
+#define BT_ON_PAD IMX_GPIO_NR(1, 12)
+static iomux_v3_cfg_t const bt_on_pads[] = {
+	IMX8MM_PAD_GPIO1_IO12_GPIO1_IO12 | MUX_PAD_CTRL(NO_PAD_CTRL),
+};
+
+void setup_wifi(void)
+{
+	imx_iomux_v3_setup_multiple_pads(wl_reg_on_pads, ARRAY_SIZE(wl_reg_on_pads));
+	imx_iomux_v3_setup_multiple_pads(bt_on_pads, ARRAY_SIZE(bt_on_pads));
+
+	gpio_request(WL_REG_ON_PAD, "wl_reg_on");
+	gpio_direction_output(WL_REG_ON_PAD, 0);
+	gpio_set_value(WL_REG_ON_PAD, 0);
+
+	gpio_request(BT_ON_PAD, "bt_on");
+	gpio_direction_output(BT_ON_PAD, 0);
+	gpio_set_value(BT_ON_PAD, 0);
+}
+
 #define FSL_SIP_GPC			0xC2000000
 #define FSL_SIP_CONFIG_GPC_PM_DOMAIN	0x3
 #define DISPMIX				9
@@ -174,6 +198,7 @@ int board_usb_cleanup(int index, enum usb_init_type init)
 
 int board_init(void)
 {
+	setup_wifi();
 	if (IS_ENABLED(CONFIG_FEC_MXC))
 		setup_fec();
 
