@@ -36,15 +36,22 @@ TWD=`pwd`
 
 setup_platform()
 {
-	SOC=$( echo $BOARD | grep -o 'imx8m*[mq]' )
+	SOC=$( echo $BOARD | grep -o 'imx8m[mqp]\?' )
 	if [ ${SOC} = "imx8m" ] || [ ${SOC} = "imx8mq" ] ; then
 		PLATFORM="imx8mq"
 		SOC_TARGET="iMX8M"
 		SOC_DIR="iMX8M"
+		IMX_BOOT_SEEK="33"
 	elif [ ${SOC} = "imx8mm" ] ; then
 		PLATFORM="imx8mm"
 		SOC_TARGET="iMX8MM"
 		SOC_DIR="iMX8M"
+		IMX_BOOT_SEEK="33"
+	elif [ ${SOC} = "imx8mp" ] ; then
+		PLATFORM="imx8mp"
+		SOC_TARGET="iMX8MP"
+		SOC_DIR="iMX8M"
+		IMX_BOOT_SEEK="32"
 	else
 		printf "Targest SOC isn't supported by this script\n"
 		exit 1
@@ -78,12 +85,12 @@ install_firmware()
 	PWD=$(pwd)
 	[ -n "${PWD##*imx-atf}" ] && cd imx-atf
 	if ( git diff-index --quiet HEAD -- plat/imx/imx8mm/imx8mm_bl31_setup.c ); then
-		if [ -z "${BOARD##*axon*}" ]; then
+		if [ -z "${BOARD##*imx8mm-axon*}" ]; then
 			sed -i 's/(IMX_RDC_BASE + 0x518, 0xfc);/(IMX_RDC_BASE + 0x518, 0xf3);/g' plat/imx/imx8mm/imx8mm_bl31_setup.c
 			rm build/${PLATFORM}/release/bl31.bin
 		fi
 	else
-		if [ -n "${BOARD##*axon*}" ]; then
+		if [ -n "${BOARD##*imx8mm-axon*}" ]; then
 			git checkout plat/imx/imx8mm/imx8mm_bl31_setup.c
 			rm build/${PLATFORM}/release/bl31.bin
 		fi
@@ -110,11 +117,18 @@ install_firmware()
 	fi
 
 	if [ -d firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys ] ; then
-		cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_pmu_train_1d_dmem.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
-		cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_pmu_train_1d_imem.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
-		cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_pmu_train_2d_dmem.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
-		cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_pmu_train_2d_imem.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
-		cp firmware-imx-${DDR_FW_VER}/firmware/hdmi/cadence/signed_hdmi_imx8m.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+		if [ ${SOC} = "imx8mp" ] ; then
+			cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_pmu_train_1d_dmem_201904.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+			cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_pmu_train_1d_imem_201904.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+			cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_pmu_train_2d_dmem_201904.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+			cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_pmu_train_2d_imem_201904.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+		else
+			cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_pmu_train_1d_dmem.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+			cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_pmu_train_1d_imem.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+			cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_pmu_train_2d_dmem.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+			cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_pmu_train_2d_imem.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+		fi
+			cp firmware-imx-${DDR_FW_VER}/firmware/hdmi/cadence/signed_hdmi_imx8m.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
 	else
 		printf "Cannot find DDR firmware \n"
 	fi
@@ -172,7 +186,7 @@ flash_imx_boot()
 	fi
 	sudo umount ${DRIVE}?
 	sleep 0.1
-	sudo dd if=${TWD}/${MKIMAGE_DIR}/${SOC_DIR}/${IMX_BOOT} of=${DRIVE} bs=1k seek=33 oflag=dsync status=progress && \
+	sudo dd if=${TWD}/${MKIMAGE_DIR}/${SOC_DIR}/${IMX_BOOT} of=${DRIVE} bs=1k seek=${IMX_BOOT_SEEK} oflag=dsync status=progress && \
 	printf "Flash flash.bin... \n" || printf "Fails to flash flash.bin... \n"
 }
 
@@ -201,6 +215,10 @@ usage()
 
     * PICO-IMX8MQ with PICO-PI-IMX8 baseboard:
     ./install_uboot_imx8.sh -b imx8mq-pico-pi -d /dev/sdX
+
+    i.mx8MP:
+    * AXON-IMX8MP:
+    ./install_uboot_imx8.sh -b imx8mp-axon -d /dev/sdX
 "
 }
 
