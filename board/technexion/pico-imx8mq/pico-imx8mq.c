@@ -110,10 +110,10 @@ int dram_init(void)
 /* Get the top of usable RAM */
 ulong board_get_usable_ram_top(ulong total_size)
 {
-        if(gd->ram_top > 0x100000000)
-            gd->ram_top = 0x100000000;
+	if(gd->ram_top > 0x100000000)
+		gd->ram_top = 0x100000000;
 
-        return gd->ram_top;
+	return gd->ram_top;
 }
 
 #ifdef CONFIG_OF_BOARD_SETUP
@@ -343,6 +343,10 @@ void board_late_mmc_env_init(void)
 
 #define FT5336_TOUCH_I2C_BUS 2
 #define FT5336_TOUCH_I2C_ADDR 0x38
+#define EXPANSION_IC_I2C_BUS 2
+#define EXPANSION_IC_I2C_ADDR 0x23
+
+
 int board_late_init(void)
 {
 	struct udevice *bus;
@@ -357,17 +361,17 @@ int board_late_init(void)
 
 	fdt_file = env_get("fdt_file");
 	if (fdt_file && !strcmp(fdt_file, "undefined")) {
-		ret = uclass_get_device_by_seq(UCLASS_I2C, FT5336_TOUCH_I2C_BUS, &bus);
+		ret = uclass_get_device_by_seq(UCLASS_I2C, EXPANSION_IC_I2C_BUS, &bus);
 		if (ret) {
 			printf("%s: Can't find bus\n", __func__);
 			return -EINVAL;
 		}
 
-		ret = dm_i2c_probe(bus, FT5336_TOUCH_I2C_ADDR, 0, &i2c_dev);
+		ret = dm_i2c_probe(bus, EXPANSION_IC_I2C_ADDR, 0, &i2c_dev);
 		if (ret)
 			env_set("fdt_file", "imx8mq-pico-pi.dtb");
 		else
-			env_set("fdt_file", "imx8mq-pico-pi-dcss-ili9881c.dtb");
+			env_set("fdt_file", "imx8mq-pico-wizard.dtb");
 	}
 
 #ifdef CONFIG_ENV_IS_IN_MMC
