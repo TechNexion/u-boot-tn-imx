@@ -264,7 +264,7 @@
 #endif
 
 #ifdef CONFIG_ANDROID_SUPPORT
-#include "imx8mp_evk_android.h"
+#include "axon-imx8mp_android.h"
 #endif
 
 #endif
