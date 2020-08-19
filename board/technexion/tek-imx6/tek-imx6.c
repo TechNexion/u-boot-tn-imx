@@ -455,6 +455,7 @@ static struct touth_device touch_matches[] = {
 	{0x0eef, "eGalaxTouch EXC3146-10"},
 	{0x0eef, "eGalaxTouch EXC3160-15"},
 	{0x0eef, "eGalaxTouch P80H60 1563"},
+	{0x0eef, "eGalaxTouch EXC3000-08"},
 };
 
 static char usb_inited = -1;
@@ -609,6 +610,26 @@ struct display_info_t const displays[] = {{
 		.lower_margin   = 17,
 		.hsync_len      = 20,
 		.vsync_len      = 4,
+		.sync           = FB_SYNC_EXT,
+		.vmode          = FB_VMODE_NONINTERLACED
+} }, {
+	.bus	= 1,
+	.addr	= 3,
+	.pixfmt = IPU_PIX_FMT_RGB24,
+	.detect = detect_usb,
+	.enable = enable_lvds,
+	.mode	= {
+		.name           = "10inch_v00",
+		.refresh        = 60,
+		.xres           = 1280,
+		.yres           = 800,
+		.pixclock       = 1000000000000ULL/71100000,
+		.left_margin    = 40,
+		.right_margin   = 40,
+		.upper_margin   = 10,
+		.lower_margin   = 3,
+		.hsync_len      = 80,
+		.vsync_len      = 10,
 		.sync           = FB_SYNC_EXT,
 		.vmode          = FB_VMODE_NONINTERLACED
 } }, {
