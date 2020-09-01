@@ -166,6 +166,12 @@ config TARGET_VERDIN_IMX8MM
        select SUPPORT_SPL
        select IMX8M_LPDDR4
 
+config TARGET_XORE_IMX8MM
+    bool "imx8mm xore wizard board"
+    select IMX8MM
+    select SUPPORT_SPL
+    select IMX8M_LPDDR4
+
 endchoice
 
 source "board/freescale/imx8mq_evk/Kconfig"
@@ -178,5 +184,6 @@ source "board/freescale/imx8mp_evk/Kconfig"
 source "board/technexion/axon-imx8mp/Kconfig"
 source "board/technexion/pico-imx8mm/Kconfig"
 source "board/toradex/verdin-imx8mm/Kconfig"
+source "board/technexion/xore-imx8mm/Kconfig"
 
 endif
