@@ -797,7 +797,8 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mp-evk.dtb \
 	imx8mm-ab2.dtb \
 	imx8mn-ddr4-ab2.dtb \
-	imx8mn-ab2.dtb
+	imx8mn-ab2.dtb	\
+	imx8mm-xore-wizard.dtb
 
 dtb-$(CONFIG_ARCH_IMXRT) += imxrt1050-evk.dtb
 
