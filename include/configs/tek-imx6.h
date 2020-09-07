@@ -133,10 +133,8 @@
 	"console=" __stringify(DEBUG_TTY)"\0" \
 	"splashpos=m,m\0" \
 	"splashsource=mmc_fs\0" \
-	"som=autodetect\0" \
 	"form=tek\0" \
-	"baseboard=fairy\0" \
-	"default_baseboard=fairy\0" \
+	"baseboard=tek3\0" \
 	"fdtfile=undefined\0" \
 	"fdt_high=0xffffffff\0" \
 	"initrd_high=0xffffffff\0" \
@@ -198,19 +196,12 @@
 	"bootscript=echo Running bootscript from ${bootmedia} ...; " \
 		"source\0" \
 	"loadimage=fatload ${bootmedia} ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
-	"setfdt=" \
-		"if test -n ${wifi_module} && test ${wifi_module} = qca; then " \
-			"setenv fdtfile ${som}-${form}-${baseboard}-${wifi_module}.dtb; " \
-		"else " \
-			"setenv fdtfile ${som}-${form}.dtb;" \
-		"fi\0" \
 	"loadfdt=fatload ${bootmedia} ${mmcdev}:${mmcpart} ${fdt_addr} ${fdtfile}\0" \
 	"mmcboot=echo Booting from ${bootmedia} ...; " \
 		"run searchbootdev; " \
 		"run mmcargs; " \
 		"echo baseboard is ${baseboard}; " \
 		"echo ${bootargs}; " \
-		"run setfdt; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
 			"if run loadfdt; then " \
 				"bootz ${loadaddr} - ${fdt_addr}; " \
@@ -219,7 +210,6 @@
 					"echo WARN: Cannot load the DT; " \
 					"echo fall back to load the default DT; " \
 					"setenv baseboard ${default_baseboard}; " \
-					"run setfdt; " \
 					"run loadfdt; " \
 					"bootz ${loadaddr} - ${fdt_addr}; " \
 				"else " \
