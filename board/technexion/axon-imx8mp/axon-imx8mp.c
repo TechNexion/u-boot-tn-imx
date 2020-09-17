@@ -87,50 +87,28 @@ int ft_board_setup(void *blob, bd_t *bd)
 }
 #endif
 
-#ifdef CONFIG_FEC_MXC
-#define FEC_RST_PAD IMX_GPIO_NR(4, 2)
-static iomux_v3_cfg_t const fec1_rst_pads[] = {
-	MX8MP_PAD_SAI1_RXD0__GPIO4_IO02 | MUX_PAD_CTRL(NO_PAD_CTRL),
+#ifdef CONFIG_DWC_ETH_QOS
+#define EQOS_RST_PAD IMX_GPIO_NR(3, 22)
+static iomux_v3_cfg_t const eqos_rst_pads[] = {
+	MX8MP_PAD_SAI5_RXD1__GPIO3_IO22 | MUX_PAD_CTRL(NO_PAD_CTRL),
 };
 
-static void setup_iomux_fec(void)
-{
-	imx_iomux_v3_setup_multiple_pads(fec1_rst_pads,
-					 ARRAY_SIZE(fec1_rst_pads));
-
-	gpio_request(FEC_RST_PAD, "fec1_rst");
-	gpio_direction_output(FEC_RST_PAD, 0);
-	mdelay(15);
-	gpio_direction_output(FEC_RST_PAD, 1);
-	mdelay(100);
-}
-
-static int setup_fec(void)
-{
-	struct iomuxc_gpr_base_regs *gpr =
-		(struct iomuxc_gpr_base_regs *)IOMUXC_GPR_BASE_ADDR;
-
-	setup_iomux_fec();
-
-	/* Enable RGMII TX clk output */
-	setbits_le32(&gpr->gpr[1], BIT(22));
-
-	//return set_clk_enet(ENET_125MHZ);
-	return 0;
-}
-#endif
-
-#ifdef CONFIG_DWC_ETH_QOS
-
-#define EQOS_RST_PAD IMX_GPIO_NR(4, 22)
-static iomux_v3_cfg_t const eqos_rst_pads[] = {
-	MX8MP_PAD_SAI2_RXC__GPIO4_IO22 | MUX_PAD_CTRL(NO_PAD_CTRL),
+#define EQOS_PWR_PAD IMX_GPIO_NR(5, 2)
+static iomux_v3_cfg_t const eqos_pwr_pads[] = {
+	MX8MP_PAD_SAI3_MCLK__GPIO5_IO02 | MUX_PAD_CTRL(NO_PAD_CTRL),
 };
 
 static void setup_iomux_eqos(void)
 {
 	imx_iomux_v3_setup_multiple_pads(eqos_rst_pads,
 					 ARRAY_SIZE(eqos_rst_pads));
+
+	imx_iomux_v3_setup_multiple_pads(eqos_pwr_pads,
+					 ARRAY_SIZE(eqos_pwr_pads));
+
+	gpio_request(EQOS_PWR_PAD, "eqos_pwr");
+	gpio_direction_output(EQOS_PWR_PAD, 1);
+	mdelay(20);
 
 	gpio_request(EQOS_RST_PAD, "eqos_rst");
 	gpio_direction_output(EQOS_RST_PAD, 0);
@@ -300,9 +278,6 @@ void setup_wifi(void)
 int board_init(void)
 {
 	setup_wifi();
-#ifdef CONFIG_FEC_MXC
-	setup_fec();
-#endif
 
 #ifdef CONFIG_DWC_ETH_QOS
 	/* clock, pin, gpr */
