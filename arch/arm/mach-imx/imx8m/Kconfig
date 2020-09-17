@@ -161,16 +161,22 @@ config TARGET_PICO_IMX8MM
 	select IMX8M_LPDDR4
 
 config TARGET_VERDIN_IMX8MM
-       bool "Support Toradex Verdin iMX8M Mini module"
-       select IMX8MM
-       select SUPPORT_SPL
-       select IMX8M_LPDDR4
+	bool "Support Toradex Verdin iMX8M Mini module"
+	select IMX8MM
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
 
 config TARGET_XORE_IMX8MM
-    bool "imx8mm xore wizard board"
-    select IMX8MM
-    select SUPPORT_SPL
-    select IMX8M_LPDDR4
+	bool "TechNexion XORE-IMX8MM"
+	select IMX8MM
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+
+config TARGET_AXON_IMX8MM
+	bool "Technexion AXON-IMX8MM"
+	select IMX8MM
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
 
 endchoice
 
@@ -185,5 +191,6 @@ source "board/technexion/axon-imx8mp/Kconfig"
 source "board/technexion/pico-imx8mm/Kconfig"
 source "board/toradex/verdin-imx8mm/Kconfig"
 source "board/technexion/xore-imx8mm/Kconfig"
+source "board/technexion/axon-imx8mm/Kconfig"
 
 endif
