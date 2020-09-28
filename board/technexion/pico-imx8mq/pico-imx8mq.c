@@ -394,6 +394,7 @@ int board_late_init(void)
 			struct display_info_t const *dev = displays+i;
 			if ((!panel && dev->detect && dev->detect(dev)) || !strcmp(panel, dev->mode.name)) {
 				strcat(str_fdtfile, mipi_panel_mapping[i].suffix);
+				env_set("panel_name", mipi_panel_mapping[i].panel_name);
 				break;
 			}
 		}
