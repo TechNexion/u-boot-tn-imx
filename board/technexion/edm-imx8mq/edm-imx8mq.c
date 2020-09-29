@@ -393,7 +393,7 @@ int board_late_init(void)
 
 	fdt_file = env_get("fdt_file");
 	if (fdt_file && !strcmp(fdt_file, "undefined")) {
-		strcpy(str_fdtfile, "imx8mq-pico-wizard");
+		strcpy(str_fdtfile, "imx8mq-edm-wizard");
 
 		for (i = 0; i < display_count; i++) {
 			struct display_info_t const *dev = displays+i;
