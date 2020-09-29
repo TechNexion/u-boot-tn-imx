@@ -17,6 +17,8 @@
 #define CONFIG_CSF_SIZE			0x2000 /* 8K region */
 #endif
 
+#define CONFIG_SYS_BOOTM_LEN       0xA000000
+
 #define CONFIG_SPL_TEXT_BASE		0x7E1000
 #define CONFIG_SPL_MAX_SIZE		(148 * 1024)
 #define CONFIG_SYS_MONITOR_LEN		(512 * 1024)
