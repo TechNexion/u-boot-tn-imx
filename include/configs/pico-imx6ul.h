@@ -137,9 +137,9 @@
 	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
 	"setfdt=" \
 		"if test -n ${wifi_module} && test ${wifi_module} = qca; then " \
-			"setenv fdtfile ${som}-${form}-${wifi_module}_${baseboard}.dtb; " \
+			"setenv fdtfile ${som}-${form}-${baseboard}-${wifi_module}.dtb; " \
 		"else " \
-			"setenv fdtfile ${som}-${form}_${baseboard}.dtb;" \
+			"setenv fdtfile ${som}-${form}-${baseboard}.dtb;" \
 		"fi\0" \
 	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdtfile}\0" \
 	"mmcboot=echo Booting from mmc ...; " \
