@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 /*
- * Copyright 2019 NXP
+ * Copyright 2017 NXP
+ * Copyright 2020 Technexion Ltd, Ray Chang <ray.chang@technexion.com>
  */
 
 /dts-v1/;
@@ -23,26 +24,26 @@
 		      <0x1 0x00000000 0 0xc0000000>;
 	};
 
-	leds {
-		compatible = "gpio-leds";
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_gpio_led>;
-
-		status {
-			label = "status";
-			gpios = <&gpio3 16 GPIO_ACTIVE_HIGH>;
-			default-state = "on"; /* LED GREEN */
-		};
-	};
-
 	reg_usb1_host_vbus: regulator-usb1-vbus {
 		compatible = "regulator-fixed";
 		regulator-name = "usb1_host_vbus";
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_usb1_vbus>;
-		regulator-min-microvolt = <5000000>;
-		regulator-max-microvolt = <5000000>;
-		gpio = <&gpio1 14 GPIO_ACTIVE_HIGH>;
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		gpio = <&gpio4 22 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+		regulator-always-on;
+	};
+
+	enet_power_en: enet_power_en {
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_enet_pwr>;
+		compatible = "regulator-fixed";
+		regulator-name = "enet_pwr";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		gpio = <&gpio1 11 GPIO_ACTIVE_HIGH>;
 		enable-active-high;
 		regulator-always-on;
 	};
@@ -92,6 +93,8 @@
 	pinctrl-0 = <&pinctrl_eqos>;
 	phy-mode = "rgmii-id";
 	phy-handle = <&ethphy0>;
+	phy-supply = <&enet_power_en>;
+	phy-reset-gpios = <&gpio1 9 GPIO_ACTIVE_LOW>;
 	status = "okay";
 
 	mdio {
@@ -115,6 +118,40 @@
 	pinctrl-1 = <&pinctrl_i2c1_gpio>;
 	scl-gpios = <&gpio5 14 GPIO_ACTIVE_HIGH>;
 	sda-gpios = <&gpio5 15 GPIO_ACTIVE_HIGH>;
+	status = "okay";
+};
+
+&i2c2 {
+	clock-frequency = <400000>;
+	pinctrl-names = "default", "gpio";
+	pinctrl-0 = <&pinctrl_i2c2>;
+	pinctrl-1 = <&pinctrl_i2c2_gpio>;
+	scl-gpios = <&gpio5 16 GPIO_ACTIVE_HIGH>;
+	sda-gpios = <&gpio5 17 GPIO_ACTIVE_HIGH>;
+	status = "okay";
+
+	adv_bridge: adv7535@3d {
+		compatible = "adi,adv7533";
+		reg = <0x3d>;
+		adi,addr-cec = <0x3c>;
+		adi,dsi-lanes = <4>;
+		status = "okay";
+
+		port {
+			adv7535_from_dsim: endpoint {
+				remote-endpoint = <&dsim_to_adv7535>;
+			};
+		};
+	};
+};
+
+&i2c4 {
+	clock-frequency = <100000>;
+	pinctrl-names = "default", "gpio";
+	pinctrl-0 = <&pinctrl_i2c4>;
+	pinctrl-1 = <&pinctrl_i2c4_gpio>;
+	scl-gpios = <&gpio5 20 GPIO_ACTIVE_HIGH>;
+	sda-gpios = <&gpio5 21 GPIO_ACTIVE_HIGH>;
 	status = "okay";
 
 	pmic: pca9450@25 {
@@ -225,45 +262,14 @@
 	};
 };
 
-&i2c2 {
-	clock-frequency = <400000>;
-	pinctrl-names = "default", "gpio";
-	pinctrl-0 = <&pinctrl_i2c2>;
-	pinctrl-1 = <&pinctrl_i2c2_gpio>;
-	scl-gpios = <&gpio5 16 GPIO_ACTIVE_HIGH>;
-	sda-gpios = <&gpio5 17 GPIO_ACTIVE_HIGH>;
-	status = "okay";
-
-	adv_bridge: adv7535@3d {
-		compatible = "adi,adv7533";
-		reg = <0x3d>;
-		adi,addr-cec = <0x3c>;
-		adi,dsi-lanes = <4>;
-		status = "okay";
-
-		port {
-			adv7535_from_dsim: endpoint {
-				remote-endpoint = <&dsim_to_adv7535>;
-			};
-		};
-	};
-};
-
-&i2c3 {
+&i2c5 {
 	clock-frequency = <100000>;
 	pinctrl-names = "default", "gpio";
-	pinctrl-0 = <&pinctrl_i2c3>;
-	pinctrl-1 = <&pinctrl_i2c3_gpio>;
-	scl-gpios = <&gpio5 18 GPIO_ACTIVE_HIGH>;
-	sda-gpios = <&gpio5 19 GPIO_ACTIVE_HIGH>;
+	pinctrl-0 = <&pinctrl_i2c5>;
+	pinctrl-1 = <&pinctrl_i2c5_gpio>;
+	scl-gpios = <&gpio5 3 GPIO_ACTIVE_HIGH>;
+	sda-gpios = <&gpio5 4 GPIO_ACTIVE_HIGH>;
 	status = "okay";
-
-	pca6416: gpio@20 {
-		compatible = "ti,tca6416";
-		reg = <0x20>;
-		gpio-controller;
-		#gpio-cells = <2>;
-	};
 };
 
 &lcdif1 {
@@ -353,7 +359,7 @@
 	pinctrl_eqos: eqosgrp {
 		fsl,pins = <
 			MX8MP_IOMUXC_ENET_MDC__ENET_QOS_MDC	0x3
-			MX8MP_IOMUXC_ENET_MDIO__ENET_QOS_MDIO	0x3
+			MX8MP_IOMUXC_ENET_MDIO__ENET_QOS_MDIO	0x23
 			MX8MP_IOMUXC_ENET_RD0__ENET_QOS_RGMII_RD0	0x91
 			MX8MP_IOMUXC_ENET_RD1__ENET_QOS_RGMII_RD1	0x91
 			MX8MP_IOMUXC_ENET_RD2__ENET_QOS_RGMII_RD2	0x91
@@ -366,14 +372,8 @@
 			MX8MP_IOMUXC_ENET_TD3__ENET_QOS_RGMII_TD3		0x1f
 			MX8MP_IOMUXC_ENET_TX_CTL__ENET_QOS_RGMII_TX_CTL	0x1f
 			MX8MP_IOMUXC_ENET_TXC__CCM_ENET_QOS_CLOCK_GENERATE_TX_CLK	0x1f
-			MX8MP_IOMUXC_SAI5_RXD1__GPIO3_IO22		0x19
-			MX8MP_IOMUXC_SAI5_RXD2__GPIO3_IO23		0x19
-		>;
-	};
-
-	pinctrl_gpio_led: gpioledgrp {
-		fsl,pins = <
-			MX8MP_IOMUXC_NAND_READY_B__GPIO3_IO16	0x19
+			MX8MP_IOMUXC_GPIO1_IO09__GPIO1_IO09		0x19
+			MX8MP_IOMUXC_GPIO1_IO12__GPIO1_IO12		0x19
 		>;
 	};
 
@@ -391,10 +391,17 @@
 		>;
 	};
 
-	pinctrl_i2c3: i2c3grp {
+	pinctrl_i2c4: i2c4grp {
 		fsl,pins = <
-			MX8MP_IOMUXC_I2C3_SCL__I2C3_SCL			0x400001c3
-			MX8MP_IOMUXC_I2C3_SDA__I2C3_SDA			0x400001c3
+			MX8MP_IOMUXC_I2C4_SCL__I2C4_SCL			0x400001a3
+			MX8MP_IOMUXC_I2C4_SDA__I2C4_SDA			0x400001a3
+		>;
+	};
+
+	pinctrl_i2c5: i2c5grp {
+		fsl,pins = <
+			MX8MP_IOMUXC_SPDIF_TX__I2C5_SCL			0x400001c3
+			MX8MP_IOMUXC_SPDIF_RX__I2C5_SDA			0x400001c3
 		>;
 	};
 
@@ -412,10 +419,17 @@
 		>;
 	};
 
-	pinctrl_i2c3_gpio: i2c3grp-gpio {
+	pinctrl_i2c4_gpio: i2c4grp-gpio {
 		fsl,pins = <
-			MX8MP_IOMUXC_I2C3_SCL__GPIO5_IO18        	0x1c3
-			MX8MP_IOMUXC_I2C3_SDA__GPIO5_IO19        	0x1c3
+			MX8MP_IOMUXC_I2C4_SCL__GPIO5_IO20        	0x1a3
+			MX8MP_IOMUXC_I2C4_SDA__GPIO5_IO21        	0x1a3
+		>;
+	};
+
+	pinctrl_i2c5_gpio: i2c5grp-gpio {
+		fsl,pins = <
+			MX8MP_IOMUXC_SPDIF_TX__GPIO5_IO03        	0x1c3
+			MX8MP_IOMUXC_SPDIF_RX__GPIO5_IO04        	0x1c3
 		>;
 	};
 
@@ -431,15 +445,9 @@
 		>;
 	};
 
-	pinctrl_typec: typec1grp {
-		fsl,pins = <
-			MX8MP_IOMUXC_SAI1_TXD7__GPIO4_IO19	0x1c4
-		>;
-	};
-
 	pinctrl_typec_mux: typec1muxgrp {
 		fsl,pins = <
-			MX8MP_IOMUXC_SAI1_MCLK__GPIO4_IO20	0x16
+			MX8MP_IOMUXC_SAI1_RXC__GPIO4_IO01	0x16
 		>;
 	};
 
@@ -458,7 +466,7 @@
 
 	pinctrl_usb1_vbus: usb1grp {
 		fsl,pins = <
-			MX8MP_IOMUXC_GPIO1_IO14__GPIO1_IO14	0x19
+			MX8MP_IOMUXC_SAI2_RXC__GPIO4_IO22	0x19
 		>;
 	};
 
@@ -555,6 +563,12 @@
 	pinctrl_wdog: wdoggrp {
 		fsl,pins = <
 			MX8MP_IOMUXC_GPIO1_IO02__WDOG1_WDOG_B	0xc6
+		>;
+	};
+
+	pinctrl_enet_pwr: enetpwrgrp {
+		fsl,pins = <
+			MX8MP_IOMUXC_GPIO1_IO11__GPIO1_IO11		0x11
 		>;
 	};
 };
