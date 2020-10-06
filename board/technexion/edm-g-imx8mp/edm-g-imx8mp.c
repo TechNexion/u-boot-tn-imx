@@ -246,14 +246,14 @@ int board_usb_cleanup(int index, enum usb_init_type init)
 }
 #endif
 
-#define WL_REG_ON_PAD IMX_GPIO_NR(4, 1)
+#define WL_REG_ON_PAD IMX_GPIO_NR(1, 0)
 static iomux_v3_cfg_t const wl_reg_on_pads[] = {
-	MX8MP_PAD_SAI1_RXC__GPIO4_IO01 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	MX8MP_PAD_GPIO1_IO00__GPIO1_IO00 | MUX_PAD_CTRL(NO_PAD_CTRL),
 };
 
-#define BT_ON_PAD IMX_GPIO_NR(4, 0)
+#define BT_ON_PAD IMX_GPIO_NR(1, 5)
 static iomux_v3_cfg_t const bt_on_pads[] = {
-	MX8MP_PAD_SAI1_RXFS__GPIO4_IO00 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	MX8MP_PAD_GPIO1_IO05__GPIO1_IO05 | MUX_PAD_CTRL(NO_PAD_CTRL),
 };
 
 void setup_wifi(void)
