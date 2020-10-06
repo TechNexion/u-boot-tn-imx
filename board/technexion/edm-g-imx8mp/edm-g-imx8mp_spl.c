@@ -64,14 +64,14 @@ void spl_dram_init(void)
 #define PC MUX_PAD_CTRL(I2C_PAD_CTRL)
 struct i2c_pads_info i2c_pad_info1 = {
 	.scl = {
-		.i2c_mode = MX8MP_PAD_I2C1_SCL__I2C1_SCL | PC,
-		.gpio_mode = MX8MP_PAD_I2C1_SCL__GPIO5_IO14 | PC,
-		.gp = IMX_GPIO_NR(5, 14),
+		.i2c_mode = MX8MP_PAD_I2C4_SCL__I2C4_SCL | PC,
+		.gpio_mode = MX8MP_PAD_I2C4_SCL__GPIO5_IO20 | PC,
+		.gp = IMX_GPIO_NR(5, 20),
 	},
 	.sda = {
-		.i2c_mode = MX8MP_PAD_I2C1_SDA__I2C1_SDA | PC,
-		.gpio_mode = MX8MP_PAD_I2C1_SDA__GPIO5_IO15 | PC,
-		.gp = IMX_GPIO_NR(5, 15),
+		.i2c_mode = MX8MP_PAD_I2C4_SDA__I2C4_SDA | PC,
+		.gpio_mode = MX8MP_PAD_I2C4_SDA__GPIO5_IO21 | PC,
+		.gp = IMX_GPIO_NR(5, 21),
 	},
 };
 
@@ -248,10 +248,12 @@ void board_init_f(ulong dummy)
 
 	enable_tzc380();
 
+#ifdef CONFIG_POWER
 	/* Adjust pmic voltage to 1.0V for 800M */
-	setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1);
+	setup_i2c(3, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1);
 
 	power_init_board();
+#endif
 
 	/* DDR initialization */
 	spl_dram_init();
