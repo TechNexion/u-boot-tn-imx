@@ -24,6 +24,7 @@
 #include <usb.h>
 #include <dwc3-uboot.h>
 #include <mmc.h>
+#include <asm/armv8/mmu.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -51,6 +52,40 @@ int board_early_init_f(void)
 
 	init_uart_clk(1);
 
+	return 0;
+}
+
+static int ddr_size;
+extern struct mm_region *mem_map;
+/* The following index corresponds to the index of DRAM1 of imx8m_mem_map
+   in arch/arm/mach-imx/imx8m/soc.c */
+#define DRAM1_INDEX 5
+#define DRAM2_INDEX 6
+
+int board_phys_sdram_size(phys_size_t *size)
+{
+	if (!size)
+		return -EINVAL;
+
+	/*************************************************
+	ToDo: It's a dirty workaround to store the
+	information of DDR size into start address of OCRAM.
+	It'd be better to detect DDR size from DDR controller.
+	**************************************************/
+	ddr_size = readl(OCRAM_BASE_ADDR);
+
+	if (ddr_size == 0x4) { /* DRAM size: 6GB */
+		*size = SZ_3G;
+		mem_map[DRAM1_INDEX].size=SZ_3G;
+		mem_map[DRAM2_INDEX].size=SZ_3G;
+	}
+	else if (ddr_size == 0x3) { /* DRAM size: 4GB */
+		*size = SZ_1G;
+		mem_map[DRAM1_INDEX].size=SZ_3G;
+		mem_map[DRAM2_INDEX].size=SZ_1G;
+	}
+	else
+		puts("Unknown DDR type!!!\n");
 	return 0;
 }
 
