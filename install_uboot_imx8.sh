@@ -222,6 +222,8 @@ usage()
     i.mx8MP:
     * AXON-IMX8MP:
     ./install_uboot_imx8.sh -b imx8mp-axon -d /dev/sdX
+    * EDM-G-IMX8MP:
+    ./install_uboot_imx8.sh -b imx8mp-edm-g -d /dev/sdX
 "
 }
 
