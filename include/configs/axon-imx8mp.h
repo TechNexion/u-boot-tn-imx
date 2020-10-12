@@ -6,8 +6,8 @@
  *
  */
 
-#ifndef __IMX8MP_EVK_H
-#define __IMX8MP_EVK_H
+#ifndef __IMX8MP_AXON_H
+#define __IMX8MP_AXON_H
 
 #include <linux/sizes.h>
 #include <asm/arch/imx-regs.h>
