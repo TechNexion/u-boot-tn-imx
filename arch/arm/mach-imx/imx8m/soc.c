@@ -248,6 +248,9 @@ int dram_init(void)
 	return 0;
 }
 
+/* The following index corresponds to the index of DRAM2 of imx8m_mem_map */
+#define DRAM2_INDEX 6
+
 int dram_init_banksize(void)
 {
 	int bank = 0;
@@ -284,7 +287,7 @@ int dram_init_banksize(void)
 		return -1;
 	}
 	gd->bd->bi_dram[bank].start = PHYS_SDRAM_2;
-	gd->bd->bi_dram[bank].size = PHYS_SDRAM_2_SIZE;
+	gd->bd->bi_dram[bank].size = imx8m_mem_map[DRAM2_INDEX].size;
 #endif
 
 	return 0;
