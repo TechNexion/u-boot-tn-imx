@@ -123,14 +123,14 @@ int ft_board_setup(void *blob, bd_t *bd)
 #endif
 
 #ifdef CONFIG_DWC_ETH_QOS
-#define EQOS_RST_PAD IMX_GPIO_NR(3, 22)
+#define EQOS_RST_PAD IMX_GPIO_NR(1, 9)
 static iomux_v3_cfg_t const eqos_rst_pads[] = {
-	MX8MP_PAD_SAI5_RXD1__GPIO3_IO22 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	MX8MP_PAD_GPIO1_IO09__GPIO1_IO09 | MUX_PAD_CTRL(NO_PAD_CTRL),
 };
 
-#define EQOS_PWR_PAD IMX_GPIO_NR(5, 2)
+#define EQOS_PWR_PAD IMX_GPIO_NR(1, 11)
 static iomux_v3_cfg_t const eqos_pwr_pads[] = {
-	MX8MP_PAD_SAI3_MCLK__GPIO5_IO02 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	MX8MP_PAD_GPIO1_IO11__GPIO1_IO11 | MUX_PAD_CTRL(NO_PAD_CTRL),
 };
 
 static void setup_iomux_eqos(void)
