@@ -229,14 +229,14 @@
 	"fit_addr=0x45800000\0" \
 	"fit_high=0xffffffff\0" \
 	"fit_overlay=for ov in ${dtoverlay}; do " \
-			"echo Overlaying ${ov}...; setenv fitov \"${fitov}#${ov}\"; " \
+			"echo Overlaying ${ov}...; setenv fitov \"${fitov}#conf@imx8mm-pico-${baseboard}-${ov}.dtbo\"; " \
 		"done; echo fit conf: ${fdt_file}${fitov};\0" \
 	"fitargs=setenv bootargs ${jh_clk} console=${console} root=/dev/ram0 rootwait rw ${fbconargs} " \
 		"modules-load=g_acm_ms g_acm_ms.stall=0 g_acm_ms.removable=1 g_acm_ms.file=/dev/mmcblk2 " \
 		"g_acm_ms.iSerialNumber=00:00:00:00:00:00 g_acm_ms.iManufacturer=TechNexion\0" \
 	"loadfit=fatload mmc ${mmcdev}:${mmcpart} ${fit_addr} tnrescue.itb\0" \
 	"fitboot=echo Booting from FIT image ...; " \
-		"run fit_overlay; run loadfbcon; run fitargs; " \
+		"run checkbaseboard; run fit_overlay; run loadfbcon; run fitargs; " \
 		"bootm ${fit_addr}#conf@${fdt_file}${fitov}\0"
 
 #define CONFIG_BOOTCOMMAND \
