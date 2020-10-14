@@ -139,6 +139,7 @@
 	"splashsource=mmc_fs\0" \
 	"fdt_addr=0x43000000\0"			\
 	"fdt_high=0xffffffffffffffff\0"		\
+	"fdt_buffer=8192\0"	\
 	"boot_fdt=try\0" \
 	"fdt_file=undefined\0" \
 	"initrd_addr=0x43800000\0"		\
@@ -158,6 +159,19 @@
 		"source\0" \
 	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
 	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
+        "checkbaseboard=" \
+                "if test ${fdt_file} = imx8mq-pico-wizard.dtb; then " \
+                        "setenv baseboard wizard; " \
+                "else " \
+                        "setenv baseboard pi; " \
+                "fi;\0" \
+        "loadoverlay=" \
+                "fdt addr ${fdt_addr} && fdt resize ${fdt_buffer}; " \
+                "setexpr fdtovaddr ${fdt_addr} + 0xF0000; " \
+                "for ov in ${dtoverlay}; do " \
+                        "echo Overlaying ${ov}...; " \
+                        "fatload mmc ${mmcdev}:${mmcpart} ${fdtovaddr} imx8mq-pico-${baseboard}-${ov}.dtbo && fdt apply ${fdtovaddr}; " \
+                "done\0" \
 	"bootenv=uEnv.txt\0" \
 	"loadbootenv=fatload mmc ${mmcdev} ${loadaddr} ${bootenv}\0" \
 	"importbootenv=echo Importing environment from mmc ...; " \
@@ -166,6 +180,8 @@
 		"run mmcargs; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
 			"if run loadfdt; then " \
+				"run checkbaseboard; " \
+				"run loadoverlay; " \
 				"booti ${loadaddr} - ${fdt_addr}; " \
 			"else " \
 				"echo WARN: Cannot load the DT; " \
@@ -204,14 +220,14 @@
 	"fit_addr=0x45800000\0" \
 	"fit_high=0xffffffff\0" \
 	"fit_overlay=for ov in ${dtoverlay}; do " \
-			"echo Overlaying ${ov}...; setenv fitov \"${fitov}#${ov}\"; " \
+			"echo Overlaying ${ov}...; setenv fitov \"${fitov}#conf@imx8mq-pico-${baseboard}-${ov}.dtbo\"; " \
 		"done; echo fit conf: ${fdt_file}${fitov};\0" \
 	"fitargs=setenv bootargs ${jh_clk} console=${console} root=/dev/ram0 rootwait rw ${fbconargs} " \
 		"modules-load=g_acm_ms g_acm_ms.stall=0 g_acm_ms.removable=1 g_acm_ms.file=/dev/mmcblk2 " \
 		"g_acm_ms.iSerialNumber=00:00:00:00:00:00 g_acm_ms.iManufacturer=TechNexion\0" \
 	"loadfit=fatload mmc ${mmcdev}:${mmcpart} ${fit_addr} tnrescue.itb\0" \
 	"fitboot=echo Booting from FIT image ...; " \
-		"run fit_overlay; run loadfbcon; run fitargs; " \
+		"run checkbaseboard; run fit_overlay; run loadfbcon; run fitargs; " \
 		"bootm ${fit_addr}#conf@${fdt_file}${fitov}\0"
 
 #define CONFIG_BOOTCOMMAND \
