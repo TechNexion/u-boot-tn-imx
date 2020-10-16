@@ -210,8 +210,12 @@ usage()
 
     For example:
 
+    i.mx8MM:
     * PICO-IMX8MM with PICO-PI-IMX8 baseboard:
     ./install_uboot_imx8.sh -b imx8mm-pico-pi -d /dev/sdX
+	
+    * EDM-G-IMX8MM with WB:
+    ./install_uboot_imx8.sh -b imx8mm-edm-g-wb -d /dev/sdX
 
     i.mx8MQ:
     * EDM-IMX8MQ with EDM-WIZARD baseboard:
@@ -223,7 +227,8 @@ usage()
     i.mx8MP:
     * AXON-IMX8MP:
     ./install_uboot_imx8.sh -b imx8mp-axon -d /dev/sdX
-    * EDM-G-IMX8MP:
+    
+    * EDM-G-IMX8MP with WB:
     ./install_uboot_imx8.sh -b imx8mp-edm-g -d /dev/sdX
 "
 }
