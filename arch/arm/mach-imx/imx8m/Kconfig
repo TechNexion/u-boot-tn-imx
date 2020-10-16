@@ -184,6 +184,12 @@ config TARGET_AXON_IMX8MM
 	select SUPPORT_SPL
 	select IMX8M_LPDDR4
 
+config TARGET_EDM_G_IMX8MM
+	bool "Technexion EDM-G-IMX8MM"
+	select IMX8MM
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+
 endchoice
 
 source "board/freescale/imx8mq_evk/Kconfig"
@@ -199,5 +205,6 @@ source "board/technexion/pico-imx8mm/Kconfig"
 source "board/toradex/verdin-imx8mm/Kconfig"
 source "board/technexion/xore-imx8mm/Kconfig"
 source "board/technexion/axon-imx8mm/Kconfig"
+source "board/technexion/edm-g-imx8mm/Kconfig"
 
 endif
