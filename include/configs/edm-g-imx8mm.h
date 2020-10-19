@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 TechNexion Ltd.
+ * Copyright 2020 TechNexion Ltd.
  * 
  * Author: Richard Hu <richard.hu@technexion.com>
  *
@@ -71,7 +71,7 @@
 	CONFIG_MFG_ENV_SETTINGS_DEFAULT \
 	"initrd_addr=0x43800000\0" \
 	"initrd_high=0xffffffffffffffff\0" \
-	"emmc_dev=0\0"\
+	"emmc_dev=2\0"\
 	"sd_dev=1\0" \
 
 /* Initial environment variables */
@@ -155,13 +155,8 @@
 	(CONFIG_SYS_INIT_RAM_ADDR + CONFIG_SYS_INIT_SP_OFFSET)
 
 #define CONFIG_ENV_OVERWRITE
-#if defined(CONFIG_ENV_IS_IN_SPI_FLASH)
-#define CONFIG_ENV_SPI_BUS		CONFIG_SF_DEFAULT_BUS
-#define CONFIG_ENV_SPI_CS		CONFIG_SF_DEFAULT_CS
-#define CONFIG_ENV_SPI_MODE		CONFIG_SF_DEFAULT_MODE
-#define CONFIG_ENV_SPI_MAX_HZ		CONFIG_SF_DEFAULT_SPEED
-#endif
-#define CONFIG_SYS_MMC_ENV_DEV		0   /* USDHC2 */
+
+#define CONFIG_SYS_MMC_ENV_DEV		1   /* USDHC2 */
 #define CONFIG_MMCROOT			"/dev/mmcblk1p2"  /* USDHC2 */
 
 /* Size of malloc() pool */
@@ -169,12 +164,7 @@
 
 #define CONFIG_SYS_SDRAM_BASE	0x40000000
 #define PHYS_SDRAM				0x40000000
-#define PHYS_SDRAM_SIZE			PHYS_SDRAM_SIZE_1GB
-
-#define PHYS_SDRAM_SIZE_1GB		SZ_1G /* 1GB DDR */
-#define PHYS_SDRAM_SIZE_2GB		SZ_2G /* 2GB DDR */
-#define PHYS_SDRAM_SIZE_3GB		0xC0000000 /* 3GB DDR */
-#define PHYS_SDRAM_SIZE_4GB		0x100000000 /* 4GB DDR */
+#define PHYS_SDRAM_SIZE			0x80000000 /* 2GB DDR */
 
 #define CONFIG_SYS_MEMTEST_START	PHYS_SDRAM
 #define CONFIG_SYS_MEMTEST_END		(CONFIG_SYS_MEMTEST_START + (PHYS_SDRAM_SIZE >> 1))
