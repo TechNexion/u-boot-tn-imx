@@ -114,21 +114,6 @@ void spl_dram_init(void)
 		puts("Unknown DDR type!!!\n");
 }
 
-#define I2C_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_HYS | PAD_CTL_PUE | PAD_CTL_PE)
-#define PC (MUX_PAD_CTRL(I2C_PAD_CTRL) | MUX_MODE_SION)
-struct i2c_pads_info i2c_pad_info1 = {
-	.scl = {
-		.i2c_mode = IMX8MM_PAD_I2C4_SCL_I2C4_SCL | PC,
-		.gpio_mode = IMX8MM_PAD_I2C4_SCL_GPIO5_IO20 | PC,
-		.gp = IMX_GPIO_NR(5, 20),
-	},
-	.sda = {
-		.i2c_mode = IMX8MM_PAD_I2C4_SDA_I2C4_SDA | PC,
-		.gpio_mode = IMX8MM_PAD_I2C4_SDA_GPIO5_IO21 | PC,
-		.gp = IMX_GPIO_NR(5, 21),
-	},
-};
-
 #define USDHC2_CD_GPIO	IMX_GPIO_NR(2, 12)
 #define USDHC2_PWR_GPIO IMX_GPIO_NR(2, 19)
 
@@ -228,44 +213,6 @@ int board_mmc_getcd(struct mmc *mmc)
 	return 1;
 }
 
-#ifdef CONFIG_POWER
-#define I2C_PMIC	3
-int power_init_board(void)
-{
-	struct pmic *p;
-	int ret;
-
-	ret = power_bd71837_init(I2C_PMIC);
-	if (ret)
-		printf("power init failed");
-
-	p = pmic_get("BD71837");
-	pmic_probe(p);
-
-	/* decrease RESET key long push time from the default 10s to 10ms */
-	pmic_reg_write(p, BD71837_PWRONCONFIG1, 0x0);
-
-	/* unlock the PMIC regs */
-	pmic_reg_write(p, BD71837_REGLOCK, 0x1);
-
-	/* increase VDD_SOC to typical value 0.85v before first DRAM access */
-	pmic_reg_write(p, BD71837_BUCK1_VOLT_RUN, 0x0f);
-
-	/* increase VDD_DRAM to 0.975v for 3Ghz DDR */
-	pmic_reg_write(p, BD71837_BUCK5_VOLT, 0x83);
-
-#ifndef CONFIG_IMX8M_LPDDR4
-	/* increase NVCC_DRAM_1V2 to 1.2v for DDR4 */
-	pmic_reg_write(p, BD71837_BUCK8_VOLT, 0x28);
-#endif
-
-	/* lock the PMIC regs */
-	pmic_reg_write(p, BD71837_REGLOCK, 0x11);
-
-	return 0;
-}
-#endif
-
 void spl_board_init(void)
 {
 #ifndef CONFIG_SPL_USB_SDP_SUPPORT
@@ -310,11 +257,6 @@ void board_init_f(ulong dummy)
 	}
 
 	enable_tzc380();
-
-	/* Adjust pmic voltage to 1.0V for 800M */
-	setup_i2c(I2C_PMIC, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1);
-
-	power_init_board();
 
 	/* DDR initialization */
 	spl_dram_init();
