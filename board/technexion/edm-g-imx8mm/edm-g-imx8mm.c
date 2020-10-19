@@ -101,14 +101,14 @@ ulong board_get_usable_ram_top(ulong total_size)
 }
 
 #if IS_ENABLED(CONFIG_FEC_MXC)
-#define PHY_PWR_PAD IMX_GPIO_NR(3, 1)
-#define FEC_RST_PAD IMX_GPIO_NR(3, 2)
+#define FEC_RST_PAD IMX_GPIO_NR(2, 7)
 static iomux_v3_cfg_t const fec1_rst_pads[] = {
-	IMX8MM_PAD_NAND_CE1_B_GPIO3_IO2 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	IMX8MM_PAD_SD1_DATA5_GPIO2_IO7 | MUX_PAD_CTRL(NO_PAD_CTRL),
 };
 
+#define PHY_PWR_PAD IMX_GPIO_NR(4, 0)
 static iomux_v3_cfg_t const phy_pwr_pads[] = {
-	IMX8MM_PAD_NAND_CE0_B_GPIO3_IO1 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	IMX8MM_PAD_SAI1_RXFS_GPIO4_IO0 | MUX_PAD_CTRL(NO_PAD_CTRL),
 };
 
 static void setup_iomux_fec(void)
@@ -179,14 +179,14 @@ int board_usb_cleanup(int index, enum usb_init_type init)
 	return ret;
 }
 
-#define WL_REG_ON_PAD IMX_GPIO_NR(3, 6)
+#define WL_REG_ON_PAD IMX_GPIO_NR(1, 0)
 static iomux_v3_cfg_t const wl_reg_on_pads[] = {
-	IMX8MM_PAD_NAND_DATA00_GPIO3_IO6 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	IMX8MM_PAD_GPIO1_IO00_GPIO1_IO0 | MUX_PAD_CTRL(NO_PAD_CTRL),
 };
 
-#define BT_ON_PAD IMX_GPIO_NR(3, 7)
+#define BT_ON_PAD IMX_GPIO_NR(1, 3)
 static iomux_v3_cfg_t const bt_on_pads[] = {
-	IMX8MM_PAD_NAND_DATA01_GPIO3_IO7 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	IMX8MM_PAD_GPIO1_IO03_GPIO1_IO3 | MUX_PAD_CTRL(NO_PAD_CTRL),
 };
 
 void setup_wifi(void)
