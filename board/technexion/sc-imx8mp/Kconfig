@@ -1,0 +1,12 @@
+if TARGET_SC_IMX8MP
+
+config SYS_BOARD
+	default "sc-imx8mp"
+
+config SYS_VENDOR
+	default "technexion"
+
+config SYS_CONFIG_NAME
+	default "sc-imx8mp"
+
+endif

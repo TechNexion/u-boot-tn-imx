@@ -118,6 +118,12 @@ config TARGET_IMX8MP_EVK
 	select SUPPORT_SPL
 	select IMX8M_LPDDR4
 
+config TARGET_SC_IMX8MP
+	bool "TechNexion SC-IMX8MP"
+	select IMX8MP
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+
 config TARGET_IMX8MM_AB2
 	bool "imx8mm LPDDR4 Audio board 2.0"
 	select IMX8MM
@@ -188,5 +194,6 @@ source "board/toradex/verdin-imx8mm/Kconfig"
 source "board/technexion/xore-imx8mm/Kconfig"
 source "board/technexion/axon-imx8mm/Kconfig"
 source "board/technexion/edm-g-imx8mm/Kconfig"
+source "board/technexion/sc-imx8mp/Kconfig"
 
 endif
