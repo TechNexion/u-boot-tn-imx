@@ -377,11 +377,11 @@
 	fsl,ext-reset-output;
 	status = "okay";
 };
-
+/*
 &A53_0 {
 	cpu-supply = <&buck2_reg>;
 };
-
+*/
 &snvs_pwrkey {
 	status = "okay";
 };
