@@ -274,13 +274,28 @@ void disp_mix_lcdif_clks_enable(ulong gpr_base, bool enable)
 		clrbits_le32(gpr_base + DISPLAY_MIX_CLK_EN_CSR, LCDIF_PIXEL_CLK_SFT_EN | LCDIF_APB_CLK_SFT_EN);
 }
 
+#define DISPLAY_NAME_MIPI2HDMI   "MIPI2HDMI"
+#define DISPLAY_NAME_MIPI5       "ILI9881C_LCD"
+#define DISPLAY_NAME_MIPI8       "G080UAN01_LCD"
+#define DISPLAY_NAME_MIPI10      "G101UAN02_LCD"
+#define DISPLAY_NAME_MIPI2LVDS10 "M101NWWB_LCD"
+#define DISPLAY_NAME_MIPI2LVDS15 "G156XW01_LCD"
+#define DISPLAY_NAME_MIPI2LVDS21 "G215HVN01_LCD"
+
 struct mipi_panel_id {
 	const char *panel_name;
 	int id;
+    const char *suffix;
 };
 
 static const struct mipi_panel_id mipi_panel_mapping[] = {
-	{"ILI9881C_LCD", 0x54},
+    {DISPLAY_NAME_MIPI2HDMI, 0, "-adv7535"},
+    {DISPLAY_NAME_MIPI5, 0x54, "-ili9881c"},
+    {DISPLAY_NAME_MIPI8, 0x58, "-g080uan01"},
+    {DISPLAY_NAME_MIPI10, 0x59, "-g101uan02"},
+    {DISPLAY_NAME_MIPI2LVDS10, 0, "-sn65dsi84-m101nmmb"},
+    {DISPLAY_NAME_MIPI2LVDS15, 0, "-sn65dsi84-g156xw01"},
+    {DISPLAY_NAME_MIPI2LVDS21, 0, "-sn65dsi84-g215hvn01"},
 };
 
 static int display_dtoverlay_indx = -1;
@@ -427,8 +442,49 @@ struct display_info_t const displays[] = {{
 size_t display_count = ARRAY_SIZE(displays);
 #endif
 
+#define EXPANSION_IC_I2C_BUS	2
+#define EXPANSION_IC_I2C_ADDR	0x23
+
 int board_late_init(void)
 {
+    struct udevice *bus;
+    struct udevice *i2c_dev = NULL;
+    char *fdt_file, str_fdtfile[64];
+    char const *panel = env_get("panel");
+    int ret, i;
+
+    fdt_file = env_get("fdt_file");
+    if (fdt_file && !strcmp(fdt_file, "undefined")) {
+        ret = uclass_get_device_by_seq(UCLASS_I2C, EXPANSION_IC_I2C_BUS, &bus);
+        if (ret) {
+            printf("%s: Can't find bus\n", __func__);
+            return -EINVAL;
+        }
+
+		ret = uclass_get_device_by_seq(UCLASS_I2C, EXPANSION_IC_I2C_BUS, &bus);
+		if (ret) {
+			printf("%s: Can't find bus\n", __func__);
+			return -EINVAL;
+		}
+
+		ret = dm_i2c_probe(bus, EXPANSION_IC_I2C_BUS, 0, &i2c_dev);
+		if (ret)
+			strcpy(str_fdtfile, "imx8mm-axon-pi");
+		else
+			strcpy(str_fdtfile, "imx8mm-axon-wizard");
+
+		for (i = 0; i < display_count; i++) {
+			struct display_info_t const *dev = displays+i;
+			if ((!panel && dev->detect && dev->detect(dev)) || !strcmp(panel, dev->mode.name)) {
+				strcat(str_fdtfile, mipi_panel_mapping[i].suffix);
+				env_set("panel_name", mipi_panel_mapping[i].panel_name);
+				break;
+			}
+		}
+		strcat(str_fdtfile, ".dtb");
+		env_set("fdt_file", str_fdtfile);
+	}
+
 #ifdef CONFIG_ENV_IS_IN_MMC
 	board_late_mmc_env_init();
 #endif
