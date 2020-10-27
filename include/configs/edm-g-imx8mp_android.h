@@ -26,6 +26,19 @@
 	"splashimage=0x50000000\0"		\
 	"fdt_high=0xffffffffffffffff\0"		\
 	"initrd_high=0xffffffffffffffff\0"	\
+	"bootargs="				\
+	"console=ttymxc1,115200 "		\
+	"init=/init "				\
+	"androidboot.console=ttymxc1 "		\
+	"androidboot.hardware=freescale "	\
+	"androidboot.hwrotation=0 "		\
+	"firmware_class.path=/vendor/firmware "	\
+	"loop.max_part=7 "			\
+	"transparent_hugepage=never "		\
+	"androidboot.lcd_density=240 "		\
+	"androidboot.primary_display=imx-drm "	\
+	"androidboot.wificountrycode=TW "	\
+	"cma=800M@0x400M-0xb80M\0"
 
 /* Enable mcu firmware flash */
 #ifdef CONFIG_FLASH_MCUFIRMWARE_SUPPORT
