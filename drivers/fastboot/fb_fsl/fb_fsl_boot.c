@@ -19,6 +19,8 @@
 #include <asm/setup.h>
 #include <env.h>
 #include <lz4.h>
+#include <fdt_support.h>
+#include <linux/libfdt.h>
 #include "../lib/avb/fsl/utils.h"
 
 #ifdef CONFIG_AVB_SUPPORT
@@ -67,6 +69,10 @@ boot_metric metrics = {
   .odt	 = 0,
   .sw	 = 0
 };
+
+#ifdef CONFIG_OF_LIBFDT_OVERLAY
+enum overlay_type {NO_OVERLAY, LVDS_10, LVDS_21};
+#endif
 
 int read_from_partition_multi(const char* partition,
 		int64_t offset, size_t num_bytes, void* buffer, size_t* out_num_read)
@@ -858,6 +864,34 @@ int do_boota(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]) {
 		} else {
 			addr = (ulong)(hdr->kernel_addr - hdr->page_size);
 		}
+
+#ifdef CONFIG_OF_LIBFDT_OVERLAY
+		ulong *dtbo_addr = NULL;
+		struct dt_table_entry *dt_entry_overlay = NULL;
+		enum overlay_type dtbo_idx = NO_OVERLAY;
+		u32 fdt_overlay_size = 0;
+		char *overlay_name = NULL;
+
+		overlay_name = env_get("overlay_name");
+		if (strcmp(overlay_name, "lvds_10") == 0) {
+			dtbo_idx = LVDS_10;
+		} else if (strcmp(overlay_name, "lvds_21") == 0) {
+			dtbo_idx = LVDS_21;
+		} else {
+			dtbo_idx = NO_OVERLAY;
+		}
+
+		if( dtbo_idx != NO_OVERLAY ) {
+			dt_entry_overlay = (struct dt_table_entry *)((ulong)dt_img +
+				be32_to_cpu(dt_img->dt_entries_offset) + (u32)dtbo_idx * be32_to_cpu(dt_img->dt_entry_size));
+
+			fdt_overlay_size = be32_to_cpu(dt_entry_overlay->dt_size);
+			memcpy((void *)(ulong)dtbo_addr, (void *)((ulong)dt_img +
+			be32_to_cpu(dt_entry_overlay->dt_offset)), fdt_overlay_size);
+			fdt_increase_size((void *)(ulong)fdt_addr, fdt_totalsize((void *)dtbo_addr));
+			fdt_overlay_apply((void *)(ulong)fdt_addr, (void *)dtbo_addr);
+		}
+#endif
 		printf("kernel   @ %08x (%d)\n", hdr->kernel_addr, hdr->kernel_size);
 		printf("ramdisk  @ %08x (%d)\n", hdr->ramdisk_addr, hdr->ramdisk_size);
 	}
