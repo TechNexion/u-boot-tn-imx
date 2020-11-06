@@ -40,7 +40,8 @@
 	"androidboot.primary_display=imx-drm "	\
 	"androidboot.wificountrycode=TW "	\
 	"androidboot.usb.debugging=1 "		\
-	"cma=800M@0x400M-0xb80M\0"
+	"cma=800M@0x400M-0xb80M "		\
+	"quiet\0"
 
 /* Enable mcu firmware flash */
 #ifdef CONFIG_FLASH_MCUFIRMWARE_SUPPORT
