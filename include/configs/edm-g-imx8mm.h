@@ -33,6 +33,13 @@
 /* For RAW image gives a error info not panic */
 #define CONFIG_SPL_ABORT_ON_RAW_IMAGE
 
+#define CONFIG_POWER
+#define CONFIG_POWER_I2C
+#define CONFIG_POWER_PCA9450
+
+#define CONFIG_SYS_I2C
+#define CONFIG_SYS_MAX_I2C_BUS	3
+
 #endif
 
 #define CONFIG_CMD_READ
