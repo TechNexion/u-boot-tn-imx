@@ -262,6 +262,9 @@ int power_init_board(void)
 	/* set WDOG_B_CFG to 10b=Cold Reset, except LDO1/2 */
 	pmic_reg_write(p, PCA9450_RESET_CTRL, 0xA1);
 
+	/* enable level translator, forced enable */
+	pmic_reg_write(p, PCA9450_CONFIG2, 0x3);
+
 	return 0;
 }
 #endif
