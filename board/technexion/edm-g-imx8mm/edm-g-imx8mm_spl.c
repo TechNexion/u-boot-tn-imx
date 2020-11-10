@@ -20,7 +20,7 @@
 #include <asm/arch/ddr.h>
 
 #include <power/pmic.h>
-#include <power/bd71837.h>
+#include <power/pca9450.h>
 #include <asm/mach-imx/gpio.h>
 #include <asm/mach-imx/mxc_i2c.h>
 #include <fsl_esdhc_imx.h>
@@ -109,6 +109,22 @@ void spl_dram_init(void)
 	else
 		puts("Unknown DDR type!!!\n");
 }
+
+#define I2C_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_HYS | PAD_CTL_PUE | PAD_CTL_PE)
+#define PC	MUX_PAD_CTRL(I2C_PAD_CTRL)
+
+struct i2c_pads_info i2c_pad_info1 = {
+	.scl = {
+		.i2c_mode = IMX8MM_PAD_I2C4_SCL_I2C4_SCL | PC,
+		.gpio_mode = IMX8MM_PAD_I2C4_SCL_GPIO5_IO20 | PC,
+		.gp = IMX_GPIO_NR(5, 20),
+	},
+	.sda = {
+		.i2c_mode = IMX8MM_PAD_I2C4_SDA_I2C4_SDA | PC,
+		.gpio_mode = IMX8MM_PAD_I2C4_SDA_GPIO5_IO21 | PC,
+		.gp = IMX_GPIO_NR(5, 21),
+	},
+};
 
 #define USDHC2_CD_GPIO	IMX_GPIO_NR(2, 12)
 #define USDHC2_PWR_GPIO IMX_GPIO_NR(2, 19)
@@ -209,6 +225,47 @@ int board_mmc_getcd(struct mmc *mmc)
 	return 1;
 }
 
+#ifdef CONFIG_POWER
+#define I2C_PMIC	3
+int power_init_board(void)
+{
+	struct pmic *p;
+	int ret;
+
+	ret = power_pca9450b_init(I2C_PMIC);
+	if (ret)
+		printf("power init failed");
+	p = pmic_get("PCA9450");
+	pmic_probe(p);
+
+	/* BUCKxOUT_DVS0/1 control BUCK123 output */
+	pmic_reg_write(p, PCA9450_BUCK123_DVS, 0x29);
+	/* Buck 1 DVS control through PMIC_STBY_REQ */
+	pmic_reg_write(p, PCA9450_BUCK1CTRL, 0x59);
+
+	/* decrease RESET key long push time from the default 10s to 10ms */
+	/* Ton_Deb of PCA9450 is 20ms and don't change */
+	/* increase VDD_SOC to typical value 0.85v before first DRAM access */
+	/* pmic_reg_write(p, PCA9450_BUCK1OUT_DVS0, 0x14); */
+	pmic_reg_write(p, PCA9450_BUCK1OUT_DVS0, 0x14);
+	pmic_reg_write(p, PCA9450_BUCK1OUT_DVS1, 0x10);
+
+	/* increase VDD_DRAM to 0.975v for 3Ghz DDR -> 0.95V instead of 0.975V, */
+	/* because PCA9450 Buck3 can set 0.95V */
+	/* Also, set B3_ENMODE=2 (ON by PMIC_ON_REQ=H & PMIC_STBY_REQ=L) */
+	pmic_reg_write(p, PCA9450_BUCK3OUT_DVS0, 0x1C);
+	pmic_reg_write(p, PCA9450_BUCK3CTRL, 0x4A);
+
+	/* set VDD_SNVS_0V8 from default 0.85V */
+	pmic_reg_write(p, PCA9450_LDO2CTRL, 0xC0);
+
+	/* set WDOG_B_CFG to 10b=Cold Reset, except LDO1/2 */
+	pmic_reg_write(p, PCA9450_RESET_CTRL, 0xA1);
+
+	return 0;
+}
+#endif
+
 void spl_board_init(void)
 {
 #ifndef CONFIG_SPL_USB_SDP_SUPPORT
@@ -253,6 +310,13 @@ void board_init_f(ulong dummy)
 	}
 
 	enable_tzc380();
+
+#ifdef CONFIG_POWER
+	/* Adjust pmic voltage to 1.0V for 800M */
+	setup_i2c(I2C_PMIC, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1);
+
+	power_init_board();
+#endif
 
 	/* DDR initialization */
 	spl_dram_init();
