@@ -1,0 +1,12 @@
+if TARGET_EDM_IMX8MQ
+
+config SYS_BOARD
+	default "edm-imx8mq"
+
+config SYS_VENDOR
+	default "technexion"
+
+config SYS_CONFIG_NAME
+	default "edm-imx8mq"
+
+endif
