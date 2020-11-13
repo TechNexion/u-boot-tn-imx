@@ -555,6 +555,15 @@ config VIDEO_LCD_USMP_RM67162
 	Say Y here if you want to enable support for USMP RM67162
 	400x400 DSI video mode panel.
 
+config VIDEO_LCD_ILITEK_ILI9881C
+	bool "ILI9881C MIPI DSI LCD panel support"
+	depends on DM_VIDEO
+	select VIDEO_MIPI_DSI
+	default n
+	help
+	Say Y here if you want to enable support for Ilitek ILI9881C
+	720x1280 DSI video mode panel.
+
 config VIDEO_LCD_ROCKTECH_HIMAX8394F
 	bool "Rocktech Himax8394f 720x1280 DSI video mode panel"
 	depends on VIDEO
