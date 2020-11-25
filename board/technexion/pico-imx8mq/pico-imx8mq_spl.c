@@ -1,8 +1,9 @@
-// SPDX-License-Identifier: GPL-2.0+
 /*
- * Copyright 2018 NXP
+ * Copyright 2020 TechNexion Ltd.
  *
- * SPDX-License-Identifier:	GPL-2.0+
+ * Author: Richard Hu <richard.hu@technexion.com>
+ *
+ * SPDX-License-Identifier:     GPL-2.0+
  */
 
 #include <common.h>
