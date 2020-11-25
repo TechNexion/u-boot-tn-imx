@@ -23,13 +23,11 @@
 #include <power/pmic.h>
 #include <power/bd71837.h>
 #include <spl.h>
-#include "lpddr4_timing_base_b1.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 
-extern struct dram_timing_info dram_timing_4gb_b1;
 extern struct dram_timing_info dram_timing_2gb_b1;
-extern struct dram_cfg_param ddr_ddrphy_cfg_b1[];
+extern struct dram_timing_info dram_timing_2gb;
 
 #define DDR_DET_1       IMX_GPIO_NR(3, 11)
 #define DDR_DET_2       IMX_GPIO_NR(3, 12)
@@ -69,46 +67,70 @@ void spl_dram_init(void)
 	if (!gpio_get_value(DDR_DET_1) && !gpio_get_value(DDR_DET_2) && gpio_get_value(DDR_DET_3)) {
 		puts("dram_init: LPDDR4 4GB\n");
 		if ((get_cpu_rev() & 0xfff) == CHIP_REV_2_1) {
-			dram_timing_4gb_b1.ddrphy_cfg = ddr_ddrphy_cfg_b1;
-			dram_timing_4gb_b1.ddrphy_cfg_num = ELEMENTS_IN(ddr_ddrphy_cfg_b1);
-			dram_timing_4gb_b1.ddrphy_trained_csr = ddr_ddrphy_trained_csr_b1;
-			dram_timing_4gb_b1.ddrphy_trained_csr_num = ELEMENTS_IN(ddr_ddrphy_trained_csr_b1);
-			dram_timing_4gb_b1.ddrphy_pie = ddr_phy_pie_b1;
-			dram_timing_4gb_b1.ddrphy_pie_num = ELEMENTS_IN(ddr_phy_pie_b1);
-			ddr_init(&dram_timing_4gb_b1);
+			/* Silicon rev B1. Overwrite DDRC_CFG for 4GB LPDDR4*/
+			dram_timing_2gb_b1.ddrc_cfg[2].val = 0xa3080020;
+			dram_timing_2gb_b1.ddrc_cfg[38].val = 0x17;
+			/* ddr_fsp0_cfg */
+			dram_timing_2gb_b1.fsp_msg[0].fsp_cfg[8].val = 0x310;
+			dram_timing_2gb_b1.fsp_msg[0].fsp_cfg[20].val = 0x3;
+			/* ddr_fsp1_cfg */
+			dram_timing_2gb_b1.fsp_msg[1].fsp_cfg[9].val = 0x310;
+			dram_timing_2gb_b1.fsp_msg[1].fsp_cfg[21].val = 0x3;
+			/* ddr_fsp2_cfg */
+			dram_timing_2gb_b1.fsp_msg[2].fsp_cfg[9].val = 0x310;
+			dram_timing_2gb_b1.fsp_msg[2].fsp_cfg[21].val = 0x3;
+			/* ddr_fsp0_2d_cfg */
+			dram_timing_2gb_b1.fsp_msg[3].fsp_cfg[11].val = 0x310;
+			dram_timing_2gb_b1.fsp_msg[3].fsp_cfg[23].val = 0x3;
+			ddr_init(&dram_timing_2gb_b1);
 		} else {
-			ddr_init(&dram_timing_4gb);
+			/* Silicon rev B0. Overwrite DDRC_CFG for 4GB LPDDR4*/
+			dram_timing_2gb.ddrc_cfg[2].val = 0xa3080020;
+			dram_timing_2gb.ddrc_cfg[38].val = 0x17;
+			/* ddr_fsp0_cfg */
+			dram_timing_2gb.fsp_msg[0].fsp_cfg[9].val = 0x310;
+			dram_timing_2gb.fsp_msg[0].fsp_cfg[21].val = 0x3;
+			/* ddr_fsp1_cfg */
+			dram_timing_2gb.fsp_msg[1].fsp_cfg[10].val = 0x310;
+			dram_timing_2gb.fsp_msg[1].fsp_cfg[22].val = 0x3;
+			/* ddr_fsp0_2d_cfg */
+			dram_timing_2gb.fsp_msg[2].fsp_cfg[10].val = 0x310;
+			dram_timing_2gb.fsp_msg[2].fsp_cfg[22].val = 0x3;
+			ddr_init(&dram_timing_2gb);
 		}
 		writel(0x4, MCU_BOOTROM_BASE_ADDR);
-
 	} else if (gpio_get_value(DDR_DET_1) && gpio_get_value(DDR_DET_2) && !gpio_get_value(DDR_DET_3)) {
 		puts("dram_init: LPDDR4 2GB\n");
 		if ((get_cpu_rev() & 0xfff) == CHIP_REV_2_1) {
-			dram_timing_2gb_b1.ddrphy_cfg = ddr_ddrphy_cfg_b1;
-			dram_timing_2gb_b1.ddrphy_cfg_num = ELEMENTS_IN(ddr_ddrphy_cfg_b1);
-			dram_timing_2gb_b1.ddrphy_trained_csr = ddr_ddrphy_trained_csr_b1;
-			dram_timing_2gb_b1.ddrphy_trained_csr_num = ELEMENTS_IN(ddr_ddrphy_trained_csr_b1);
-			dram_timing_2gb_b1.ddrphy_pie = ddr_phy_pie_b1;
-			dram_timing_2gb_b1.ddrphy_pie_num = ELEMENTS_IN(ddr_phy_pie_b1);
+			/* Silicon rev B1 */
 			ddr_init(&dram_timing_2gb_b1);
 		} else {
+			/* Silicon rev B0 */
 			ddr_init(&dram_timing_2gb);
 		}
 		writel(0x2, MCU_BOOTROM_BASE_ADDR);
-/*	} else if (gpio_get_value(DDR_DET_1) && !gpio_get_value(DDR_DET_2) && gpio_get_value(DDR_DET_3)) {
+	} else if (gpio_get_value(DDR_DET_1) && !gpio_get_value(DDR_DET_2) && gpio_get_value(DDR_DET_3)) {
 		puts("dram_init: LPDDR4 1GB\n");
 		if ((get_cpu_rev() & 0xfff) == CHIP_REV_2_1) {
-			dram_timing_1gb_b1.ddrphy_cfg = ddr_ddrphy_cfg_b1;
-			dram_timing_1gb_b1.ddrphy_cfg_num = ELEMENTS_IN(ddr_ddrphy_cfg_b1);
-			dram_timing_1gb_b1.ddrphy_trained_csr = ddr_ddrphy_trained_csr_b1;
-			dram_timing_1gb_b1.ddrphy_trained_csr_num = ELEMENTS_IN(ddr_ddrphy_trained_csr_b1);
-			dram_timing_1gb_b1.ddrphy_pie = ddr_phy_pie_b1;
-			dram_timing_1gb_b1.ddrphy_pie_num = ELEMENTS_IN(ddr_phy_pie_b1);
-			ddr_init(&dram_timing_1gb_b1);
+			/* Silicon rev B1. Overwrite DDRC_CFG for 1GB LPDDR4*/
+			dram_timing_2gb_b1.ddrc_cfg[6].val = 0x300090;
+			dram_timing_2gb_b1.ddrc_cfg[22].val = 0x96;
+			dram_timing_2gb_b1.ddrc_cfg[43].val = 0xf070707;
+			dram_timing_2gb_b1.ddrc_cfg[47].val = 0x60012;
+			dram_timing_2gb_b1.ddrc_cfg[62].val = 0x13;
+			dram_timing_2gb_b1.ddrc_cfg[71].val = 0x30005;
+			dram_timing_2gb_b1.ddrc_cfg[86].val = 0x5;
+			ddr_init(&dram_timing_2gb_b1);
 		} else {
-			ddr_init(&dram_timing_1gb);
+			/* Silicon rev B0. Overwrite DDRC_CFG for 1GB LPDDR4*/
+			dram_timing_2gb.ddrc_cfg[6].val = 0x610090;
+			dram_timing_2gb.ddrc_cfg[22].val = 0x96;
+			dram_timing_2gb.ddrc_cfg[43].val = 0xf070707;
+			dram_timing_2gb.ddrc_cfg[47].val = 0x14001f;
+			dram_timing_2gb.ddrc_cfg[62].val = 0x20;
+			ddr_init(&dram_timing_2gb);
 		}
-		writel(0x1, MCU_BOOTROM_BASE_ADDR); */
+		writel(0x1, MCU_BOOTROM_BASE_ADDR);
 	} else
 		puts("Unknown DDR type!!!\n");
 }
