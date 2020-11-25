@@ -26,6 +26,7 @@
 #include "../../freescale/common/tcpc.h"
 #include "../../freescale/common/pfuze.h"
 #include <usb.h>
+#include <asm/armv8/mmu.h>
 #include <dwc3-uboot.h>
 
 DECLARE_GLOBAL_DATA_PTR;
@@ -53,6 +54,53 @@ int board_early_init_f(void)
 	imx_iomux_v3_setup_multiple_pads(uart_pads, ARRAY_SIZE(uart_pads));
 
 	return 0;
+}
+
+static int ddr_size;
+extern struct mm_region *mem_map;
+#define DRAM1_INDEX 5 /* Correspond to the index of DRAM1 of imx8m_mem_map
+						 in arch/arm/mach-imx/imx8m/soc.c */
+
+int board_phys_sdram_size(phys_size_t *size)
+{
+	if (!size)
+		return -EINVAL;
+
+	/*************************************************
+	ToDo: It's a dirty workaround to store the
+	information of DDR size into start address of TCM.
+	It'd be better to detect DDR size from DDR controller.
+	**************************************************/
+	ddr_size = readl(MCU_BOOTROM_BASE_ADDR);
+
+	if (ddr_size == 0x4) {
+		*size = SZ_4G;
+		mem_map[DRAM1_INDEX].size=SZ_4G;
+	}
+	else if (ddr_size == 0x3) {
+		*size = SZ_3G;
+		mem_map[DRAM1_INDEX].size=SZ_3G;
+	}
+	else if (ddr_size == 0x2) {
+		*size = SZ_2G;
+		mem_map[DRAM1_INDEX].size=SZ_2G;
+	}
+	else if (ddr_size == 0x1) {
+		*size = SZ_1G;
+		mem_map[DRAM1_INDEX].size=SZ_1G;
+	}
+	else
+		puts("Unknown DDR type!!!\n");
+	return 0;
+}
+
+/* Get the top of usable RAM */
+ulong board_get_usable_ram_top(ulong total_size)
+{
+	if(gd->ram_top > 0x100000000)
+		gd->ram_top = 0x100000000;
+
+	return gd->ram_top;
 }
 
 #ifdef CONFIG_FSL_QSPI
