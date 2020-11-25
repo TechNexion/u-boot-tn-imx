@@ -1,10 +1,13 @@
-/* SPDX-License-Identifier: GPL-2.0+ */
 /*
- * Copyright 2018 NXP
+ * Copyright 2020 TechNexion Ltd.
+ *
+ * Author: Richard Hu <richard.hu@technexion.com>
+ *
+ * SPDX-License-Identifier:     GPL-2.0+
  */
 
-#ifndef __IMX8M_EVK_H
-#define __IMX8M_EVK_H
+#ifndef __PICO_IMX8M_H
+#define __PICO_IMX8M_H
 
 #include <linux/sizes.h>
 #include <asm/arch/imx-regs.h>
@@ -39,7 +42,6 @@
 #define CONFIG_POWER
 #define CONFIG_POWER_I2C
 #define CONFIG_POWER_BD71837
-//#define CONFIG_POWER_PFUZE100_I2C_ADDR 0x08
 #endif
 
 #define CONFIG_REMAKE_ELF
@@ -188,12 +190,6 @@
 #define CONFIG_SYS_FSL_ESDHC_ADDR       0
 
 #define CONFIG_SYS_MMC_IMG_LOAD_PART	1
-
-#ifdef CONFIG_FSL_QSPI
-#define CONFIG_SYS_FSL_QSPI_AHB
-#define FSL_QSPI_FLASH_SIZE		(SZ_32M)
-#define FSL_QSPI_FLASH_NUM		1
-#endif
 
 /* I2C Configs */
 #define CONFIG_SYS_I2C_SPEED		  100000

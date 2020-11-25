@@ -1,6 +1,9 @@
-// SPDX-License-Identifier: GPL-2.0+
 /*
- * Copyright 2018 NXP
+ * Copyright 2020 TechNexion Ltd.
+ *
+ * Author: Richard Hu <richard.hu@technexion.com>
+ *
+ * SPDX-License-Identifier:     GPL-2.0+
  */
 
 #include <common.h>
@@ -21,10 +24,6 @@
 #include <asm/mach-imx/mxc_i2c.h>
 #include <asm/arch/clock.h>
 #include <spl.h>
-#include <power/pmic.h>
-#include <power/pfuze100_pmic.h>
-#include "../../freescale/common/tcpc.h"
-#include "../../freescale/common/pfuze.h"
 #include <usb.h>
 #include <asm/armv8/mmu.h>
 #include <dwc3-uboot.h>
@@ -103,30 +102,40 @@ ulong board_get_usable_ram_top(ulong total_size)
 	return gd->ram_top;
 }
 
-#ifdef CONFIG_FSL_QSPI
-int board_qspi_init(void)
-{
-	set_clk_qspi();
-
-	return 0;
-}
-#endif
-
 #ifdef CONFIG_FEC_MXC
 #define FEC_RST_PAD IMX_GPIO_NR(1, 9)
 static iomux_v3_cfg_t const fec1_rst_pads[] = {
-    IMX8MQ_PAD_GPIO1_IO09__GPIO1_IO9 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	IMX8MQ_PAD_GPIO1_IO09__GPIO1_IO9 | MUX_PAD_CTRL(NO_PAD_CTRL),
+};
+
+#define FEC_PWR_PAD IMX_GPIO_NR(1, 0)
+static iomux_v3_cfg_t const fec1_pwr_pads[] = {
+	IMX8MQ_PAD_GPIO1_IO00__GPIO1_IO0 | MUX_PAD_CTRL(NO_PAD_CTRL),
+};
+
+#define WL_REG_ON_PAD IMX_GPIO_NR(3, 24)
+static iomux_v3_cfg_t const wl_reg_on_pads[] = {
+	IMX8MQ_PAD_SAI5_RXD3__GPIO3_IO24 | MUX_PAD_CTRL(NO_PAD_CTRL),
+};
+
+#define BT_ON_PAD IMX_GPIO_NR(3, 21)
+static iomux_v3_cfg_t const bt_on_pads[] = {
+	IMX8MQ_PAD_SAI5_RXD0__GPIO3_IO21 | MUX_PAD_CTRL(NO_PAD_CTRL),
 };
 
 static void setup_iomux_fec(void)
 {
-    imx_iomux_v3_setup_multiple_pads(fec1_rst_pads,
-                     ARRAY_SIZE(fec1_rst_pads));
+	imx_iomux_v3_setup_multiple_pads(fec1_rst_pads, ARRAY_SIZE(fec1_rst_pads));
+	imx_iomux_v3_setup_multiple_pads(fec1_pwr_pads, ARRAY_SIZE(fec1_pwr_pads));
 
-    gpio_request(FEC_RST_PAD, "fec1_rst");
-    gpio_direction_output(FEC_RST_PAD, 0);
-    udelay(500);
-    gpio_direction_output(FEC_RST_PAD, 1);
+	gpio_request(IMX_GPIO_NR(1, 0), "fec1_pwr");
+	gpio_direction_output(IMX_GPIO_NR(1, 0), 1);
+	udelay(500);
+
+	gpio_request(IMX_GPIO_NR(1, 9), "fec1_rst");
+	gpio_direction_output(IMX_GPIO_NR(1, 9), 0);
+	udelay(500);
+	gpio_direction_output(IMX_GPIO_NR(1, 9), 1);
 }
 
 static int setup_fec(void)
@@ -172,11 +181,7 @@ int board_phy_config(struct phy_device *phydev)
 #define USB_PHY_CTRL2_TXENABLEN0	BIT(8)
 
 static struct dwc3_device dwc3_device_data = {
-#ifdef CONFIG_SPL_BUILD
 	.maximum_speed = USB_SPEED_HIGH,
-#else
-	.maximum_speed = USB_SPEED_SUPER,
-#endif
 	.base = USB1_BASE_ADDR,
 	.dr_mode = USB_DR_MODE_PERIPHERAL,
 	.index = 0,
@@ -213,77 +218,16 @@ static void dwc3_nxp_usb_phy_init(struct dwc3_device *dwc3)
 }
 #endif
 
-#ifdef CONFIG_USB_TCPC
-struct tcpc_port port;
-struct tcpc_port_config port_config = {
-	.i2c_bus = 0,
-	.addr = 0x50,
-	.port_type = TYPEC_PORT_UFP,
-	.max_snk_mv = 20000,
-	.max_snk_ma = 3000,
-	.max_snk_mw = 15000,
-	.op_snk_mv = 9000,
-};
-
-struct gpio_desc type_sel_desc;
-static iomux_v3_cfg_t ss_mux_gpio[] = {
-	IMX8MQ_PAD_NAND_RE_B__GPIO3_IO15 | MUX_PAD_CTRL(NO_PAD_CTRL),
-};
-
-void ss_mux_select(enum typec_cc_polarity pol)
-{
-	if (pol == TYPEC_POLARITY_CC1)
-		dm_gpio_set_value(&type_sel_desc, 1);
-	else
-		dm_gpio_set_value(&type_sel_desc, 0);
-}
-
-static int setup_typec(void)
-{
-	int ret;
-
-	imx_iomux_v3_setup_multiple_pads(ss_mux_gpio, ARRAY_SIZE(ss_mux_gpio));
-
-	ret = dm_gpio_lookup_name("GPIO3_15", &type_sel_desc);
-	if (ret) {
-		printf("%s lookup GPIO3_15 failed ret = %d\n", __func__, ret);
-		return -ENODEV;
-	}
-
-	ret = dm_gpio_request(&type_sel_desc, "typec_sel");
-	if (ret) {
-		printf("%s request typec_sel failed ret = %d\n", __func__, ret);
-		return -ENODEV;
-	}
-
-	dm_gpio_set_dir_flags(&type_sel_desc, GPIOD_IS_OUT);
-
-	ret = tcpc_init(&port, port_config, &ss_mux_select);
-	if (ret) {
-		printf("%s: tcpc init failed, err=%d\n",
-		       __func__, ret);
-	}
-
-	return ret;
-}
-#endif
-
 #if defined(CONFIG_USB_DWC3) || defined(CONFIG_USB_XHCI_IMX8M)
 int board_usb_init(int index, enum usb_init_type init)
 {
 	int ret = 0;
+	imx8m_usb_power(index, true);
 
 	if (index == 0 && init == USB_INIT_DEVICE) {
-		imx8m_usb_power(index, true);
-#ifdef CONFIG_USB_TCPC
-		ret = tcpc_setup_ufp_mode(&port);
-#endif
 		dwc3_nxp_usb_phy_init(&dwc3_device_data);
 		return dwc3_uboot_init(&dwc3_device_data);
 	} else if (index == 0 && init == USB_INIT_HOST) {
-#ifdef CONFIG_USB_TCPC
-		ret = tcpc_setup_dfp_mode(&port);
-#endif
 		return ret;
 	}
 
@@ -293,24 +237,32 @@ int board_usb_init(int index, enum usb_init_type init)
 int board_usb_cleanup(int index, enum usb_init_type init)
 {
 	int ret = 0;
-	if (index == 0 && init == USB_INIT_DEVICE) {
-		dwc3_uboot_exit(index);
-		imx8m_usb_power(index, false);
-	} else if (index == 0 && init == USB_INIT_HOST) {
-#ifdef CONFIG_USB_TCPC
-		ret = tcpc_disable_src_vbus(&port);
-#endif
-	}
+	if (index == 0 && init == USB_INIT_DEVICE)
+			dwc3_uboot_exit(index);
+
+	imx8m_usb_power(index, false);
 
 	return ret;
 }
 #endif
 
+void setup_wifi(void)
+{
+	imx_iomux_v3_setup_multiple_pads(wl_reg_on_pads, ARRAY_SIZE(wl_reg_on_pads));
+	imx_iomux_v3_setup_multiple_pads(bt_on_pads, ARRAY_SIZE(bt_on_pads));
+
+	gpio_request(WL_REG_ON_PAD, "wl_reg_on");
+	gpio_direction_output(WL_REG_ON_PAD, 0);
+	gpio_set_value(WL_REG_ON_PAD, 0);
+
+	gpio_request(BT_ON_PAD, "bt_on");
+	gpio_direction_output(BT_ON_PAD, 0);
+	gpio_set_value(BT_ON_PAD, 0);
+}
+
 int board_init(void)
 {
-#ifdef CONFIG_FSL_QSPI
-	board_qspi_init();
-#endif
+	setup_wifi();
 
 #ifdef CONFIG_FEC_MXC
 	setup_fec();
@@ -320,9 +272,6 @@ int board_init(void)
 	init_usb_clk();
 #endif
 
-#ifdef CONFIG_USB_TCPC
-	setup_typec();
-#endif
 	return 0;
 }
 
@@ -391,10 +340,3 @@ int is_recovery_key_pressing(void)
 }
 #endif /*CONFIG_ANDROID_RECOVERY*/
 #endif /*CONFIG_FSL_FASTBOOT*/
-
-#ifdef CONFIG_ANDROID_SUPPORT
-bool is_power_key_pressed(void) {
-	return (bool)(!!(readl(SNVS_HPSR) & (0x1 << 6)));
-}
-#endif
-
