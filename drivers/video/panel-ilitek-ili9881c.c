@@ -9,10 +9,11 @@
 #include <panel.h>
 #include <asm/gpio.h>
 #include <linux/err.h>
+#include <power/regulator.h>
 
 struct ili9881c_panel_priv {
 	struct udevice *power;
-	struct udevice *backlight;
+	struct gpio_desc backlight;
 	struct gpio_desc reset;
 	unsigned int timing_mode;		/* 0 */
 	unsigned int lanes;			/* 4 */
@@ -20,20 +21,8 @@ struct ili9881c_panel_priv {
 	unsigned long mode_flags;		/* MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_SYNC_PULSE | MIPI_DSI_CLOCK_NON_CONTINUOUS | MIPI_DSI_MODE_VIDEO_HSE */
 };
 
-static const struct display_timing highclk_timing = {
-	.pixelclock.typ	= 74250000,
-	.hactive.typ	= 720,
-	.hfront_porch.typ	= 34,
-	.hback_porch.typ	= 100,
-	.hsync_len.typ	= 100,
-	.vactive.typ	= 1280,
-	.vfront_porch.typ	= 2,
-	.vback_porch.typ	= 20,
-	.vsync_len.typ	= 30,
-};
-
 static const struct display_timing default_timing = {
-	.pixelclock.typ	= 64000000,
+	.pixelclock.typ	= 16129000,
 	.hactive.typ	= 720,
 	.hfront_porch.typ	= 10,
 	.hback_porch.typ	= 30,
@@ -42,21 +31,6 @@ static const struct display_timing default_timing = {
 	.vfront_porch.typ	= 10,
 	.vback_porch.typ	= 20,
 	.vsync_len.typ	= 10,
-};
-
-static u8 color_format_from_dsi_format(enum mipi_dsi_pixel_format format)
-{
-	switch (format) {
-	case MIPI_DSI_FMT_RGB565:
-		return 0x55;
-	case MIPI_DSI_FMT_RGB666:
-	case MIPI_DSI_FMT_RGB666_PACKED:
-		return 0x66;
-	case MIPI_DSI_FMT_RGB888:
-		return 0x77;
-	default:
-		return 0x77; /* for backward compatibility */
-	}
 };
 
 enum ili9881c_op {
@@ -326,15 +300,12 @@ static int ili9881c_send_cmd_data(struct mipi_dsi_device *dsi, u8 cmd, u8 data)
 
 static int ili9881c_enable(struct udevice *dev)
 {
-	struct ili9881c_panel_priv *priv = dev_get_priv(dev);
 	struct mipi_dsi_panel_plat *plat = dev_get_platdata(dev);
 	struct mipi_dsi_device *dsi = plat->device;
-	u8 color_format = color_format_from_dsi_format(priv->format);
-	u16 brightness;
 	unsigned int i;
 	int ret;
 
-	priv->mode_flags |= MIPI_DSI_MODE_LPM;
+	dsi->mode_flags |= MIPI_DSI_MODE_LPM;
 
 	for (i = 0; i < ARRAY_SIZE(ili9881c_init); i++) {
 		const struct ili9881c_instr *instr = &ili9881c_init[i];
@@ -375,18 +346,7 @@ static int ili9881c_panel_get_display_timing(struct udevice *dev,
 	struct mipi_dsi_panel_plat *plat = dev_get_platdata(dev);
 	struct mipi_dsi_device *device = plat->device;
 
-	switch (priv->timing_mode) {
-		case 0:
-			memcpy(timings, &default_timing, sizeof(*timings));
-			break;
-		case 1:
-			memcpy(timings, &highclk_timing, sizeof(*timings));
-			break;
-		default:
-			printf("invalid timing mode %d, fail back to use default mode\n", priv->timing_mode);
-			memcpy(timings, &default_timing, sizeof(*timings));
-			break;
-	}
+	memcpy(timings, &default_timing, sizeof(*timings));
 
 	/* fill characteristics of DSI data link */
 	if (device) {
@@ -432,12 +392,6 @@ static int ili9881c_panel_ofdata_to_platdata(struct udevice *dev)
 	u32 video_mode;
 	int ret;
 
-	ret = dev_read_u32(dev, "timing-mode", &priv->timing_mode);
-	if (ret < 0) {
-		printf("Failed to get timing-mode (%d)\n", ret);
-		return ret;
-	}
-
 	priv->format = MIPI_DSI_FMT_RGB888;
 	priv->mode_flags = MIPI_DSI_MODE_VIDEO_HSE | MIPI_DSI_MODE_VIDEO | MIPI_DSI_CLOCK_NON_CONTINUOUS;
 
@@ -479,9 +433,9 @@ static int ili9881c_panel_ofdata_to_platdata(struct udevice *dev)
 		return ret;
 	}
 
-	ret = uclass_get_device_by_phandle(UCLASS_PANEL_BACKLIGHT, dev, "backlight", &priv->backlight);
-	if (ret) {
-		printf("Cannot get backlight (%d)\n", ret);
+	ret = gpio_request_by_name(dev, "backlight-gpio", 0, &priv->backlight, GPIOD_IS_OUT);
+	if (ret && ret != -ENOENT) {
+		printf("Warning: cannot get backlight GPIO (%d)\n", ret);
 		return ret;
 	}
 
@@ -493,15 +447,26 @@ static int ili9881c_panel_probe(struct udevice *dev)
 	struct ili9881c_panel_priv *priv = dev_get_priv(dev);
 	int ret;
 
+	if (IS_ENABLED(CONFIG_DM_REGULATOR) && priv->power) {
+		ret = regulator_set_enable(priv->power, true);
+		if (ret)
+			return ret;
+		mdelay(5);
+	}
+
 	/* reset panel - reset gpio pin is GPIO_ACTIVE_LOW */
 	ret = dm_gpio_set_value(&priv->reset, true);
 	if (ret)
 		printf("reset gpio fails to set true\n");
-	mdelay(100);
+	mdelay(20);
 	ret = dm_gpio_set_value(&priv->reset, false);
 	if (ret)
-		printf("reset gpio fails to set true\n");
-	mdelay(100);
+		printf("reset gpio fails to set false\n");
+	mdelay(20);
+
+	ret = dm_gpio_set_value(&priv->backlight, 0);
+	if (ret)
+		printf("backlight gpio fails to set on\n");
 
 	return 0;
 }
