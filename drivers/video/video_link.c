@@ -480,7 +480,7 @@ int video_link_init(void)
 {
 	struct udevice *dev;
 	ulong env_id;
-	int off;
+	int off, ret, i;
 	memset(&video_links, 0, sizeof(video_links));
 	memset(&temp_stack, 0, sizeof(temp_stack));
 
@@ -503,9 +503,25 @@ int video_link_init(void)
 		return 0;
 	}
 
-	env_id = env_get_ulong("video_link", 10, 0);
-	if (env_id < video_links_num)
-		curr_video_link = env_id;
+	if (env_get("video_link") != NULL) {
+		env_id = env_get_ulong("video_link", 10, 0);
+		if (env_id < video_links_num)
+			curr_video_link = env_id;
+	} else {
+		for (env_id = 0; env_id < video_links_num; env_id ++) {
+			for (i = video_links[env_id].dev_num - 1; i >= 0 ; i--) {
+				dev = video_links[env_id].link_devs[i];
+				if (device_get_uclass_id(dev) == UCLASS_PANEL) {
+					ret = device_probe(video_links[env_id].link_devs[i]);
+					if (!ret) {
+						curr_video_link = env_id;
+						env_id = video_links_num;
+					}
+					break;
+				}
+			}
+		}
+	}
 
 	list_videolink(true);
 
