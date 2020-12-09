@@ -27,6 +27,7 @@
 #include <usb.h>
 #include <asm/armv8/mmu.h>
 #include <dwc3-uboot.h>
+#include <splash.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -245,6 +246,41 @@ int board_usb_cleanup(int index, enum usb_init_type init)
 	return ret;
 }
 #endif
+
+#ifdef CONFIG_SPLASH_SCREEN
+static struct splash_location imx_splash_locations[] = {
+	{
+		.name = "sf",
+		.storage = SPLASH_STORAGE_SF,
+		.flags = SPLASH_STORAGE_RAW,
+		.offset = 0x100000,
+	},
+	{
+		.name = "mmc_fs",
+		.storage = SPLASH_STORAGE_MMC,
+		.flags = SPLASH_STORAGE_FS,
+		.devpart = "0:1",
+	},
+	{
+		.name = "usb_fs",
+		.storage = SPLASH_STORAGE_USB,
+		.flags = SPLASH_STORAGE_FS,
+		.devpart = "0:1",
+	},
+	{
+		.name = "sata_fs",
+		.storage = SPLASH_STORAGE_SATA,
+		.flags = SPLASH_STORAGE_FS,
+		.devpart = "0:1",
+	},
+};
+
+int splash_screen_prepare(void)
+{
+	imx_splash_locations[1].devpart[0] = mmc_get_env_dev() + '0';
+	return splash_source_load(imx_splash_locations, ARRAY_SIZE(imx_splash_locations));
+}
+#endif /* CONFIG_SPLASH_SCREEN */
 
 void setup_wifi(void)
 {
