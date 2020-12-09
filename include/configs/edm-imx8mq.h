@@ -108,6 +108,7 @@
 	"script=boot.scr\0" \
 	"image=Image\0" \
 	"console=ttymxc0,115200 earlycon=ec_imx6q,0x30860000,115200\0" \
+	"splashimage=0x50000000\0" \
 	"splashpos=m,m\0" \
 	"splashsource=mmc_fs\0" \
 	"fdt_addr=0x43000000\0"			\
@@ -304,16 +305,17 @@
 #define CONFIG_USB_GADGET_VBUS_DRAW 2
 
 /* Framebuffer */
-#ifdef CONFIG_VIDEO
-#define CONFIG_VIDEO_IMXDCSS
-#define CONFIG_VIDEO_BMP_RLE8
+#ifdef CONFIG_DM_VIDEO
+#define CONFIG_VIDEO_LOGO
 #define CONFIG_SPLASH_SCREEN
 #define CONFIG_SPLASH_SCREEN_ALIGN
 #define CONFIG_SPLASH_SOURCE
+#define CONFIG_CMD_BMP
 #define CONFIG_BMP_16BPP
-#define CONFIG_VIDEO_LOGO
+#define CONFIG_BMP_24BPP
+#define CONFIG_BMP_32BPP
+#define CONFIG_VIDEO_BMP_RLE8
 #define CONFIG_VIDEO_BMP_LOGO
-#define CONFIG_IMX_VIDEO_SKIP
 #endif
 
 #if defined(CONFIG_ANDROID_SUPPORT)
