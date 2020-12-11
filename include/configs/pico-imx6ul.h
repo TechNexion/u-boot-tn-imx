@@ -206,7 +206,7 @@
 		"g_acm_ms.iSerialNumber=00:00:00:00:00:00 g_acm_ms.iManufacturer=TechNexion\0" \
 	"loadfit=fatload mmc ${mmcdev}:${mmcpart} ${fit_addr} tnrescue.itb\0" \
 	"fitboot=echo Booting from FIT image...; " \
-		"run fit_overlay; run fitargs; " \
+		"run setfdt; run fit_overlay; run fitargs; " \
 		"bootm ${fit_addr}#conf@${fdtfile}${fitov};\0"
 
 #define CONFIG_BOOTCOMMAND \
