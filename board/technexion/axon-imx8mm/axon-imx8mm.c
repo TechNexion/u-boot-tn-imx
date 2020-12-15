@@ -229,8 +229,20 @@ void board_late_mmc_env_init(void)
 #ifdef CONFIG_VIDEO_MXS
 
 #define MIPI_DSI_I2C_BUS 2
+#define MIPI_DSI_LVDS_I2C_BUS 1
+#define EXPANSION_IC_I2C_BUS 2
+#define EXPANSION_IC_I2C_ADDR 0x23
 #define ADV7535_MAIN_I2C_ADDR 0x3d
 #define FT5336_TOUCH_I2C_ADDR 0x38
+#define SN65DSI84_I2C_ADDR 0x2d
+
+#define DISPLAY_NAME_MIPI2HDMI   "MIPI2HDMI"
+#define DISPLAY_NAME_MIPI5       "ILI9881C_LCD"
+#define DISPLAY_NAME_MIPI8       "G080UAN01_LCD"
+#define DISPLAY_NAME_MIPI10      "G101UAN02_LCD"
+#define DISPLAY_NAME_MIPI2LVDS10 "M101NWWB_LCD"
+#define DISPLAY_NAME_MIPI2LVDS15 "G156XW01_LCD"
+#define DISPLAY_NAME_MIPI2LVDS21 "G215HVN01_LCD"
 
 static const struct sec_mipi_dsim_plat_data imx8mm_mipi_dsim_plat_data = {
 	.version	= 0x1060200,
@@ -274,31 +286,21 @@ void disp_mix_lcdif_clks_enable(ulong gpr_base, bool enable)
 		clrbits_le32(gpr_base + DISPLAY_MIX_CLK_EN_CSR, LCDIF_PIXEL_CLK_SFT_EN | LCDIF_APB_CLK_SFT_EN);
 }
 
-#define DISPLAY_NAME_MIPI2HDMI   "MIPI2HDMI"
-#define DISPLAY_NAME_MIPI5       "ILI9881C_LCD"
-#define DISPLAY_NAME_MIPI8       "G080UAN01_LCD"
-#define DISPLAY_NAME_MIPI10      "G101UAN02_LCD"
-#define DISPLAY_NAME_MIPI2LVDS10 "M101NWWB_LCD"
-#define DISPLAY_NAME_MIPI2LVDS15 "G156XW01_LCD"
-#define DISPLAY_NAME_MIPI2LVDS21 "G215HVN01_LCD"
-
 struct mipi_panel_id {
 	const char *panel_name;
 	int id;
-    const char *suffix;
+	const char *suffix;
 };
 
 static const struct mipi_panel_id mipi_panel_mapping[] = {
-    {DISPLAY_NAME_MIPI2HDMI, 0, "-adv7535"},
-    {DISPLAY_NAME_MIPI5, 0x54, "-ili9881c"},
-    {DISPLAY_NAME_MIPI8, 0x58, "-g080uan01"},
-    {DISPLAY_NAME_MIPI10, 0x59, "-g101uan02"},
-    {DISPLAY_NAME_MIPI2LVDS10, 0, "-sn65dsi84-m101nwwb"},
-    {DISPLAY_NAME_MIPI2LVDS15, 0, "-sn65dsi84-g156xw01"},
-    {DISPLAY_NAME_MIPI2LVDS21, 0, "-sn65dsi84-g215hvn01"},
+	{DISPLAY_NAME_MIPI2HDMI, 0, "-adv7535"},
+	{DISPLAY_NAME_MIPI5, 0x54, "-ili9881c"},
+	{DISPLAY_NAME_MIPI8, 0x58, "-g080uan01"},
+	{DISPLAY_NAME_MIPI10, 0x59, "-g101uan02"},
+	{DISPLAY_NAME_MIPI2LVDS10, 0, "-sn65dsi84-m101nwwb"},
+	{DISPLAY_NAME_MIPI2LVDS15, 0, "-sn65dsi84-g156xw01"},
+	{DISPLAY_NAME_MIPI2LVDS21, 0, "-sn65dsi84-g215hvn01"},
 };
-
-static int display_dtoverlay_indx = -1;
 
 static int detect_i2c(struct display_info_t const *dev)
 {
@@ -309,18 +311,21 @@ static int detect_i2c(struct display_info_t const *dev)
 			(0 == dm_i2c_probe(bus, dev->addr, 0, &i2c_dev))) {
 		if (dev->addr == FT5336_TOUCH_I2C_ADDR) {
 			val = dm_i2c_reg_read(i2c_dev, 0xA3);
-			for (i = 0; i < ARRAY_SIZE(mipi_panel_mapping); i++) {
+			for (i = 1; i < ARRAY_SIZE(mipi_panel_mapping); i++) {
 				const struct mipi_panel_id *instr = &mipi_panel_mapping[i];
 				if((strcmp(instr->panel_name, dev->mode.name) == 0) &&
 						(instr->id == val)) {
 					ret = 1;
-					display_dtoverlay_indx = i;
 					break;
 				}
 			}
 		} else {
 			ret = 1;
-			display_dtoverlay_indx = 0;
+		}
+	} else 	if ((0 == uclass_get_device_by_seq(UCLASS_I2C, MIPI_DSI_LVDS_I2C_BUS, &bus)) &&
+				(0 == dm_i2c_probe(bus, dev->addr, 0, &i2c_dev))) {
+		if (dev->addr == SN65DSI84_I2C_ADDR) {
+			ret = 1;
 		}
 	}
 
@@ -344,6 +349,21 @@ struct mipi_dsi_client_dev ili9881c_dev = {
 			  MIPI_DSI_CLOCK_NON_CONTINUOUS | MIPI_DSI_MODE_VIDEO_HSE,
 };
 
+struct mipi_dsi_client_dev gxxxuan_dev = {
+	.channel	= 0,
+	.lanes = 4,
+	.format  = MIPI_DSI_FMT_RGB888,
+	.mode_flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_SYNC_PULSE,
+};
+
+struct mipi_dsi_client_dev sn65dsi84_dev = {
+	.channel	= 0,
+	.lanes = 4,
+	.format  = MIPI_DSI_FMT_RGB888,
+	.mode_flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_SYNC_PULSE |
+			  MIPI_DSI_MODE_VIDEO_BURST,
+};
+
 #define FSL_SIP_GPC			0xC2000000
 #define FSL_SIP_CONFIG_GPC_PM_DOMAIN	0x3
 #define DISPMIX				9
@@ -351,8 +371,10 @@ struct mipi_dsi_client_dev ili9881c_dev = {
 
 void do_enable_mipi2hdmi(struct display_info_t const *dev)
 {
+#ifdef CONFIG_ADV75353
 	/* ADV7353 initialization */
 	adv7535_init(MIPI_DSI_I2C_BUS);
+#endif
 
 	/* enable the dispmix & mipi phy power domain */
 	call_imx_sip(FSL_SIP_GPC, FSL_SIP_CONFIG_GPC_PM_DOMAIN, DISPMIX, true, 0);
@@ -385,9 +407,25 @@ void do_enable_mipi_lcd(struct display_info_t const *dev)
 	/* Setup mipi dsim */
 	sec_mipi_dsim_setup(&imx8mm_mipi_dsim_plat_data);
 
-	ili9881c_init();
-	ili9881c_dev.name = displays[1].mode.name;
-	imx_mipi_dsi_bridge_attach(&ili9881c_dev); /* attach ili9881c device */
+	if (!strcmp(dev->mode.name, DISPLAY_NAME_MIPI5)) {
+#ifdef CONFIG_ILI9881C
+		ili9881c_init();
+		ili9881c_dev.name = dev->mode.name;
+		imx_mipi_dsi_bridge_attach(&ili9881c_dev); /* attach ili9881c device */
+#endif
+	}else if (!strcmp(dev->mode.name, DISPLAY_NAME_MIPI8) ||
+				!strcmp(dev->mode.name, DISPLAY_NAME_MIPI10)) {
+		gxxxuan_dev.name = dev->mode.name;
+		imx_mipi_dsi_bridge_attach(&gxxxuan_dev);
+	}else if (!strcmp(dev->mode.name, DISPLAY_NAME_MIPI2LVDS10) ||
+				!strcmp(dev->mode.name, DISPLAY_NAME_MIPI2LVDS15) ||
+				!strcmp(dev->mode.name, DISPLAY_NAME_MIPI2LVDS21)) {
+#ifdef CONFIG_SN65DSI84
+		sn65dsi84_init(MIPI_DSI_LVDS_I2C_BUS, dev->mode.name);
+		sn65dsi84_dev.name = dev->mode.name;
+		imx_mipi_dsi_bridge_attach(&sn65dsi84_dev);
+#endif
+	}
 }
 
 void board_quiesce_devices(void)
@@ -403,7 +441,7 @@ struct display_info_t const displays[] = {{
 	.detect = detect_i2c,
 	.enable	= do_enable_mipi2hdmi,
 	.mode	= {
-		.name			= "MIPI2HDMI",
+		.name			= DISPLAY_NAME_MIPI2HDMI,
 		.refresh		= 60,
 		.xres			= 1920,
 		.yres			= 1080,
@@ -424,7 +462,7 @@ struct display_info_t const displays[] = {{
 	.detect = detect_i2c,
 	.enable	= do_enable_mipi_lcd,
 	.mode	= {
-		.name			= "ILI9881C_LCD",
+		.name			= DISPLAY_NAME_MIPI5,
 		.refresh		= 60,
 		.xres			= 720,
 		.yres			= 1280,
@@ -438,36 +476,131 @@ struct display_info_t const displays[] = {{
 		.sync			= FB_SYNC_EXT,
 		.vmode			= FB_VMODE_NONINTERLACED
 
+} }, {
+	.bus = LCDIF_BASE_ADDR,
+	.addr = FT5336_TOUCH_I2C_ADDR,
+	.pixfmt = 24,
+	.detect = detect_i2c,
+	.enable	= do_enable_mipi_lcd,
+	.mode	= {
+		.name			= DISPLAY_NAME_MIPI8,
+		.refresh		= 60,
+		.xres			= 1200,
+		.yres			= 1920,
+		.pixclock		= 6273, /* 956400  kHz */
+		.left_margin	= 60,
+		.right_margin	= 60,
+		.upper_margin	= 25,
+		.lower_margin	= 35,
+		.hsync_len		= 2,
+		.vsync_len		= 1,
+		.sync			= FB_SYNC_EXT,
+		.vmode			= FB_VMODE_NONINTERLACED
+
+} }, {
+	.bus = LCDIF_BASE_ADDR,
+	.addr = FT5336_TOUCH_I2C_ADDR,
+	.pixfmt = 24,
+	.detect = detect_i2c,
+	.enable	= do_enable_mipi_lcd,
+	.mode	= {
+		.name			= DISPLAY_NAME_MIPI10,
+		.refresh		= 60,
+		.xres			= 1920,
+		.yres			= 1200,
+		.pixclock		= 6671, /* 899400  kHz */
+		.left_margin	= 60,
+		.right_margin	= 60,
+		.upper_margin	= 5,
+		.lower_margin	= 5,
+		.hsync_len		= 18,
+		.vsync_len		= 2,
+		.sync			= FB_SYNC_EXT,
+		.vmode			= FB_VMODE_NONINTERLACED
+
+} }, {
+	.bus = LCDIF_BASE_ADDR,
+	.addr = SN65DSI84_I2C_ADDR,
+	.pixfmt = 24,
+	.detect = detect_i2c,
+	.enable	= do_enable_mipi_lcd,
+	.mode	= {
+		.name			= DISPLAY_NAME_MIPI2LVDS10,
+		.refresh		= 60,
+		.xres			= 1280,
+		.yres			= 800,
+		.pixclock		= 14513, /* 413400  kHz */
+		.left_margin	= 40,
+		.right_margin	= 40,
+		.upper_margin	= 10,
+		.lower_margin	= 3,
+		.hsync_len		= 80,
+		.vsync_len		= 10,
+		.sync			= FB_SYNC_EXT,
+		.vmode			= FB_VMODE_NONINTERLACED
+
+} }, {
+	.bus = LCDIF_BASE_ADDR,
+	.addr = SN65DSI84_I2C_ADDR,
+	.pixfmt = 24,
+	.detect = detect_i2c,
+	.enable	= do_enable_mipi_lcd,
+	.mode	= {
+		.name			= DISPLAY_NAME_MIPI2LVDS15,
+		.refresh		= 60,
+		.xres			= 1368,
+		.yres			= 768,
+		.pixclock		= 13157, /* 456000  kHz */
+		.left_margin	= 90,
+		.right_margin	= 90,
+		.upper_margin	= 17,
+		.lower_margin	= 17,
+		.hsync_len		= 20,
+		.vsync_len		= 4,
+		.sync			= FB_SYNC_EXT,
+		.vmode			= FB_VMODE_NONINTERLACED
+
+} }, {
+	.bus = LCDIF_BASE_ADDR,
+	.addr = SN65DSI84_I2C_ADDR,
+	.pixfmt = 24,
+	.detect = detect_i2c,
+	.enable	= do_enable_mipi_lcd,
+	.mode	= {
+		.name			= DISPLAY_NAME_MIPI2LVDS21,
+		.refresh		= 60,
+		.xres			= 1920,
+		.yres			= 1080,
+		.pixclock		= 14285, /* 420000  kHz */
+		.left_margin	= 70,
+		.right_margin	= 70,
+		.upper_margin	= 17,
+		.lower_margin	= 17,
+		.hsync_len		= 20,
+		.vsync_len		= 4,
+		.sync			= FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
+		.vmode			= FB_VMODE_NONINTERLACED
+
 } } };
 size_t display_count = ARRAY_SIZE(displays);
 #endif
 
-#define EXPANSION_IC_I2C_BUS	2
-#define EXPANSION_IC_I2C_ADDR	0x23
-
 int board_late_init(void)
 {
-    struct udevice *bus;
-    struct udevice *i2c_dev = NULL;
-    char *fdt_file, str_fdtfile[64];
-    char const *panel = env_get("panel");
-    int ret, i;
+	char *fdt_file, str_fdtfile[64];
+	char const *panel = env_get("panel");
+	struct udevice *bus;
+	struct udevice *i2c_dev = NULL;
+	int ret, i;
 
-    fdt_file = env_get("fdt_file");
-    if (fdt_file && !strcmp(fdt_file, "undefined")) {
-        ret = uclass_get_device_by_seq(UCLASS_I2C, EXPANSION_IC_I2C_BUS, &bus);
-        if (ret) {
-            printf("%s: Can't find bus\n", __func__);
-            return -EINVAL;
-        }
-
+	fdt_file = env_get("fdt_file");
+	if (fdt_file && !strcmp(fdt_file, "undefined")) {
 		ret = uclass_get_device_by_seq(UCLASS_I2C, EXPANSION_IC_I2C_BUS, &bus);
 		if (ret) {
 			printf("%s: Can't find bus\n", __func__);
 			return -EINVAL;
 		}
-
-		ret = dm_i2c_probe(bus, EXPANSION_IC_I2C_BUS, 0, &i2c_dev);
+		ret = dm_i2c_probe(bus, EXPANSION_IC_I2C_ADDR, 0, &i2c_dev);
 		if (ret)
 			strcpy(str_fdtfile, "imx8mm-axon-pi");
 		else
