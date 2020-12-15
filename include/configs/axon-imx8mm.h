@@ -18,6 +18,8 @@
 #define CONFIG_CSF_SIZE			0x2000 /* 8K region */
 #endif
 
+#define CONFIG_SYS_BOOTM_LEN       0xA000000
+
 #define CONFIG_SPL_MAX_SIZE		(148 * 1024)
 #define CONFIG_SYS_MONITOR_LEN		(512 * 1024)
 #define CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_USE_SECTOR
@@ -158,10 +160,25 @@
 		"source\0" \
 	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
 	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
+	"checkbaseboard=" \
+		"if test ${fdt_file} = imx8mm-axon-wizard.dtb; then " \
+			"setenv baseboard wizard; " \
+		"else " \
+			"setenv baseboard pi; " \
+		"fi;\0" \
+	"loadoverlay=" \
+		"fdt addr ${fdt_addr} && fdt resize ${fdt_buffer}; " \
+		"setexpr fdtovaddr ${fdt_addr} + 0xF0000; " \
+		"for ov in ${dtoverlay}; do " \
+			"echo Overlaying ${ov}...; " \
+			"fatload mmc ${mmcdev}:${mmcpart} ${fdtovaddr} imx8mm-axon-${baseboard}-${ov}.dtbo && fdt apply ${fdtovaddr}; " \
+		"done\0" \
 	"mmcboot=echo Booting from mmc ...; " \
 		"run mmcargs; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
 			"if run loadfdt; then " \
+			        "run checkbaseboard; " \
+			        "run loadoverlay; " \
 				"booti ${loadaddr} - ${fdt_addr}; " \
 			"else " \
 				"echo WARN: Cannot load the DT; " \
@@ -188,19 +205,35 @@
 			"fi; " \
 		"else " \
 			"booti; " \
-		"fi;\0"
+		"fi;\0" \
+	"fitov=\"\"\0" \
+	"fit_addr=0x45800000\0" \
+	"fit_high=0xffffffff\0" \
+	"fit_overlay=for ov in ${dtoverlay}; do " \
+			"echo Overlaying ${ov}...; setenv fitov \"${fitov}#conf@imx8mm-axon-${baseboard}-${ov}.dtbo\"; " \
+		"done; echo fit conf: ${fdt_file}${fitov};\0" \
+	"fitargs=setenv bootargs ${jh_clk} console=${console} root=/dev/ram0 rootwait rw " \
+		"modules-load=g_acm_ms g_acm_ms.stall=0 g_acm_ms.removable=1 g_acm_ms.file=/dev/mmcblk2 " \
+		"g_acm_ms.iSerialNumber=00:00:00:00:00:00 g_acm_ms.iManufacturer=TechNexion\0" \
+	"loadfit=fatload mmc ${mmcdev}:${mmcpart} ${fit_addr} tnrescue.itb\0" \
+	"fitboot=echo Booting from FIT image ...; " \
+		"run checkbaseboard; run fit_overlay; run fitargs; " \
+		"bootm ${fit_addr}#conf@${fdt_file}${fitov}\0"
 
 #define CONFIG_BOOTCOMMAND \
 	   "mmc dev ${mmcdev}; if mmc rescan; then " \
 		   "if run loadbootscript; then " \
 			   "run bootscript; " \
-		   "else " \
-			   "if run loadimage; then " \
-				   "run mmcboot; " \
-			   "else run netboot; " \
-			   "fi; " \
 		   "fi; " \
-	   "else booti ${loadaddr} - ${fdt_addr}; fi"
+		   "if run loadfit; then " \
+			   "run fitboot; " \
+		   "fi; " \
+		   "if run loadimage; then " \
+			   "run mmcboot; " \
+		   "else " \
+			   "echo WARN: Cannot load kernel from boot media; " \
+		   "fi; " \
+	   "else run netboot; fi"
 
 /* Link Definitions */
 #define CONFIG_LOADADDR			0x40480000
