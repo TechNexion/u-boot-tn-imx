@@ -293,7 +293,7 @@ static const struct mipi_panel_id mipi_panel_mapping[] = {
     {DISPLAY_NAME_MIPI5, 0x54, "-ili9881c"},
     {DISPLAY_NAME_MIPI8, 0x58, "-g080uan01"},
     {DISPLAY_NAME_MIPI10, 0x59, "-g101uan02"},
-    {DISPLAY_NAME_MIPI2LVDS10, 0, "-sn65dsi84-m101nmmb"},
+    {DISPLAY_NAME_MIPI2LVDS10, 0, "-sn65dsi84-m101nwwb"},
     {DISPLAY_NAME_MIPI2LVDS15, 0, "-sn65dsi84-g156xw01"},
     {DISPLAY_NAME_MIPI2LVDS21, 0, "-sn65dsi84-g215hvn01"},
 };
