@@ -108,11 +108,13 @@
 
 #define CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 #define CONFIG_EXTRA_ENV_SETTINGS \
+	"script=boot.scr\0" \
 	"image=zImage\0" \
 	"console=ttymxc0\0" \
 	"splashpos=m,m\0" \
 	"splashsource=mmc_fs\0" \
 	"som=autodetect\0" \
+	"form=axon\0" \
 	"baseboard=pi\0" \
 	"default_baseboard=pi\0" \
 	"fdtfile=undefined\0" \
@@ -124,8 +126,10 @@
 	"mmcpart=1\0" \
 	"searchbootdev=" \
 		"if test ${bootdev} = SD0; then " \
+			"setenv mmcrootdev /dev/mmcblk2; " \
 			"setenv mmcroot /dev/mmcblk2p2 rootwait rw; " \
 		"else " \
+			"setenv mmcrootdev /dev/mmcblk0; " \
 			"setenv mmcroot /dev/mmcblk0p2 rootwait rw; " \
 		"fi\0" \
 	"mmcargs=setenv bootargs console=${console},${baudrate} " \
@@ -170,13 +174,12 @@
 	"bootscript=echo Running bootscript from mmc ...; " \
 		"source\0" \
 	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
-	"setfdt=setenv fdtfile ${som}-axon-${baseboard}.dtb\0" \
+	"setfdt=setenv fdtfile ${som}-${form}-${baseboard}.dtb\0" \
 	"loadfdt=load mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdtfile}\0" \
 	"mmcboot=echo Booting from mmc ...; " \
 		"run searchbootdev; " \
 		"run mmcargs; " \
 		"echo baseboard is ${baseboard}; " \
-		"echo ${bootargs}; " \
 		"run setfdt; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
 			"if run loadfdt; then " \
@@ -197,7 +200,7 @@
 			"bootz; " \
 		"fi;\0" \
 	"bootenv=uEnv.txt\0" \
-	"loadbootenv=load mmc ${mmcdev} ${loadaddr} ${bootenv}\0" \
+	"loadbootenv=fatload mmc ${mmcdev} ${loadaddr} ${bootenv}\0" \
 	"importbootenv=echo Importing environment from mmc ...; " \
 		"env import -t -r $loadaddr $filesize\0" \
 	"netargs=setenv bootargs console=${console},${baudrate} " \
@@ -213,7 +216,6 @@
 		"run importbootenv; " \
 		"run setfdt; " \
 		"run netargs; " \
-		"echo ${bootargs}; " \
 		"${get_cmd} ${loadaddr} ${image}; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
 			"if ${get_cmd} ${fdt_addr} ${fdtfile}; then " \
@@ -229,17 +231,17 @@
 			"bootz; " \
 		"fi;\0" \
 	"fitov=\"\"\0" \
-	"fit_addr=0x17880000\0" \
+	"fit_addr=0x21100000\0" \
 	"fit_high=0xffffffff\0" \
 	"fit_overlay=for ov in ${dtoverlay}; do " \
 			"echo Overlaying ${ov}...; setenv fitov \"${fitov}#${ov}\"; " \
 		"done; echo fit conf: ${fdtfile}${fitov};\0" \
 	"fitargs=setenv bootargs console=${console},${baudrate} root=/dev/ram0 rootwait rw " \
-		"modules-load=g_acm_ms g_acm_ms.stall=0 g_acm_ms.removable=1 g_acm_ms.file=/dev/mmcblk${mmcdev} " \
+		"modules-load=g_acm_ms g_acm_ms.stall=0 g_acm_ms.removable=1 g_acm_ms.file=${mmcrootdev} " \
 		"g_acm_ms.iSerialNumber=00:00:00:00:00:00 g_acm_ms.iManufacturer=TechNexion; run videoargs\0" \
 	"loadfit=fatload mmc ${mmcdev} ${fit_addr} tnrescue.itb\0" \
 	"fitboot=echo Booting from FIT image...; " \
-		"run fit_overlay; run fitargs; " \
+		"run searchbootdev; run setfdt; run fit_overlay; run fitargs; " \
 		"bootm ${fit_addr}#conf@${fdtfile}${fitov};\0"
 
 #define CONFIG_BOOTCOMMAND \
