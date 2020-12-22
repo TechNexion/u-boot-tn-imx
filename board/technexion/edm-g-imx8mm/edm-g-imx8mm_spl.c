@@ -115,14 +115,14 @@ void spl_dram_init(void)
 
 struct i2c_pads_info i2c_pad_info1 = {
 	.scl = {
-		.i2c_mode = IMX8MM_PAD_I2C4_SCL_I2C4_SCL | PC,
-		.gpio_mode = IMX8MM_PAD_I2C4_SCL_GPIO5_IO20 | PC,
-		.gp = IMX_GPIO_NR(5, 20),
+		.i2c_mode = IMX8MM_PAD_I2C1_SCL_I2C1_SCL | PC,
+		.gpio_mode = IMX8MM_PAD_I2C1_SCL_GPIO5_IO14 | PC,
+		.gp = IMX_GPIO_NR(5, 14),
 	},
 	.sda = {
-		.i2c_mode = IMX8MM_PAD_I2C4_SDA_I2C4_SDA | PC,
-		.gpio_mode = IMX8MM_PAD_I2C4_SDA_GPIO5_IO21 | PC,
-		.gp = IMX_GPIO_NR(5, 21),
+		.i2c_mode = IMX8MM_PAD_I2C1_SDA_I2C1_SDA | PC,
+		.gpio_mode = IMX8MM_PAD_I2C1_SDA_GPIO5_IO15 | PC,
+		.gp = IMX_GPIO_NR(5, 15),
 	},
 };
 
@@ -226,7 +226,7 @@ int board_mmc_getcd(struct mmc *mmc)
 }
 
 #ifdef CONFIG_POWER
-#define I2C_PMIC	3
+#define I2C_PMIC	0
 int power_init_board(void)
 {
 	struct pmic *p;
