@@ -120,7 +120,6 @@
 		"source\0" \
 	"baseboard=wb\0" \
 	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
-	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
 	"loadfdt=" \
 		"echo Loading fdt_file ${fdt_file}...; " \
 		"fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
