@@ -91,11 +91,6 @@ void spl_dram_init(void)
 		ddr_init(&dram_timing_4gb);
 		writel(0x4, MCU_BOOTROM_BASE_ADDR);
 	}
-	else if (gpio_get_value(BOARD_ID0) && !gpio_get_value(BOARD_ID1)) {
-		puts("dram_init: LPDDR4 3GB\n");
-		ddr_init(&dram_timing_3gb);
-		writel(0x3, MCU_BOOTROM_BASE_ADDR);
-	}
 	else if (!gpio_get_value(BOARD_ID0) && gpio_get_value(BOARD_ID1)) {
 		puts("dram_init: LPDDR4: 2GB\n");
 		ddr_init(&dram_timing_2gb);
