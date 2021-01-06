@@ -808,7 +808,8 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mm-edm-g-wb.dtb	\
 	imx8mm-xore-wizard.dtb \
 	imx8mq-edm-wizard.dtb \
-	imx8mq-pico-pi.dtb
+	imx8mq-pico-pi.dtb \
+	imx8mn-edm-g.dtb
 
 dtb-$(CONFIG_ARCH_IMXRT) += imxrt1050-evk.dtb
 
