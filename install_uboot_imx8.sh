@@ -37,7 +37,7 @@ TWD=`pwd`
 
 setup_platform()
 {
-	SOC=$( echo $BOARD | grep -o 'imx8m[mqp]\?' )
+	SOC=$( echo $BOARD | grep -o 'imx8m[mqpn]\?' )
 	if [ ${SOC} = "imx8m" ] || [ ${SOC} = "imx8mq" ] ; then
 		PLATFORM="imx8mq"
 		SOC_TARGET="iMX8M"
@@ -51,6 +51,11 @@ setup_platform()
 	elif [ ${SOC} = "imx8mp" ] ; then
 		PLATFORM="imx8mp"
 		SOC_TARGET="iMX8MP"
+		SOC_DIR="iMX8M"
+		IMX_BOOT_SEEK="32"
+	elif [ ${SOC} = "imx8mn" ] ; then
+		PLATFORM="imx8mn"
+		SOC_TARGET="iMX8MN"
 		SOC_DIR="iMX8M"
 		IMX_BOOT_SEEK="32"
 	else
@@ -230,6 +235,10 @@ usage()
     
     * EDM-G-IMX8MP with WB:
     ./install_uboot_imx8.sh -b imx8mp-edm-g -d /dev/sdX
+
+    i.MX8MN:
+    * EDM-G-IMX8MN with WB:
+    ./install_uboot_imx8.sh -b imx8mn-edm-g -d /dev/sdX
 "
 }
 
