@@ -38,8 +38,6 @@
 #define CONFIG_POWER_PCA9450
 
 #define CONFIG_SYS_I2C
-#undef I2C1_BASE_ADDR
-#define I2C1_BASE_ADDR         0x30A50000
 
 #if defined(CONFIG_NAND_BOOT)
 #define CONFIG_SPL_NAND_SUPPORT
