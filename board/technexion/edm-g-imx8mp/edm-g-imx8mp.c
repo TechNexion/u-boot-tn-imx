@@ -84,6 +84,11 @@ int board_phys_sdram_size(phys_size_t *size)
 		mem_map[DRAM1_INDEX].size=SZ_3G;
 		mem_map[DRAM2_INDEX].size=SZ_1G;
 	}
+	else if (ddr_size == 0x1) { /* DRAM size: 2GB */
+		*size = SZ_1G;
+		mem_map[DRAM1_INDEX].size=SZ_1G;
+		mem_map[DRAM2_INDEX].size=SZ_1G;
+	}
 	else
 		puts("Unknown DDR type!!!\n");
 	return 0;

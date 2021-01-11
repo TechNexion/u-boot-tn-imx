@@ -81,6 +81,7 @@ static void setup_iomux_ver_det(void)
 BOARD_ID0    BOARD_ID1   BOARD_ID2
    1            0            0       6G LPDDR4
    0            1            1       4G LPDDR4
+   0            0            0       2G LPDDR4
 ************************************************/
 
 void spl_dram_init(void)
@@ -101,6 +102,11 @@ void spl_dram_init(void)
 		puts("dram_init: LPDDR4 4GB\n");
 		ddr_init(&dram_timing_4gb);
 		writel(0x3, OCRAM_BASE_ADDR);
+	}
+	else if (!gpio_get_value(BOARD_ID0) && !gpio_get_value(BOARD_ID1) && !gpio_get_value(BOARD_ID2)) {
+		puts("dram_init: LPDDR4 2GB\n");
+		ddr_init(&dram_timing_2gb);
+		writel(0x1, OCRAM_BASE_ADDR);
 	}
 	else
 		puts("Unknown DDR type!!!\n");
