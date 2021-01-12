@@ -74,7 +74,12 @@ int board_phys_sdram_size(phys_size_t *size)
 	**************************************************/
 	ddr_size = readl(OCRAM_BASE_ADDR);
 
-	if (ddr_size == 0x4) { /* DRAM size: 6GB */
+	if (ddr_size == 0x5) { /* DRAM size: 8GB */
+		*size = SZ_3G;
+		mem_map[DRAM1_INDEX].size=SZ_3G;
+		mem_map[DRAM2_INDEX].size=SZ_5G;
+	}
+	else if (ddr_size == 0x4) { /* DRAM size: 6GB */
 		*size = SZ_3G;
 		mem_map[DRAM1_INDEX].size=SZ_3G;
 		mem_map[DRAM2_INDEX].size=SZ_3G;

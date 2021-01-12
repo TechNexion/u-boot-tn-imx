@@ -79,6 +79,7 @@ static void setup_iomux_ver_det(void)
 
 /***********************************************
 BOARD_ID0    BOARD_ID1   BOARD_ID2
+   1            0            1       8G LPDDR4
    1            0            0       6G LPDDR4
    0            1            1       4G LPDDR4
    0            0            0       2G LPDDR4
@@ -93,7 +94,12 @@ void spl_dram_init(void)
 	U-boot would extract this information in dram_init().
 	**************************************************/
 
-	if (gpio_get_value(BOARD_ID0) && !gpio_get_value(BOARD_ID1) && !gpio_get_value(BOARD_ID2)) {
+	if (gpio_get_value(BOARD_ID0) && !gpio_get_value(BOARD_ID1) && gpio_get_value(BOARD_ID2)) {
+		puts("dram_init: LPDDR4 8GB\n");
+		ddr_init(&dram_timing_8gb);
+		writel(0x5, OCRAM_BASE_ADDR);
+	}
+	else if (gpio_get_value(BOARD_ID0) && !gpio_get_value(BOARD_ID1) && !gpio_get_value(BOARD_ID2)) {
 		puts("dram_init: LPDDR4 6GB\n");
 		ddr_init(&dram_timing_6gb);
 		writel(0x4, OCRAM_BASE_ADDR);
