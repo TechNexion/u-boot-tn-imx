@@ -6,8 +6,8 @@
  * SPDX-License-Identifier:     GPL-2.0+
  */
 
-#ifndef __IMX8MN_EVK_H
-#define __IMX8MN_EVK_H
+#ifndef __EDM_G_IMX8MN_H
+#define __EDM_G_IMX8MN_H
 
 #include <linux/sizes.h>
 #include <asm/arch/imx-regs.h>
@@ -69,6 +69,9 @@
 #define JH_ROOT_DTB	"imx8mn-evk-root.dtb"
 #endif
 
+/* M7 Specific */
+#define SYS_AUXCORE_BOOTDATA_TCM    0x007E0000
+
 #define JAILHOUSE_ENV \
 	"jh_clk= \0 " \
 	"jh_root_dtb=" JH_ROOT_DTB "\0" \
@@ -100,6 +103,11 @@
 	"fdt_file=" CONFIG_DEFAULT_FDT_FILE "\0" \
 	"initrd_addr=0x43800000\0"		\
 	"initrd_high=0xffffffffffffffff\0" \
+    "m7image=hello_world.bin\0" \
+    "m7loadaddr="__stringify(SYS_AUXCORE_BOOTDATA_TCM)"\0" \
+    "m7boot=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${m7image}; " \
+	"cp.b ${loadaddr} ${m7loadaddr} ${filesize}; " \
+    "dcache flush; bootaux ${m7loadaddr}\0" \
 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
 	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
 	"mmcroot=" CONFIG_MMCROOT " rootwait rw\0" \
@@ -234,7 +242,7 @@
 #endif
 
 #ifdef CONFIG_ANDROID_SUPPORT
-#include "imx8mn_evk_android.h"
+#include "edm_g_imx8mn_android.h"
 #endif
 
 #endif
