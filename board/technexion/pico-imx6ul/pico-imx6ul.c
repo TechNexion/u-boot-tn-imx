@@ -510,7 +510,7 @@ int board_late_init(void)
         setup_iomux_ddr_type_detection();
         gpio_direction_input(DDR_TYPE_DET);
 
-        if (gpio_get_value(DDR_TYPE_DET))
+        if (!gpio_get_value(DDR_TYPE_DET))
                 env_set("memdet", "512MB");
         else
                 env_set("memdet", "256MB");
