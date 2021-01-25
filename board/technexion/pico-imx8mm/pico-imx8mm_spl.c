@@ -283,13 +283,38 @@ void spl_board_init(void)
 	puts("Normal Boot\n");
 }
 
+
+
 #ifdef CONFIG_SPL_LOAD_FIT
+#define PCA9555_23_I2C_ADDR 0x23
+#define PCA9555_26_I2C_ADDR 0x26
+#define EXPANSION_IC_I2C_BUS 2
+struct i2c_pads_info i2c_pad_info2 = {
+	.scl = {
+		.i2c_mode = IMX8MM_PAD_I2C3_SCL_I2C3_SCL | PC,
+		.gpio_mode = IMX8MM_PAD_I2C3_SCL_GPIO5_IO18 | PC,
+		.gp = IMX_GPIO_NR(5, 18),
+	},
+	.sda = {
+		.i2c_mode = IMX8MM_PAD_I2C3_SDA_I2C3_SDA | PC,
+		.gpio_mode = IMX8MM_PAD_I2C3_SDA_GPIO5_IO19 | PC,
+		.gp = IMX_GPIO_NR(5, 19),
+	},
+};
+
 int board_fit_config_name_match(const char *name)
 {
-	/* Just empty function now - can't decide what to choose */
-	debug("%s: %s\n", __func__, name);
+	i2c_set_bus_num(EXPANSION_IC_I2C_BUS);
 
-	return 0;
+	if (!i2c_probe(PCA9555_23_I2C_ADDR) && !i2c_probe(PCA9555_26_I2C_ADDR)) {
+		if (!strcmp(name, "imx8mm-pico-wizard"))
+			return 0;
+	} else {
+		if (!strcmp(name, "imx8mm-pico-pi"))
+			return 0;
+	}
+
+	return -EINVAL;
 }
 #endif
 
@@ -318,6 +343,8 @@ void board_init_f(ulong dummy)
 
 	/* Adjust pmic voltage to 1.0V for 800M */
 	setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1);
+
+	setup_i2c(2, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info2);
 
 	power_init_board();
 
