@@ -15,8 +15,8 @@ DRIVE=/dev/sdX
 #PLATFORM="imx8mm"
 #SOC_TARGET="iMX8MM"
 #SOC_DIR="iMX8M"
-#BOARD="fsl-imx8mq-evk"
-#BOARD="pico-imx8m"
+#DTBS="fsl-imx8mq-evk"
+#DTBS="pico-imx8m"
 
 BRANCH_VER="lf-5.10.y_2.0.0" #branch used by imx-mkimage and imx-atf under meta-imx
 ATF_BRANCH_VER="lf_v2.4"
@@ -37,7 +37,7 @@ TWD=`pwd`
 
 setup_platform()
 {
-	SOC=$( echo $BOARD | grep -o 'imx8m[mqpn]\?' )
+	SOC=$( echo "${DTBS}" | cut -d' ' -f1 | grep -o 'imx8m[mqpn]\?' )
 	if [ ${SOC} = "imx8m" ] || [ ${SOC} = "imx8mq" ] ; then
 		PLATFORM="imx8mq"
 		SOC_TARGET="iMX8M"
@@ -91,14 +91,14 @@ install_firmware()
 	PWD=$(pwd)
 	[ -n "${PWD##*imx-atf}" ] && cd imx-atf
 	if ( git diff-index --quiet HEAD -- plat/imx/imx8mm/imx8mm_bl31_setup.c ); then
-		if [ -z "${BOARD##*imx8mm-axon*}" ]; then
+		if [ -z "${DTBS##*imx8mm-axon*}" ]; then
 			# AXON: Change UART2 base address to UART1 and released UART4 from M4
 			sed -i 's/(RDC_PDAP_UART4, D1R | D1W),/(RDC_PDAP_UART4, D0R | D0W),/g' plat/imx/imx8m/imx8mm/imx8mm_bl31_setup.c
 			sed -i 's/(0x30890000)/(0x30860000)/g' plat/imx/imx8m/imx8mm/include/platform_def.h
 			rm build/${PLATFORM}/release/bl31.bin
 		fi
 	else
-		if [ -n "${BOARD##*imx8mm-axon*}" ]; then
+		if [ -n "${DTBS##*imx8mm-axon*}" ]; then
 			git checkout plat/imx/imx8mm/imx8mm_bl31_setup.c
 			git checkout plat/imx/imx8m/imx8mm/include/platform_def.h
 			rm build/${PLATFORM}/release/bl31.bin
@@ -163,11 +163,14 @@ install_uboot_dtb()
 
 	#Copy device tree file
 	cd ${TWD}
-	if [ -f arch/arm/dts/${BOARD}.dtb ] ; then
-		cp arch/arm/dts/${BOARD}.dtb ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
-	else
-		printf "Cannot find arch/arm/dts/${BOARD}.dtb. Please build u-boot first! \n"
-	fi
+	for DTB in ${DTBS}
+	do
+		if [ -f arch/arm/dts/${DTB} ] ; then
+			cp arch/arm/dts/${DTB} ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+		else
+			printf "Cannot find arch/arm/dts/${DTB} . Please build u-boot first! \n"
+		fi
+	done
 }
 
 generate_imx_boot()
@@ -182,7 +185,7 @@ generate_imx_boot()
 
 	#Generate bootable binary (This binary contains SPL and u-boot.bin) for flashing
 	cd ${MKIMAGE_DIR}
-	make SOC=${SOC_TARGET} dtbs=${BOARD}.dtb ${MKIMAGE_TARGET} && \
+	make SOC=${SOC_TARGET} dtbs="${DTBS}" ${MKIMAGE_TARGET} && \
 	printf "Make target: ${MKIMAGE_TARGET} and generate flash.bin... \n" || printf "Fails to generate flash.bin... \n"
 }
 
@@ -202,13 +205,12 @@ flash_imx_boot()
 usage()
 {
     echo -e "\nUsage: install_uboot_imx8mq.sh
-    Optional parameters: [-d disk-path] [-b board_name] [-t] [-c] [-h]"
+    Optional parameters: [-d disk-path] [-b DTBS_name] [-t] [-c] [-h]"
 	echo "
     * This script is used to download required firmware files, generate and flash bootable u-boot binary
     *
     * [-d disk-path]: specify the disk to flash u-boot binary, e.g., /dev/sdd
-    * [-b dtb_name]: specify the name of dtb, support list: imx8mm-pico-pi, imx8mm-flex-pi, imx8mm-axon-pi
-    *                                                       imx8mq-pico-pi, imx8mq-edm-wizard
+    * [-b dtb_name]: specify the name of dtb, which will be included in FIT image
     * [-t]: target u-boot binary is without HDMI firmware
     * [-c]: clean temporary directory
     * [-h]: help
@@ -216,29 +218,29 @@ usage()
     For example:
 
     i.mx8MM:
-    * PICO-IMX8MM with PICO-PI-IMX8 baseboard:
-    ./install_uboot_imx8.sh -b imx8mm-pico-pi -d /dev/sdX
+    * PICO-IMX8MM with PICO-PI-IMX8 baseDTBS:
+    ./install_uboot_imx8.sh -b imx8mm-pico-pi.dtb -b imx8mm-pico-wizard.dtb -d /dev/sdX
 	
     * EDM-G-IMX8MM with WB:
-    ./install_uboot_imx8.sh -b imx8mm-edm-g-wb -d /dev/sdX
+    ./install_uboot_imx8.sh -b imx8mm-edm-g-wb.dtb -d /dev/sdX
 
     i.mx8MQ:
-    * EDM-IMX8MQ with EDM-WIZARD baseboard:
-    ./install_uboot_imx8.sh -b imx8mq-edm-wizard -d /dev/sdX
+    * EDM-IMX8MQ with EDM-WIZARD baseDTBS:
+    ./install_uboot_imx8.sh -b imx8mq-edm-wizard.dtb -d /dev/sdX
 
-    * PICO-IMX8MQ with PICO-PI-IMX8 baseboard:
-    ./install_uboot_imx8.sh -b imx8mq-pico-pi -d /dev/sdX
+    * PICO-IMX8MQ with PICO-PI-IMX8 baseDTBS:
+    ./install_uboot_imx8.sh -b imx8mq-pico-pi.dtb -d /dev/sdX
 
     i.mx8MP:
     * AXON-IMX8MP:
-    ./install_uboot_imx8.sh -b imx8mp-axon -d /dev/sdX
+    ./install_uboot_imx8.sh -b imx8mp-axon.dtb -d /dev/sdX
     
     * EDM-G-IMX8MP with WB:
-    ./install_uboot_imx8.sh -b imx8mp-edm-g -d /dev/sdX
+    ./install_uboot_imx8.sh -b imx8mp-edm-g.dtb -d /dev/sdX
 
     i.MX8MN:
     * EDM-G-IMX8MN with WB:
-    ./install_uboot_imx8.sh -b imx8mn-edm-g -d /dev/sdX
+    ./install_uboot_imx8.sh -b imx8mn-edm-g.dtb -d /dev/sdX
 "
 }
 
@@ -248,7 +250,7 @@ print_settings()
 	echo "Before run this script, please build u-boot first!
 	"
 	echo "The disk path to flash u-boot: $DRIVE"
-	echo "The default board name: $BOARD"
+	echo "The default DTB name: ${DTBS}"
 	echo "Make target: ${PLATFORM}"
 	echo "Make target: ${MKIMAGE_TARGET}"
 	echo "SOC platform: ${SOC}"
@@ -269,7 +271,7 @@ do
            DRIVE="$OPTARG"
            ;;
         b) 
-           BOARD="$OPTARG"
+           DTBS="$DTBS $OPTARG"
            ;;
         t) 
            MKIMAGE_TARGET='flash_spl_uboot';
@@ -284,6 +286,8 @@ do
            ;;
     esac
 done
+
+DTBS=$(echo ${DTBS} | cut -c 1-)
 
 if [ "$(id -u)" = "0" ]; then
    echo "This script can not be run as root"
