@@ -22,7 +22,7 @@ struct ili9881c_panel_priv {
 };
 
 static const struct display_timing default_timing = {
-	.pixelclock.typ	= 16129000,
+	.pixelclock.typ	= 62000000,
 	.hactive.typ	= 720,
 	.hfront_porch.typ	= 10,
 	.hback_porch.typ	= 30,
