@@ -284,28 +284,40 @@ void board_late_mmc_env_init(void)
 
 #define FT5336_TOUCH_I2C_BUS 2
 #define FT5336_TOUCH_I2C_ADDR 0x38
+#define PCA9555_23_I2C_ADDR 0x23
+#define PCA9555_26_I2C_ADDR 0x26
+#define EXPANSION_IC_I2C_BUS 2
 
 int board_late_init(void)
 {
 
-	struct udevice *bus;
+	struct udevice *bus = NULL;
 	struct udevice *i2c_dev = NULL;
 	int ret;
-	char *fdt_file;
+	char *fdt_file, *baseboard, str_fdtfile[64];
 
 	fdt_file = env_get("fdt_file");
 	if (fdt_file && !strcmp(fdt_file, "undefined")) {
-		ret = uclass_get_device_by_seq(UCLASS_I2C, FT5336_TOUCH_I2C_BUS, &bus);
+		ret = uclass_get_device_by_seq(UCLASS_I2C, EXPANSION_IC_I2C_BUS, &bus);
 		if (ret) {
 			printf("%s: Can't find bus\n", __func__);
 			return -EINVAL;
 		}
 
-		ret = dm_i2c_probe(bus, FT5336_TOUCH_I2C_ADDR, 0, &i2c_dev);
-		if (ret)
-			env_set("fdt_file", "imx8mm-pico-pi.dtb");
-		else
-			env_set("fdt_file", "imx8mm-pico-pi-ili9881c.dtb");
+		baseboard = env_get("baseboard");
+		if (baseboard && !strcmp(baseboard, "undefined")) {
+			if (!dm_i2c_probe(bus, PCA9555_23_I2C_ADDR, 0, &i2c_dev) && \
+			!dm_i2c_probe(bus, PCA9555_26_I2C_ADDR, 0, &i2c_dev) )
+				env_set("baseboard", "wizard");
+			else
+				env_set("baseboard", "pi");
+
+			baseboard = env_get("baseboard");
+		}
+		strcpy(str_fdtfile, "imx8mm-pico-");
+		strcat(str_fdtfile, baseboard);
+		strcat(str_fdtfile, ".dtb");
+		env_set("fdt_file", str_fdtfile);
 	}
 
 #ifdef CONFIG_ENV_IS_IN_MMC
