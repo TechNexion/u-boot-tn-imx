@@ -243,3 +243,14 @@ int board_ehci_hcd_init(int port)
 	return 0;
 }
 
+/* This should be defined for each board */
+__weak int mmc_map_to_kernel_blk(int dev_no)
+{
+    return dev_no;
+}
+
+int board_mmc_get_env_dev(int devno)
+{
+    return 0;
+}
+

@@ -39,7 +39,7 @@
 /* Define the payload for FAT/EXT support */
 #if defined(CONFIG_SPL_FS_FAT) || defined(CONFIG_SPL_FS_EXT4)
 # ifdef CONFIG_OF_CONTROL
-#  define CONFIG_SPL_FS_LOAD_PAYLOAD_NAME	"u-boot-dtb.img"
+#  define CONFIG_SPL_FS_LOAD_PAYLOAD_NAME	"u-boot.img"
 # else
 #  define CONFIG_SPL_FS_LOAD_PAYLOAD_NAME	"u-boot.img"
 # endif

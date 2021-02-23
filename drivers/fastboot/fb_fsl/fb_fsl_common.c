@@ -355,6 +355,7 @@ void fastboot_setup(void)
 	struct tag_serialnr serialnr;
 	char serial[17];
 
+	serialnr.high = 0; serialnr.low = 0;
 	get_board_serial(&serialnr);
 	sprintf(serial, "%08x%08x", serialnr.high, serialnr.low);
 	env_set("serial#", serial);
