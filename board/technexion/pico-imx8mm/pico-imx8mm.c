@@ -304,15 +304,13 @@ int detect_baseboard(void)
 		}
 
 		baseboard = env_get("baseboard");
-		if (baseboard && !strcmp(baseboard, "undefined")) {
-			if (!dm_i2c_probe(bus, PCA9555_23_I2C_ADDR, 0, &i2c_dev) && \
-			!dm_i2c_probe(bus, PCA9555_26_I2C_ADDR, 0, &i2c_dev) )
-				env_set("baseboard", "wizard");
-			else
-				env_set("baseboard", "pi");
+		if (!dm_i2c_probe(bus, PCA9555_23_I2C_ADDR, 0, &i2c_dev) && \
+		!dm_i2c_probe(bus, PCA9555_26_I2C_ADDR, 0, &i2c_dev) )
+			env_set("baseboard", "wizard");
+		else
+			env_set("baseboard", "pi");
+		baseboard = env_get("baseboard");
 
-			baseboard = env_get("baseboard");
-		}
 		strcpy(str_fdtfile, "imx8mm-pico-");
 		strcat(str_fdtfile, baseboard);
 		strcat(str_fdtfile, ".dtb");

@@ -103,7 +103,7 @@
 	"loadbootscript=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${script};\0" \
 	"bootscript=echo Running bootscript from mmc ...; " \
 		"source\0" \
-	"baseboard=undefined\0" \
+	"baseboard=autodetect\0" \
 	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
 	"loadfdt=" \
 		"echo Loading fdt_file ${fdt_file}...; " \
