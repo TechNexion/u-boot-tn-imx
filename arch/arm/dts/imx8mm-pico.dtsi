@@ -157,12 +157,7 @@
 };
 
 &usbotg1 {
-	dr_mode = "otg";
-	hnp-disable;
-	srp-disable;
-	adp-disable;
-	picophy,pre-emp-curr-control = <3>;
-	picophy,dc-vol-level-adjust = <7>;
+	dr_mode = "peripheral";
 	status = "okay";
 };
 
