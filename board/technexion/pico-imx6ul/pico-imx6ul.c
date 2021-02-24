@@ -46,6 +46,8 @@ DECLARE_GLOBAL_DATA_PTR;
 	PAD_CTL_PKE | PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm)
 
 #define RMII_PHY_RESET IMX_GPIO_NR(1, 28)
+#define DDR_TYPE_DET IMX_GPIO_NR(5, 1)
+
 
 static iomux_v3_cfg_t const fec_pads[] = {
 	MX6_PAD_ENET1_TX_EN__ENET2_MDC		| MUX_PAD_CTRL(MDIO_PAD_CTRL),
@@ -60,6 +62,16 @@ static iomux_v3_cfg_t const fec_pads[] = {
 	MX6_PAD_ENET2_RX_ER__ENET2_RX_ER	| MUX_PAD_CTRL(ENET_PAD_CTRL),
 	MX6_PAD_UART4_TX_DATA__GPIO1_IO28	| MUX_PAD_CTRL(NO_PAD_CTRL),
 };
+
+static iomux_v3_cfg_t const ddr_type_detection_pads[] = {
+	/* ddr type detection */
+	MX6_PAD_SNVS_TAMPER1__GPIO5_IO01 | MUX_PAD_CTRL(NO_PAD_CTRL),
+};
+
+static void setup_iomux_ddr_type_detection(void)
+{
+	SETUP_IOMUX_PADS(ddr_type_detection_pads);
+}
 
 static void setup_iomux_fec(void)
 {
@@ -269,6 +281,66 @@ int board_init(void)
 	setup_lcd();
 #endif
 	return 0;
+}
+
+int check_mmc_autodetect(void)
+{
+        char *autodetect_str = env_get("mmcautodetect");
+
+        if ((autodetect_str != NULL) && 
+                (strcmp(autodetect_str, "yes") == 0)) {
+                return 1;
+        }
+
+        return 0;
+}
+
+int mmc_map_to_kernel_blk(int dev_no)
+{
+        return dev_no;
+}
+
+void board_late_mmc_init(void)
+{
+        char cmd[32];
+        char mmcblk[32];
+        u32 dev_no = mmc_get_env_dev();
+
+        if (!check_mmc_autodetect())
+                return;
+
+        env_set_ulong("mmcdev", dev_no);
+
+        /* Set mmcblk env */
+        sprintf(mmcblk, "/dev/mmcblk%dp2 rootwait rw",
+                mmc_map_to_kernel_blk(dev_no));
+        env_set("mmcroot", mmcblk);
+
+        sprintf(cmd, "mmc dev %d", dev_no);
+        run_command(cmd, 0);
+}
+
+int board_late_init(void)
+{
+#ifdef CONFIG_ENV_IS_IN_MMC
+        board_late_mmc_init();
+#endif /* CONFIG_ENV_IS_IN_MMC */
+
+        set_wdog_reset((struct wdog_regs *)WDOG1_BASE_ADDR);
+
+#ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
+        env_set("som", get_som_type());
+
+        setup_iomux_ddr_type_detection();
+        gpio_direction_input(DDR_TYPE_DET);
+
+        if (!gpio_get_value(DDR_TYPE_DET))
+                env_set("memdet", "512MB");
+        else
+                env_set("memdet", "256MB");
+#endif
+
+        return 0;
 }
 
 int checkboard(void)
