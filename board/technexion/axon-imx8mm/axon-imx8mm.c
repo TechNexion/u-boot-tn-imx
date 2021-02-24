@@ -258,8 +258,34 @@ void board_late_mmc_env_init(void)
 	run_command(cmd, 0);
 }
 
+#define EXPANSION_IC_I2C_BUS 2
+#define EXPANSION_IC_I2C_ADDR 0x23
+
 int board_late_init(void)
 {
+	char *fdt_file, str_fdtfile[64];
+	struct udevice *bus;
+	struct udevice *i2c_dev = NULL;
+	int ret, i;
+
+	fdt_file = env_get("fdt_file");
+	if (fdt_file && !strcmp(fdt_file, "undefined")) {
+		ret = uclass_get_device_by_seq(UCLASS_I2C, EXPANSION_IC_I2C_BUS, &bus);
+		if (ret) {
+			printf("%s: Can't find bus\n", __func__);
+			return -EINVAL;
+		}
+
+		ret = dm_i2c_probe(bus, EXPANSION_IC_I2C_ADDR, 0, &i2c_dev);
+		if (ret)
+			strcpy(str_fdtfile, "imx8mm-axon-pi");
+		else
+			strcpy(str_fdtfile, "imx8mm-axon-wizard");
+
+		strcat(str_fdtfile, ".dtb");
+		env_set("fdt_file", str_fdtfile);
+	}
+
 #ifdef CONFIG_ENV_IS_IN_MMC
 	board_late_mmc_env_init();
 #endif
