@@ -187,14 +187,12 @@ static void spl_dram_init(void)
 	}
 }
 
-#if 0 //the instance where in soc.c
 /* General Purpose Registers */
-void gpr_init(void)
+void gpr_setup(void)
 {
 	struct iomuxc_gpr_base_regs *gpr_regs = (struct iomuxc_gpr_base_regs *)IOMUXC_GPR_BASE_ADDR;
 	writel(0x4F400005, &gpr_regs->gpr[1]);
 }
-#endif
 
 void board_init_f(ulong dummy)
 {
@@ -203,7 +201,7 @@ void board_init_f(ulong dummy)
 
 	ccgr_init();
 
-	gpr_init();
+	gpr_setup();
 
 	/* iomux and setup of i2c */
 	board_early_init_f();
