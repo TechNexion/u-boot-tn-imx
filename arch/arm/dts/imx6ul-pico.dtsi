@@ -7,7 +7,7 @@
 //	   Tapani Utriainen <tapani@technexion.com>
 /dts-v1/;
 
-#include "imx6ul.dtsi"
+#include "imx6ull.dtsi"
 
 / {
 	/* Will be filled by the bootloader */
