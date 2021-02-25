@@ -10,19 +10,19 @@
 #ifdef CONFIG_SPL
 /*
  * see Figure 8-3 in IMX6DQ/IMX6SDL Reference manuals:
- *  - IMX6SDL OCRAM (IRAM) is from 0x00907000 to 0x0091FFFF
+ *  - IMX6SDL OCRAM (IRAM) is from 0x00908800 to 0x0091FFFF
  *  - IMX6DQ has 2x IRAM of IMX6SDL but we intend to support IMX6SDL as well
  *  - BOOT ROM stack is at 0x0091FFB8
  *  - if icache/dcache is enabled (eFuse/strapping controlled) then the
  *    IMX BOOT ROM will setup MMU table at 0x00918000, therefore we need to
- *    fit between 0x00907000 and 0x00918000.
+ *    fit between 0x00908800 and 0x00918000.
  *  - Additionally the BOOT ROM loads what they consider the firmware image
  *    which consists of a 4K header in front of us that contains the IVT, DCD
- *    and some padding thus 'our' max size is really 0x00908000 - 0x00918000
- *    or 64KB
+ *    and some padding thus 'our' max size is really 0x00908800 - 0x00918000
+ *    or 62KB
  */
-#define CONFIG_SPL_TEXT_BASE		0x00908000
-#define CONFIG_SPL_MAX_SIZE		0x10000
+#define CONFIG_SPL_TEXT_BASE		0x00908800
+#define CONFIG_SPL_MAX_SIZE		0xF800 /* 62 KB */
 #define CONFIG_SPL_STACK		0x0091FFB8
 /*
  * Pad SPL to 68KB (4KB header + 64KB max size). This allows to write the
