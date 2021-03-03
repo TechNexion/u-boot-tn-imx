@@ -680,6 +680,8 @@ static void set_sysctl(struct fsl_esdhc_priv *priv, struct mmc *mmc, uint clock)
 	if (ret)
 		pr_warn("fsl_esdhc_imx: Internal clock never stabilised.\n");
 
+	udelay(1000);
+
 #ifdef CONFIG_FSL_USDHC
 	esdhc_setbits32(&regs->vendorspec, VENDORSPEC_PEREN | VENDORSPEC_CKEN);
 #else
@@ -956,6 +958,8 @@ static int esdhc_set_ios_common(struct fsl_esdhc_priv *priv, struct mmc *mmc)
 
 	if (priv->clock != clock)
 		set_sysctl(priv, mmc, clock);
+
+	udelay(1000);
 
 #ifdef MMC_SUPPORTS_TUNING
 	if (mmc->clk_disable) {
