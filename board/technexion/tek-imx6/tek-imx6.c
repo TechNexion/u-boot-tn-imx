@@ -452,7 +452,7 @@ struct touth_device {
 };
 
 static struct touth_device touch_matches[] = {
-	{0x0eef, "eGalaxTouch EXC3146-10"},
+	{0x0eef, "eGalaxTouch EXC3146"},
 	{0x0eef, "eGalaxTouch EXC3160-15"},
 	{0x0eef, "eGalaxTouch P80H60 1563"},
 	{0x0eef, "eGalaxTouch EXC3000-08"},
@@ -533,26 +533,6 @@ static void enable_fwadapt_7wvga(struct display_info_t const *dev)
 }
 
 struct display_info_t const displays[] = {{
-	.bus	= -1,
-	.addr	= 0,
-	.pixfmt = IPU_PIX_FMT_RGB24,
-	.detect = NULL,
-	.enable = enable_lvds,
-	.mode	= {
-		.name           = "hj070na",
-		.refresh        = 60,
-		.xres           = 1024,
-		.yres           = 600,
-		.pixclock       = 15385,
-		.left_margin    = 220,
-		.right_margin   = 40,
-		.upper_margin   = 21,
-		.lower_margin   = 7,
-		.hsync_len      = 60,
-		.vsync_len      = 10,
-		.sync           = FB_SYNC_EXT,
-		.vmode          = FB_VMODE_NONINTERLACED
-} }, {
 	.bus	= 1,
 	.addr	= 0,
 	.pixfmt = IPU_PIX_FMT_RGB24,
@@ -782,7 +762,7 @@ int board_late_init(void)
 
 	if ((s = env_get ("fdtfile_autodetect")) != NULL) {
 		if (strncmp (s, "off", 3) != 0) {
-			if(detect_usb(&displays[2]) || detect_usb(&displays[3])) {		// detect 15-inch panel
+			if(detect_usb(&displays[1]) || detect_usb(&displays[2])) {		// detect 15-inch panel
 				strncpy(s, "-15inch", 7);
 			} else
 				s[0] = 0;
