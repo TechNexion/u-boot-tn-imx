@@ -6,8 +6,8 @@
  *
  */
 
-#ifndef __IMX8MP_EDM_G_H
-#define __IMX8MP_EDM_G_H
+#ifndef __EDM_G_IMX8MP_H
+#define __EDM_G_IMX8MP_H
 
 #include <linux/sizes.h>
 #include <asm/arch/imx-regs.h>
@@ -25,7 +25,7 @@
 #ifdef CONFIG_SPL_BUILD
 #define CONFIG_SPL_STACK		0x187FF0
 #define CONFIG_SPL_BSS_START_ADDR      0x0095e000
-#define CONFIG_SPL_BSS_MAX_SIZE        0x2000	/* 8 KB */
+#define CONFIG_SPL_BSS_MAX_SIZE        SZ_8K	/* 8 KB */
 #define CONFIG_SYS_SPL_MALLOC_START    0x42200000
 #define CONFIG_SYS_SPL_MALLOC_SIZE     SZ_512K	/* 512 KB */
 
@@ -77,6 +77,9 @@
 
 #endif
 
+/* M7 Specific */
+#define SYS_AUXCORE_BOOTDATA_TCM    0x007E0000
+
 #define JAILHOUSE_ENV \
 	"jh_clk= \0 " \
 	"jh_mmcboot=setenv fdt_file imx8mp-evk-root.dtb;" \
@@ -108,6 +111,11 @@
 	"fdt_file=" CONFIG_DEFAULT_FDT_FILE "\0" \
 	"initrd_addr=0x43800000\0"		\
 	"initrd_high=0xffffffffffffffff\0" \
+	"m7image=hello_world.bin\0" \
+	"m7loadaddr="__stringify(SYS_AUXCORE_BOOTDATA_TCM)"\0" \
+	"m7boot=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${m7image}; " \
+	"cp.b ${loadaddr} ${m7loadaddr} ${filesize}; " \
+	"dcache flush; bootaux ${m7loadaddr}\0" \
 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
 	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
 	"mmcroot=" CONFIG_MMCROOT " rootwait rw\0" \
@@ -197,12 +205,12 @@
 /* Size of malloc() pool */
 #define CONFIG_SYS_MALLOC_LEN		SZ_32M
 
-/* Totally 6GB DDR */
+/* Totally 8GB DDR */
 #define CONFIG_SYS_SDRAM_BASE		0x40000000
 #define PHYS_SDRAM			0x40000000
 #define PHYS_SDRAM_SIZE			0xC0000000	/* 3 GB */
 #define PHYS_SDRAM_2			0x100000000
-#define PHYS_SDRAM_2_SIZE		0xC0000000	/* 3 GB */
+#define PHYS_SDRAM_2_SIZE		0x140000000	/* 5 GB */
 
 #define CONFIG_SYS_MEMTEST_START	PHYS_SDRAM
 #define CONFIG_SYS_MEMTEST_END		(CONFIG_SYS_MEMTEST_START + \
@@ -214,7 +222,7 @@
 #define CONFIG_SYS_PROMPT_HUSH_PS2	"> "
 #define CONFIG_SYS_CBSIZE		2048
 #define CONFIG_SYS_MAXARGS		64
-#define CONFIG_SYS_BARGSIZE CONFIG_SYS_CBSIZE
+#define CONFIG_SYS_BARGSIZE		CONFIG_SYS_CBSIZE
 #define CONFIG_SYS_PBSIZE		(CONFIG_SYS_CBSIZE + \
 					sizeof(CONFIG_SYS_PROMPT) + 16)
 
