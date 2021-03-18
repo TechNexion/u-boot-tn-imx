@@ -1,0 +1,219 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright 2020 TechNexion Ltd.
+ *
+ * Author: Ray Chang <ray.chang@technexion.com>
+ *
+ */
+
+/dts-v1/;
+
+#include "imx8mm-flex.dtsi"
+
+/ {
+	model = "TechNexion FLEX-IMX8MM and WIZARD baseboard";
+	compatible = "fsl,imx8mm-flex", "fsl,imx8mm";
+
+	usb_hub_reset: usb-hub-reset {
+		compatible = "gpio-reset";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_usb_hub_reset>;
+		reset-gpios = <&gpio1 7 GPIO_ACTIVE_LOW>;
+		reset-delay-us = <10>;
+		#reset-cells = <0>;
+	};
+
+	regulators {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		reg_usdhc2_vmmc: regulator-usdhc2 {
+			pinctrl-names = "default";
+			pinctrl-0 = <&pinctrl_usdhc2_gpio>;
+			compatible = "regulator-fixed";
+			regulator-name = "SD_3V3";
+			regulator-min-microvolt = <3300000>;
+			regulator-max-microvolt = <3300000>;
+			gpio = <&gpio2 19 GPIO_ACTIVE_HIGH>;
+			off-on-delay = <20000>;
+			enable-active-high;
+		};
+
+		reg_usb_otg_vbus: usb_otg_vbus {
+			pinctrl-names = "default";
+			pinctrl-0 = <&pinctrl_otg_vbus>;
+			compatible = "regulator-fixed";
+			regulator-name = "usb_otg_vbus";
+			regulator-min-microvolt = <5000000>;
+			regulator-max-microvolt = <5000000>;
+			gpio = <&gpio1 9 GPIO_ACTIVE_LOW>;
+		};
+
+		reg_backlight_pwr: regulator_blpwr {
+			pinctrl-names = "default";
+			pinctrl-0 = <&pinctrl_backlight_pwr>;
+			compatible = "regulator-fixed";
+			regulator-name = "backlight_pwr";
+			regulator-min-microvolt = <5000000>;
+			regulator-max-microvolt = <5000000>;
+			gpio = <&gpio1 12 GPIO_ACTIVE_HIGH>;
+			enable-active-high;
+		};
+	};
+
+	leds {
+		compatible = "gpio-leds";
+
+		led {
+			label = "gpio-led";
+			gpios = <&pca9555_23 7 GPIO_ACTIVE_LOW>;
+		};
+	};
+
+	dsi_host: dsi-host {
+		compatible = "samsung,sec-mipi-dsi";
+		status = "okay";
+	};
+
+	ili9881c_panel {
+		compatible = "ilitek,ili9881c";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_mipi_dsi_rst>;
+		power-supply = <&reg_backlight_pwr>;
+		reset-gpio = <&gpio1 11 GPIO_ACTIVE_LOW>;
+		backlight-gpio = <&gpio5 5 GPIO_ACTIVE_LOW>;
+		dsi-lanes = <4>;
+		video-mode = <2>;	/* 0: burst mode
+					 * 1: non-burst mode with sync event
+					 * 2: non-burst mode with sync pulse
+					 */
+		status = "okay";
+
+		port {
+			ili9881c_from_dsim: endpoint {
+				remote-endpoint = <&dsim_to_ili9881c>;
+			};
+		};
+	};
+};
+
+&lcdif {
+	enable_polarity_low;
+	/delete-property/ assigned-clocks;
+	/delete-property/ assigned-clock-parents;
+	/delete-property/ assigned-clock-rates;
+	display = <&display0>;
+	status = "okay";
+
+	display0: display@0 {
+		bits-per-pixel = <24>;
+		bus-width = <24>;
+	};
+};
+
+&mipi_dsi {
+	/delete-property/ assigned-clocks;
+	/delete-property/ assigned-clock-parents;
+	/delete-property/ assigned-clock-rates;
+	status = "okay";
+
+	port@1 {
+		dsim_to_ili9881c: endpoint {
+			remote-endpoint = <&ili9881c_from_dsim>;
+		};
+	};
+};
+
+&iomuxc {
+	pinctrl_otg_vbus: otgvbusgrp {
+		fsl,pins = <
+			MX8MM_IOMUXC_GPIO1_IO09_GPIO1_IO9	0x19 /* USB OTG VBUS Enable */
+		>;
+	};
+
+	pinctrl_backlight_pwr: backlight_pwrgrp {
+		fsl,pins = <
+			MX8MM_IOMUXC_GPIO1_IO12_GPIO1_IO12	0x19
+			MX8MM_IOMUXC_SPDIF_EXT_CLK_GPIO5_IO5	0x16
+		>;
+	};
+
+	pinctrl_mipi_dsi_rst: mipi_dsi_rstgrp {
+		fsl,pins = <
+			MX8MM_IOMUXC_GPIO1_IO11_GPIO1_IO11	0x16 /* DSI RST */
+		>;
+	};
+
+	pinctrl_pca9555_23: pca9555_23grp {
+		fsl,pins = <
+			MX8MM_IOMUXC_SAI5_RXD3_GPIO3_IO24	0x19 /* GPIO_P248 */
+		>;
+	};
+
+	pinctrl_pca9555_25: pca9555_25grp {
+		fsl,pins = <
+			MX8MM_IOMUXC_SAI5_MCLK_GPIO3_IO25	0x19 /* GPIO_P250 */
+		>;
+	};
+
+	pinctrl_clix_bt_ctrl: clixbt_ctrlgrp {
+		fsl,pins = <
+			MX8MM_IOMUXC_ECSPI2_SCLK_GPIO5_IO10	0x41 /* CLIX_BT_HOST_WAKE */
+			MX8MM_IOMUXC_ECSPI2_MOSI_GPIO5_IO11	0x41 /* CLIX_BT_REG_ON */
+		>;
+	};
+
+	pinctrl_clix_wifi_ctrl: clixwifi_ctrlgrp {
+		fsl,pins = <
+			MX8MM_IOMUXC_ECSPI2_MISO_GPIO5_IO12	0x41 /* CLIX_WL_HOST_WAKE */
+			MX8MM_IOMUXC_ECSPI2_SS0_GPIO5_IO13	0x41 /* CLIX_WL_REG_ON */
+		>;
+	};
+};
+
+&i2c3 {
+	status = "okay";
+
+	pca9555_23: pca9555_23@23 {
+		compatible = "nxp,pca9555";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_pca9555_23>;
+		interrupt-parent = <&gpio3>;
+		interrupts = <24 IRQ_TYPE_LEVEL_LOW>;
+		reg =<0x23>;
+		gpio-controller;
+		#gpio-cells = <2>;
+		interrupt-controller;
+		#interrupt-cells = <2>;
+	};
+
+	pca9555_25: pca9555_25@25 {
+		compatible = "nxp,pca9555";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_pca9555_25>;
+		interrupt-parent = <&gpio3>;
+		interrupts = <25 IRQ_TYPE_LEVEL_LOW>;
+		reg =<0x25>;
+		gpio-controller;
+		#gpio-cells = <2>;
+		interrupt-controller;
+		#interrupt-cells = <2>;
+	};
+};
+
+&usbotg1 {
+	dr_mode = "peripheral";
+	status = "okay";
+};
+
+&usbotg2 {
+	dr_mode = "host";
+	status = "okay";
+};
+
+/* SD card on Baseboard */
+&usdhc2 {
+	vmmc-supply = <&reg_usdhc2_vmmc>;
+	status = "okay";
+};

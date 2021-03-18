@@ -1,0 +1,12 @@
+if TARGET_FLEX_IMX8MM
+
+config SYS_BOARD
+	default "flex-imx8mm"
+
+config SYS_VENDOR
+	default "technexion"
+
+config SYS_CONFIG_NAME
+	default "flex-imx8mm"
+
+endif
