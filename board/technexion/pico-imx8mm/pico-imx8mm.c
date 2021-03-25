@@ -284,6 +284,7 @@ void board_late_mmc_env_init(void)
 
 #define FT5336_TOUCH_I2C_BUS 2
 #define FT5336_TOUCH_I2C_ADDR 0x38
+#define ADV7535_HDMI_I2C_ADDR 0x3d
 #define PCA9555_23_I2C_ADDR 0x23
 #define PCA9555_26_I2C_ADDR 0x26
 #define EXPANSION_IC_I2C_BUS 2
@@ -342,17 +343,37 @@ int detect_display_panel(void)
 {
 	struct udevice *bus = NULL;
 	struct udevice *i2c_dev = NULL;
-	int ret;
+	int ret, touch_id;
 
 	ret = uclass_get_device_by_seq(UCLASS_I2C, FT5336_TOUCH_I2C_BUS, &bus);
 	if (ret) {
 		printf("%s: Can't find bus\n", __func__);
 		return -EINVAL;
 	}
-	/* detect MIPI 5 inch panel(ILI9881C) */
+	/* detect different MIPI panel by touch controller */
 	ret = dm_i2c_probe(bus, FT5336_TOUCH_I2C_ADDR, 0, &i2c_dev);
-	if (! ret)
-		add_dtoverlay("ili9881c");
+	if (! ret) {
+		touch_id = dm_i2c_reg_read(i2c_dev, 0xA3);
+		switch (touch_id) {
+		case 0x54:
+			add_dtoverlay("ili9881c");
+			break;
+		case 0x58:
+			add_dtoverlay("g080uan01");
+			break;
+		case 0x59:
+			add_dtoverlay("g101uan02");
+			break;
+		default:
+			printf("Unknown panel ID!\r\n");
+		}
+	}
+
+	/* detect MIPI2HDMI controller */
+	ret = dm_i2c_probe(bus, ADV7535_HDMI_I2C_ADDR, 0, &i2c_dev);
+	if (! ret) {
+		add_dtoverlay("mipi2hdmi-adv7535");
+	}
 
 	return 0;
 }
