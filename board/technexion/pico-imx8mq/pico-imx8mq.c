@@ -313,56 +313,149 @@ int board_init(void)
 
 int board_mmc_get_env_dev(int devno)
 {
-    return devno;
+	return devno;
 }
 
 static int check_mmc_autodetect(void)
 {
-    char *autodetect_str = env_get("mmcautodetect");
+	char *autodetect_str = env_get("mmcautodetect");
 
-    if ((autodetect_str != NULL) &&
-        (strcmp(autodetect_str, "yes") == 0)) {
-        return 1;
-    }
+	if ((autodetect_str != NULL) &&
+		(strcmp(autodetect_str, "yes") == 0)) {
+		return 1;
+	}
 
-    return 0;
+	return 0;
 }
 
 /* This should be defined for each board */
 __weak int mmc_map_to_kernel_blk(int dev_no)
 {
-    return dev_no;
+	return dev_no;
 }
 
 void board_late_mmc_env_init(void)
 {
-    char cmd[32];
-    char mmcblk[32];
-    u32 dev_no = mmc_get_env_dev();
+	char cmd[32];
+	char mmcblk[32];
+	u32 dev_no = mmc_get_env_dev();
 
-    if (!check_mmc_autodetect())
-        return;
+	if (!check_mmc_autodetect())
+		return;
 
-    env_set_ulong("mmcdev", dev_no);
+	env_set_ulong("mmcdev", dev_no);
 
-    /* Set mmcblk env */
-    sprintf(mmcblk, "/dev/mmcblk%dp2 rootwait rw",
-        mmc_map_to_kernel_blk(dev_no));
-    env_set("mmcroot", mmcblk);
+	/* Set mmcblk env */
+	sprintf(mmcblk, "/dev/mmcblk%dp2 rootwait rw",
+		mmc_map_to_kernel_blk(dev_no));
+	env_set("mmcroot", mmcblk);
 
-    sprintf(cmd, "mmc dev %d", dev_no);
-    run_command(cmd, 0);
+	sprintf(cmd, "mmc dev %d", dev_no);
+	run_command(cmd, 0);
+}
+
+#define FT5336_TOUCH_I2C_BUS 2
+#define FT5336_TOUCH_I2C_ADDR 0x38
+#define PCA9555_23_I2C_ADDR 0x23
+#define PCA9555_26_I2C_ADDR 0x26
+#define EXPANSION_IC_I2C_BUS 2
+
+int detect_baseboard(void)
+{
+	struct udevice *bus = NULL;
+	struct udevice *i2c_dev = NULL;
+	int ret;
+	char *fdt_file, *baseboard, str_fdtfile[64];
+
+	fdt_file = env_get("fdt_file");
+	if (fdt_file && !strcmp(fdt_file, "undefined")) {
+		ret = uclass_get_device_by_seq(UCLASS_I2C, EXPANSION_IC_I2C_BUS, &bus);
+		if (ret) {
+			printf("%s: Can't find bus\n", __func__);
+			return -EINVAL;
+		}
+
+		baseboard = env_get("baseboard");
+		if (!dm_i2c_probe(bus, PCA9555_23_I2C_ADDR, 0, &i2c_dev) && \
+		!dm_i2c_probe(bus, PCA9555_26_I2C_ADDR, 0, &i2c_dev) )
+			env_set("baseboard", "wizard");
+		else
+			env_set("baseboard", "pi");
+		baseboard = env_get("baseboard");
+
+		strcpy(str_fdtfile, "imx8mq-pico-");
+		strcat(str_fdtfile, baseboard);
+		strcat(str_fdtfile, ".dtb");
+		env_set("fdt_file", str_fdtfile);
+	}
+	return 0;
+
+}
+
+int add_dtoverlay(char *ov_name)
+{
+	char *dtoverlay, arr_dtov[64];
+
+	dtoverlay = env_get("dtoverlay");
+	if (dtoverlay) {
+		strcpy(arr_dtov, dtoverlay);
+		if (!strstr(arr_dtov, ov_name)) {
+			strcat(arr_dtov, " ");
+			strcat(arr_dtov, ov_name);
+			env_set("dtoverlay", arr_dtov);
+		}
+	} else
+		env_set("dtoverlay", ov_name);
+
+	return 0;
+}
+
+int detect_display_panel(void)
+{
+	struct udevice *bus = NULL;
+	struct udevice *i2c_dev = NULL;
+	int ret, touch_id;
+
+	ret = uclass_get_device_by_seq(UCLASS_I2C, FT5336_TOUCH_I2C_BUS, &bus);
+	if (ret) {
+		printf("%s: Can't find bus\n", __func__);
+		return -EINVAL;
+	}
+	/* detect different MIPI panel by touch controller */
+	ret = dm_i2c_probe(bus, FT5336_TOUCH_I2C_ADDR, 0, &i2c_dev);
+	if (! ret) {
+		touch_id = dm_i2c_reg_read(i2c_dev, 0xA3);
+		switch (touch_id) {
+		case 0x54:
+			add_dtoverlay("mipi-dcss-ili9881c");
+			break;
+		case 0x58:
+			add_dtoverlay("mipi-dcss-g080uan01");
+			break;
+		case 0x59:
+			add_dtoverlay("mipi-dcss-g101uan02");
+			break;
+		default:
+			printf("Unknown panel ID!\r\n");
+		}
+	}
+
+	return 0;
 }
 
 int board_late_init(void)
 {
-#ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
-	env_set("board_name", "EVK");
-	env_set("board_rev", "iMX8MQ");
-#endif
+
+	detect_baseboard();
+	detect_display_panel();
 
 #ifdef CONFIG_ENV_IS_IN_MMC
 	board_late_mmc_env_init();
+#endif
+
+#ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
+	env_set("board_name", "PICO");
+	env_set("board_rev", "iMX8MQ");
 #endif
 
 	return 0;
