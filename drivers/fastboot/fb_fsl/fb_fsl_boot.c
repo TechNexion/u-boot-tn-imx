@@ -851,20 +851,6 @@ int do_boota(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]) {
 	/* Combine cmdline and Print image info  */
 	if (gki_is_supported) {
 		check_image_arm64  = image_arm64((void *)(ulong)vendor_boot_hdr->kernel_addr);
-		android_image_get_kernel_v3(hdr_v3, vendor_boot_hdr);
-		addr = vendor_boot_hdr->kernel_addr;
-		printf("kernel   @ %08x (%d)\n", vendor_boot_hdr->kernel_addr, hdr_v3->kernel_size);
-		printf("ramdisk  @ %08x (%d)\n", vendor_boot_hdr->ramdisk_addr,
-						vendor_boot_hdr->vendor_ramdisk_size + hdr_v3->ramdisk_size);
-	} else {
-		check_image_arm64  = image_arm64((void *)(ulong)hdr->kernel_addr);
-		if (check_image_arm64) {
-			android_image_get_kernel(hdr, 0, NULL, NULL);
-			addr = hdr->kernel_addr;
-		} else {
-			addr = (ulong)(hdr->kernel_addr - hdr->page_size);
-		}
-
 #ifdef CONFIG_OF_LIBFDT_OVERLAY
 		ulong *dtbo_addr = NULL;
 		struct dt_table_entry *dt_entry_overlay = NULL;
@@ -892,6 +878,19 @@ int do_boota(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]) {
 			fdt_overlay_apply((void *)(ulong)fdt_addr, (void *)dtbo_addr);
 		}
 #endif
+		android_image_get_kernel_v3(hdr_v3, vendor_boot_hdr);
+		addr = vendor_boot_hdr->kernel_addr;
+		printf("kernel   @ %08x (%d)\n", vendor_boot_hdr->kernel_addr, hdr_v3->kernel_size);
+		printf("ramdisk  @ %08x (%d)\n", vendor_boot_hdr->ramdisk_addr,
+						vendor_boot_hdr->vendor_ramdisk_size + hdr_v3->ramdisk_size);
+	} else {
+		check_image_arm64  = image_arm64((void *)(ulong)hdr->kernel_addr);
+		if (check_image_arm64) {
+			android_image_get_kernel(hdr, 0, NULL, NULL);
+			addr = hdr->kernel_addr;
+		} else {
+			addr = (ulong)(hdr->kernel_addr - hdr->page_size);
+		}
 		printf("kernel   @ %08x (%d)\n", hdr->kernel_addr, hdr->kernel_size);
 		printf("ramdisk  @ %08x (%d)\n", hdr->ramdisk_addr, hdr->ramdisk_size);
 	}
