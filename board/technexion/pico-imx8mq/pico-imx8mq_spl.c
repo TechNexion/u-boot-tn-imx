@@ -238,7 +238,7 @@ int board_mmc_init(bd_t *bis)
 			gpio_direction_output(USDHC2_PWR_GPIO, 1);
 			break;
 		default:
-//			printf("Warning: you configured more USDHC controllers(%d) than supported by the board\n", i + 1);
+			printf("Warning: you configured more USDHC controllers(%d) than supported by the board\n", i + 1);
 			return -EINVAL;
 		}
 
@@ -291,23 +291,46 @@ void spl_board_init(void)
 #ifndef CONFIG_SPL_USB_SDP_SUPPORT
 	/* Serial download mode */
 	if (is_usb_boot()) {
-		//puts("Back to ROM, SDP\n");
+		puts("Back to ROM, SDP\n");
 		restore_boot_params();
 	}
 #endif
 
 	init_usb_clk();
 
-	//puts("Normal Boot\n");
+	puts("Normal Boot\n");
 }
 
 #ifdef CONFIG_SPL_LOAD_FIT
+#define PCA9555_23_I2C_ADDR 0x23
+#define PCA9555_26_I2C_ADDR 0x26
+#define EXPANSION_IC_I2C_BUS 2
+struct i2c_pads_info i2c_pad_info2 = {
+	.scl = {
+		.i2c_mode = IMX8MQ_PAD_I2C3_SCL__I2C3_SCL | PC,
+		.gpio_mode = IMX8MQ_PAD_I2C3_SCL__GPIO5_IO18 | PC,
+		.gp = IMX_GPIO_NR(5, 18),
+	},
+	.sda = {
+		.i2c_mode = IMX8MQ_PAD_I2C3_SDA__I2C3_SDA | PC,
+		.gpio_mode = IMX8MQ_PAD_I2C3_SDA__GPIO5_IO19 | PC,
+		.gp = IMX_GPIO_NR(5, 19),
+	},
+};
+
 int board_fit_config_name_match(const char *name)
 {
-	/* Just empty function now - can't decide what to choose */
-	//debug("%s: %s\n", __func__, name);
+	i2c_set_bus_num(EXPANSION_IC_I2C_BUS);
 
-	return 0;
+	if (!i2c_probe(PCA9555_23_I2C_ADDR) && !i2c_probe(PCA9555_26_I2C_ADDR)) {
+		if (!strcmp(name, "imx8mq-pico-wizard"))
+			return 0;
+	} else {
+		if (!strcmp(name, "imx8mq-pico-pi"))
+			return 0;
+	}
+
+	return -EINVAL;
 }
 #endif
 
@@ -330,16 +353,19 @@ void board_init_f(ulong dummy)
 
 	ret = spl_init();
 	if (ret) {
-//		debug("spl_init() failed: %d\n", ret);
+		debug("spl_init() failed: %d\n", ret);
 		hang();
 	}
 
 	enable_tzc380();
 
-    /* Adjust pmic voltage to 1.0V for 800M */
-    setup_i2c(I2C_PMIC, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1);
+	/* Adjust pmic voltage to 1.0V for 800M */
+	setup_i2c(I2C_PMIC, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1);
 
-    power_init_board();
+
+	setup_i2c(2, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info2);
+
+	power_init_board();
 
 	/* DDR initialization */
 	spl_dram_init();
@@ -349,7 +375,7 @@ void board_init_f(ulong dummy)
 
 int do_reset(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
-//	puts ("resetting ...\n");
+	puts ("resetting ...\n");
 
 	reset_cpu(WDOG1_BASE_ADDR);
 
