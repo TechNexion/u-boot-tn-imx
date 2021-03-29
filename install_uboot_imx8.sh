@@ -229,7 +229,7 @@ usage()
     ./install_uboot_imx8.sh -b imx8mq-edm-wizard.dtb -d /dev/sdX
 
     * PICO-IMX8MQ with PICO-PI-IMX8 baseDTBS:
-    ./install_uboot_imx8.sh -b imx8mq-pico-pi.dtb -d /dev/sdX
+    ./install_uboot_imx8.sh -b imx8mq-pico-pi.dtb -b imx8mq-pico-wizard.dtb -d /dev/sdX
 
     i.mx8MP:
     * AXON-IMX8MP:
