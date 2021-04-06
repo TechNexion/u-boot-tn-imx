@@ -620,6 +620,7 @@ dtb-y += \
 	imx6dl-mamoj.dtb \
 	imx6dl-nitrogen6x.dtb \
 	imx6dl-pico.dtb \
+	imx6dl-edm.dtb \
 	imx6dl-sabreauto.dtb \
 	imx6dl-sabreauto-ecspi.dtb \
 	imx6dl-sabreauto-gpmi-weim.dtb \
@@ -653,6 +654,7 @@ dtb-y += \
 	imx6q-nitrogen6x.dtb \
 	imx6q-novena.dtb \
 	imx6q-pico.dtb \
+	imx6q-edm.dtb \
 	imx6q-sabreauto.dtb \
 	imx6q-sabreauto-ecspi.dtb \
 	imx6q-sabreauto-gpmi-weim.dtb \
