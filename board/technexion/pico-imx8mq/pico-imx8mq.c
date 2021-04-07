@@ -22,6 +22,7 @@
 #include <asm/arch/sys_proto.h>
 #include <asm/mach-imx/gpio.h>
 #include <asm/mach-imx/mxc_i2c.h>
+#include <i2c.h>
 #include <asm/arch/clock.h>
 #include <spl.h>
 #include <usb.h>
@@ -356,6 +357,7 @@ void board_late_mmc_env_init(void)
 
 #define FT5336_TOUCH_I2C_BUS 2
 #define FT5336_TOUCH_I2C_ADDR 0x38
+#define ADV7535_HDMI_I2C_ADDR 0x3d
 #define PCA9555_23_I2C_ADDR 0x23
 #define PCA9555_26_I2C_ADDR 0x26
 #define EXPANSION_IC_I2C_BUS 2
@@ -438,6 +440,12 @@ int detect_display_panel(void)
 		default:
 			printf("Unknown panel ID!\r\n");
 		}
+	}
+
+	/* detect MIPI2HDMI controller */
+	ret = dm_i2c_probe(bus, ADV7535_HDMI_I2C_ADDR, 0, &i2c_dev);
+	if (! ret) {
+		add_dtoverlay("mipi2hdmi-adv7535");
 	}
 
 	return 0;
