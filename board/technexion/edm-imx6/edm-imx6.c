@@ -62,6 +62,10 @@ DECLARE_GLOBAL_DATA_PTR;
 
 static bool with_pmic = false;
 
+#if CONFIG_IS_ENABLED(DM_GPIO)
+static struct gpio_desc board_gpios_desc[1];
+#endif
+
 int dram_init(void)
 {
 	gd->ram_size = imx_ddr_size();
@@ -128,6 +132,28 @@ static iomux_v3_cfg_t const som_detection_pads[] = {
 	/* R149 */
 	IOMUX_PADS(PAD_EIM_EB0__GPIO2_IO28  | MUX_PAD_CTRL(NO_PAD_CTRL)),
 };
+
+#if CONFIG_IS_ENABLED(DM_GPIO)
+static int request_board_gpios(void)
+{
+	int node;
+
+	node = fdt_node_offset_by_compatible(gd->fdt_blob, 0,
+		"technexion,edm-gpios");
+	if (node < 0)
+		return -ENODEV;
+
+	return gpio_request_list_by_name_nodev(offset_to_ofnode(node),
+		"edm-gpios", board_gpios_desc,
+		ARRAY_SIZE(board_gpios_desc), GPIOD_IS_IN);
+}
+
+static int free_board_gpios(void)
+{
+	return gpio_free_list_nodev(board_gpios_desc,
+		ARRAY_SIZE(board_gpios_desc));
+}
+#endif
 
 static void setup_iomux_uart(void)
 {
@@ -233,9 +259,14 @@ static const char* form_type(void)
 	/*
 	 * EDM boots from i-NAND or SD1
 	 */
+#if CONFIG_IS_ENABLED(DM_GPIO)
+	request_board_gpios();
+	if (!dm_gpio_get_value(&board_gpios_desc[0])) {
+#else
 	gpio_direction_input(EDM_SOM_DET_R149);
 
 	if (!gpio_get_value(EDM_SOM_DET_R149)) {
+#endif
 		if (with_pmic) {
 			return STRING(edm1);
 		} else {
@@ -248,6 +279,9 @@ static const char* form_type(void)
 			return STRING(edm2-cf);
 		}
 	}
+#if CONFIG_IS_ENABLED(DM_GPIO)
+	free_board_gpios();
+#endif
 }
 
 /* setup board specific PMIC */
@@ -633,16 +667,6 @@ int board_phy_config(struct phy_device *phydev)
 	return 0;
 }
 
-int mmc_map_to_kernel_blk(int dev_no)
-{
-	return dev_no;
-}
-
-int board_mmc_get_env_dev(int dev_no)
-{
-	return dev_no;
-}
-
 /*
  * Do not overwrite the console
  * Use always serial for U-Boot console
@@ -655,8 +679,8 @@ int overwrite_console(void)
 #ifdef CONFIG_CMD_BMODE
 static const struct boot_mode board_boot_modes[] = {
 	/* 4 bit bus width */
-	{"mmc0",	  MAKE_CFGVAL(0x40, 0x30, 0x00, 0x00)},
-	{"mmc1",	  MAKE_CFGVAL(0x40, 0x20, 0x00, 0x00)},
+	{"sd0",		 MAKE_CFGVAL(0x40, 0x20, 0x00, 0x00)},
+	{"mmc2",	 MAKE_CFGVAL(0x60, 0x30, 0x00, 0x00)},
 	{NULL,	 0},
 };
 #endif
@@ -724,8 +748,9 @@ int board_init(void)
 
 int checkboard(void)
 {
-	printf("SOM: %s-%s\n", get_som_type(), form_type());
-	if (!gpio_get_value(EDM_SOM_DET_R149)) {
+	const char *form = form_type();
+	printf("SOM: %s-%s\n", get_som_type(), form);
+	if (!strncmp(form, "edm1", 4)) {
 		/* EDM1 */
 		printf("Available EDM1 baseboard: Fairy, Gnome, TC0700 \n");
 	} else {
