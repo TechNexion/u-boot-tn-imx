@@ -749,6 +749,8 @@ int board_fit_config_name_match(const char *name)
 {
 	if (is_mx6dq() && !strcmp(name, "imx6q-edm"))
 		return 0;
+	else if (is_mx6dqp() && !strcmp(name, "imx6qp-edm"))
+		return 0;
 	else if ((is_mx6dl() || is_mx6solo()) && !strcmp(name, "imx6dl-edm"))
 		return 0;
 
