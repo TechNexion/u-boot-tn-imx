@@ -70,7 +70,7 @@ static iomux_v3_cfg_t const ddr_type_detection_pads[] = {
 
 static void setup_iomux_ddr_type_detection(void)
 {
-	SETUP_IOMUX_PADS(ddr_type_detection_pads);
+	imx_iomux_v3_setup_multiple_pads(ddr_type_detection_pads, ARRAY_SIZE(ddr_type_detection_pads));
 }
 
 static void setup_iomux_fec(void)
@@ -332,6 +332,7 @@ int board_late_init(void)
         env_set("som", get_som_type());
 
         setup_iomux_ddr_type_detection();
+        gpio_request(DDR_TYPE_DET, "ddr_det");
         gpio_direction_input(DDR_TYPE_DET);
 
         if (!gpio_get_value(DDR_TYPE_DET))
@@ -345,7 +346,10 @@ int board_late_init(void)
 
 int checkboard(void)
 {
-	puts("Board: PICO-IMX6UL-EMMC\n");
+	char board_output[32] = {0};
+	sprintf(board_output, "Board: pico-%s\n", get_som_type());
+
+	puts(board_output);
 
 	return 0;
 }
