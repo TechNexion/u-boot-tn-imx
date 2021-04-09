@@ -121,6 +121,7 @@
 	"mmcdev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
 	CONFIG_DFU_ENV_SETTINGS \
 	"mmcpart=1\0" \
+	"mmcautodetect=yes\0" \
 	"silent=" __stringify(SILENT_ENABLE) "\0" \
 	"searchbootdev=" \
 		"if test ${bootdev} = MMC3; then " \
