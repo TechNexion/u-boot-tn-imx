@@ -167,11 +167,13 @@ static void setup_iomux_enet(void)
 	if (with_pmic) {
 		SETUP_IOMUX_PADS(enet_ar8035_power_pads);
 		/* enable AR8035 POWER */
+		gpio_request(ETH_PHY_AR8035_POWER, "enet_phy_power");
 		gpio_direction_output(ETH_PHY_AR8035_POWER, 0);
 	}
 	/* wait until 3.3V of PHY and clock become stable */
 	mdelay(10);
 	/* Reset AR8031/AR8035 PHY */
+	gpio_request(ETH_PHY_RESET, "enet_phy_reset");
 	gpio_direction_output(ETH_PHY_RESET, 0);
 	mdelay(10);
 	gpio_set_value(ETH_PHY_RESET, 1);
@@ -482,12 +484,15 @@ static void enable_lvds(struct display_info_t const *dev)
 
 	/* Enable Backlight - use GPIO for Brightness adjustment */
 	SETUP_IOMUX_PAD(PAD_SD4_DAT1__GPIO2_IO09 | MUX_PAD_CTRL(NO_PAD_CTRL));
+	gpio_request(IMX_GPIO_NR(2, 9), "backlight_enable");
 	gpio_direction_output(IMX_GPIO_NR(2, 9), 1);
 
 	SETUP_IOMUX_PAD(PAD_SD4_DAT0__GPIO2_IO08 | MUX_PAD_CTRL(NO_PAD_CTRL));
+	gpio_request(IMX_GPIO_NR(2, 8), "brightness");
 	gpio_direction_output(IMX_GPIO_NR(2, 8), 1);
 
 	SETUP_IOMUX_PAD(PAD_CSI0_DAT13__GPIO5_IO31 | MUX_PAD_CTRL(NO_PAD_CTRL));
+	gpio_request(IMX_GPIO_NR(5, 31), "lvds_vdden");
 	gpio_direction_output(IMX_GPIO_NR(5, 31), 1);
 }
 
@@ -495,6 +500,8 @@ static void enable_ft5x06_wvga(struct display_info_t const *dev)
 {
 	SETUP_IOMUX_PADS(ft5x06_wvga_pads);
 
+	gpio_request(IMX_GPIO_NR(2, 10), "parallel_enable");
+	gpio_request(IMX_GPIO_NR(2, 11), "parallel_brightness");
 	gpio_direction_output(IMX_GPIO_NR(2, 10), 1);
 	gpio_direction_output(IMX_GPIO_NR(2, 11), 1);
 }
