@@ -400,23 +400,75 @@ void board_late_mmc_env_init(void)
 	run_command(cmd, 0);
 }
 
-#define DISPLAY_NAME_HDMI        "HDMI"
-#define DISPLAY_NAME_MIPI2HDMI   "MIPI2HDMI"
-#define DISPLAY_NAME_MIPI5       "ILI9881C_LCD"
-#define DISPLAY_NAME_MIPI8       "G080UAN01_LCD"
-#define DISPLAY_NAME_MIPI10      "G101UAN02_LCD"
-struct mipi_panel_id {
-	const char *panel_name;
-	int id;
-	const char *suffix;
-};
+int add_dtoverlay(char *ov_name)
+{
+	char *dtoverlay, arr_dtov[64];
+
+	dtoverlay = env_get("dtoverlay");
+	if (dtoverlay) {
+		strcpy(arr_dtov, dtoverlay);
+		if (!strstr(arr_dtov, ov_name)) {
+			strcat(arr_dtov, " ");
+			strcat(arr_dtov, ov_name);
+			env_set("dtoverlay", arr_dtov);
+		}
+	} else
+		env_set("dtoverlay", ov_name);
+
+	return 0;
+}
+
+#define FT5336_TOUCH_I2C_BUS 3
+#define FT5336_TOUCH_I2C_ADDR 0x38
+#define ADV7535_HDMI_I2C_ADDR 0x3d
+
+int detect_display_panel(void)
+{
+	struct udevice *bus = NULL;
+	struct udevice *i2c_dev = NULL;
+	int ret, touch_id;
+
+	ret = uclass_get_device_by_seq(UCLASS_I2C, FT5336_TOUCH_I2C_BUS, &bus);
+	if (ret) {
+		printf("%s: Can't find bus\n", __func__);
+		return -EINVAL;
+	}
+	/* detect different MIPI panel by touch controller */
+	ret = dm_i2c_probe(bus, FT5336_TOUCH_I2C_ADDR, 0, &i2c_dev);
+	if (! ret) {
+		touch_id = dm_i2c_reg_read(i2c_dev, 0xA3);
+		switch (touch_id) {
+		case 0x54:
+			add_dtoverlay("mipi-dcss-ili9881c");
+			break;
+		case 0x58:
+			add_dtoverlay("mipi-dcss-g080uan01");
+			break;
+		case 0x59:
+			add_dtoverlay("mipi-dcss-g101uan02");
+			break;
+		default:
+			printf("Unknown panel ID!\r\n");
+		}
+	}
+
+	/* detect MIPI2HDMI controller */
+	ret = dm_i2c_probe(bus, ADV7535_HDMI_I2C_ADDR, 0, &i2c_dev);
+	if (! ret) {
+		add_dtoverlay("mipi2hdmi-adv7535");
+	}
+
+	return 0;
+}
 
 int board_late_init(void)
 {
 	char *fdt_file, str_fdtfile[64];
+
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	env_set("board_name", "EDM-IMX8MQ");
 	env_set("board_rev", "iMX8MQ");
+	detect_display_panel();
 #endif
 
 	fdt_file = env_get("fdt_file");
