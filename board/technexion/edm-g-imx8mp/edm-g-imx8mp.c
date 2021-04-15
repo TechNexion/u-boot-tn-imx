@@ -107,6 +107,10 @@ int board_phys_sdram_size(phys_size_t *size)
 #ifdef CONFIG_OF_BOARD_SETUP
 int ft_board_setup(void *blob, bd_t *bd)
 {
+	const int *cell;
+	int offs;
+	uint32_t cma_size;
+	char *cmasize;
 #ifdef CONFIG_IMX8M_DRAM_INLINE_ECC
 	int rc;
 	phys_addr_t ecc0_start = 0xb0000000;
@@ -132,6 +136,16 @@ int ft_board_setup(void *blob, bd_t *bd)
 		return rc;
 	}
 #endif
+
+	offs = fdt_path_offset(blob, "/reserved-memory/linux,cma");
+	cell = fdt_getprop(blob, offs, "size", NULL);
+	cma_size = fdt32_to_cpu(cell[1]);
+	cmasize = env_get("cma_size");
+	if(cmasize || ((uint32_t)(mem_map[DRAM1_INDEX].size >> 1) < cma_size)) {
+		cma_size = env_get_ulong("cma_size", 10, 320 * 1024 * 1024);
+		cma_size = min((uint32_t)(mem_map[DRAM1_INDEX].size >> 1), cma_size);
+		fdt_setprop_u64(blob, offs, "size", (uint64_t)cma_size);
+	}
 
 	return 0;
 }
