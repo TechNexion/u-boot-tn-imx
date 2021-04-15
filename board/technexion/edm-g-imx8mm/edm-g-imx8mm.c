@@ -55,8 +55,10 @@ int board_early_init_f(void)
 
 static int ddr_size;
 extern struct mm_region *mem_map;
-#define DRAM1_INDEX 5 /* Correspond to the index of DRAM1 of imx8m_mem_map
-                         in arch/arm/mach-imx/imx8m/soc.c */
+/* The following index corresponds to the index of DRAM1 of imx8m_mem_map
+   in arch/arm/mach-imx/imx8m/soc.c */
+#define DRAM1_INDEX 5
+#define DRAM2_INDEX 6
 
 int board_phys_sdram_size(phys_size_t *size)
 {
@@ -70,21 +72,25 @@ int board_phys_sdram_size(phys_size_t *size)
 	**************************************************/
 	ddr_size = readl(MCU_BOOTROM_BASE_ADDR);
 
-	if (ddr_size == 0x4) {
-		*size = SZ_4G;
-		mem_map[DRAM1_INDEX].size=SZ_4G;
-	}
-	else if (ddr_size == 0x3) {
+	if (ddr_size == 0x5) { /* DRAM size: 8GB */
 		*size = SZ_3G;
 		mem_map[DRAM1_INDEX].size=SZ_3G;
+		mem_map[DRAM2_INDEX].size=SZ_5G;
 	}
-	else if (ddr_size == 0x2) {
+	else if (ddr_size == 0x4) { /* DRAM size: 4GB */
+		*size = SZ_3G;
+		mem_map[DRAM1_INDEX].size=SZ_3G;
+		mem_map[DRAM2_INDEX].size=SZ_1G;
+	}
+	else if (ddr_size == 0x2) { /* DRAM size: 2GB */
 		*size = SZ_2G;
 		mem_map[DRAM1_INDEX].size=SZ_2G;
+		mem_map[DRAM2_INDEX].size=0;
 	}
-	else if (ddr_size == 0x1) {
+	else if (ddr_size == 0x1) { /* DRAM size: 1GB */
 		*size = SZ_1G;
 		mem_map[DRAM1_INDEX].size=SZ_1G;
+		mem_map[DRAM2_INDEX].size=0;
 	}
 	else
 		puts("Unknown DDR type!!!\n");
