@@ -745,16 +745,16 @@ int board_late_init(void)
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	char *s;
 
-	env_set("som", get_som_type());
-
 	if ((s = env_get ("fdtfile_autodetect")) != NULL) {
 		if (strncmp (s, "off", 3) != 0) {
 			if (is_mx6dqp())
 				env_set("som", "imx6qp");
 			else if (is_mx6dq())
 				env_set("som", "imx6q");
+			else if (is_mx6sdl())
+				env_set("som", "imx6dl");
 			else
-				env_set("som", get_som_type());
+				printf("CPU type is not supported!!!\r\n");
 		}
 		env_set("form", form_type());
 	}
