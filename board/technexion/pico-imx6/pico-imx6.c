@@ -622,17 +622,16 @@ int board_late_init(void)
 	gpio_set_value(BT_NRST, 1);
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
-	env_set("som", get_som_type());
-#endif
-
 	if ((s = env_get ("fdtfile_autodetect")) != NULL) {
 		if (strncmp (s, "off", 3) != 0) {
 			if (is_mx6dqp())
 				env_set("som", "imx6qp");
 			else if (is_mx6dq())
 				env_set("som", "imx6q");
+			else if (is_mx6sdl())
+				env_set("som", "imx6dl");
 			else
-				env_set("som", get_som_type());
+				printf("CPU type is not supported!!!\r\n");
 		}
 	}
 
@@ -651,6 +650,7 @@ int board_late_init(void)
 			}
 		}
 	}
+#endif
 
 #ifdef CONFIG_CMD_BMODE
 	add_board_boot_modes(board_boot_modes);
