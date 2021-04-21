@@ -429,13 +429,13 @@ int detect_display_panel(void)
 		touch_id = dm_i2c_reg_read(i2c_dev, 0xA3);
 		switch (touch_id) {
 		case 0x54:
-			add_dtoverlay("mipi-dcss-ili9881c");
+			add_dtoverlay("ili9881c");
 			break;
 		case 0x58:
-			add_dtoverlay("mipi-dcss-g080uan01");
+			add_dtoverlay("g080uan01");
 			break;
 		case 0x59:
-			add_dtoverlay("mipi-dcss-g101uan02");
+			add_dtoverlay("g101uan02");
 			break;
 		default:
 			printf("Unknown panel ID!\r\n");
