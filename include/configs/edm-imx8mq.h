@@ -56,8 +56,6 @@
 #define CONFIG_REMAKE_ELF
 
 #define CONFIG_BOARD_POSTCLK_INIT
-/* Flat Device Tree Definitions */
-#define CONFIG_OF_BOARD_SETUP
 
 #undef CONFIG_CMD_EXPORTENV
 #undef CONFIG_CMD_IMLS

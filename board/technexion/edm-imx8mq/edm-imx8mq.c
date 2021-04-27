@@ -120,13 +120,6 @@ ulong board_get_usable_ram_top(ulong total_size)
         return gd->ram_top;
 }
 
-#ifdef CONFIG_OF_BOARD_SETUP
-int ft_board_setup(void *blob, bd_t *bd)
-{
-	return 0;
-}
-#endif
-
 #ifdef CONFIG_FEC_MXC
 #define FEC_RST_PAD IMX_GPIO_NR(1, 9)
 static iomux_v3_cfg_t const fec1_rst_pads[] = {
@@ -460,6 +453,28 @@ int detect_display_panel(void)
 
 	return 0;
 }
+
+#ifdef CONFIG_OF_BOARD_SETUP
+int ft_board_setup(void *blob, bd_t *bd)
+{
+	const int *cell;
+	int offs;
+	uint32_t cma_size;
+	char *cmasize;
+
+	offs = fdt_path_offset(blob, "/reserved-memory/linux,cma");
+	cell = fdt_getprop(blob, offs, "size", NULL);
+	cma_size = fdt32_to_cpu(cell[1]);
+	cmasize = env_get("cma_size");
+	if(cmasize || ((uint32_t)(mem_map[DRAM1_INDEX].size >> 1) < cma_size)) {
+		cma_size = env_get_ulong("cma_size", 10, 320 * 1024 * 1024);
+		cma_size = min((uint32_t)(mem_map[DRAM1_INDEX].size >> 1), cma_size);
+		fdt_setprop_u64(blob, offs, "size", (uint64_t)cma_size);
+	}
+
+	return 0;
+}
+#endif
 
 int board_late_init(void)
 {
