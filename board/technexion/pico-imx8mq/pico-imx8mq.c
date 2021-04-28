@@ -451,6 +451,40 @@ int detect_display_panel(void)
 	return 0;
 }
 
+struct camera_cfg {
+       u8 camera_index;
+       u8 i2c_bus_index;
+       u8 eeprom_i2c_addr;
+};
+
+const struct camera_cfg tevi_camera[] = {
+       {1, 1, 0x54},
+       {2, 2, 0x54},
+};
+
+#define NUMS(x)        (sizeof(x) / sizeof(x[0]))
+
+int detect_tevi_camera(void)
+{
+	struct udevice *bus = NULL;
+	struct udevice *i2c_dev = NULL;
+	int i, ret;
+
+	for (i = 0; i < NUMS(tevi_camera); i++) {
+	        ret = uclass_get_device_by_seq(UCLASS_I2C, tevi_camera[i].i2c_bus_index, &bus);
+	        if (ret) {
+	                printf("%s: Can't find bus\n", __func__);
+	                continue;
+	        }
+	        ret = dm_i2c_probe(bus, tevi_camera[i].eeprom_i2c_addr, 0, &i2c_dev);
+	        if (! ret) {
+	                add_dtoverlay("ov5640");
+	                return 0;
+	        }
+	}
+	add_dtoverlay("ov5645");
+	return 0;
+}
 
 #ifdef CONFIG_OF_BOARD_SETUP
 int ft_board_setup(void *blob, bd_t *bd)
@@ -479,6 +513,7 @@ int board_late_init(void)
 
 	detect_baseboard();
 	detect_display_panel();
+	detect_tevi_camera();
 
 #ifdef CONFIG_ENV_IS_IN_MMC
 	board_late_mmc_env_init();
