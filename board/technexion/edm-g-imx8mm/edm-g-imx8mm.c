@@ -264,6 +264,28 @@ void board_late_mmc_env_init(void)
 	run_command(cmd, 0);
 }
 
+#ifdef CONFIG_OF_BOARD_SETUP
+int ft_board_setup(void *blob, bd_t *bd)
+{
+	const int *cell;
+	int offs;
+	uint32_t cma_size;
+	char *cmasize;
+
+	offs = fdt_path_offset(blob, "/reserved-memory/linux,cma");
+	cell = fdt_getprop(blob, offs, "size", NULL);
+	cma_size = fdt32_to_cpu(cell[1]);
+	cmasize = env_get("cma_size");
+	if(cmasize || ((uint32_t)(mem_map[DRAM1_INDEX].size >> 1) < cma_size)) {
+		cma_size = env_get_ulong("cma_size", 10, 320 * 1024 * 1024);
+		cma_size = min((uint32_t)(mem_map[DRAM1_INDEX].size >> 1), cma_size);
+		fdt_setprop_u64(blob, offs, "size", (uint64_t)cma_size);
+	}
+
+	return 0;
+}
+#endif
+
 int board_late_init(void)
 {
 #ifdef CONFIG_ENV_IS_IN_MMC
