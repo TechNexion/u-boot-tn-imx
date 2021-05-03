@@ -243,7 +243,7 @@
 #endif
 
 #if defined(CONFIG_ANDROID_SUPPORT)
-#include "imx8mm_evk_android.h"
+#include "pico-imx8mm_android.h"
 #endif
 
 #endif
