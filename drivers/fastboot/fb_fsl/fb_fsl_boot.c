@@ -71,7 +71,16 @@ boot_metric metrics = {
 };
 
 #ifdef CONFIG_OF_LIBFDT_OVERLAY
-enum overlay_type {NO_OVERLAY, LVDS_10, LVDS_21};
+enum overlay_type {
+	/* NO_OVERLAY: all platforms */
+	NO_OVERLAY = 0,
+	/* LVDS_10: EDM-G-IMX8MP */
+	LVDS_10 = 1,
+	/* MIPI_5: PICO-IMX8MM */
+	MIPI_5 = 1,
+	/* LVDS_21: EDM-G-IMX8MP */
+	LVDS_21 = 2
+};
 #endif
 
 int read_from_partition_multi(const char* partition,
@@ -855,16 +864,28 @@ int do_boota(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]) {
 		ulong *dtbo_addr = NULL;
 		struct dt_table_entry *dt_entry_overlay = NULL;
 		enum overlay_type dtbo_idx = NO_OVERLAY;
+
 		u32 fdt_overlay_size = 0;
 		char *overlay_name = NULL;
 
 		overlay_name = env_get("overlay_name");
-		if (strcmp(overlay_name, "lvds_10") == 0) {
-			dtbo_idx = LVDS_10;
-		} else if (strcmp(overlay_name, "lvds_21") == 0) {
-			dtbo_idx = LVDS_21;
-		} else {
-			dtbo_idx = NO_OVERLAY;
+
+		if(is_imx8mp()) {
+			if (strcmp(overlay_name, "lvds_10") == 0) {
+				dtbo_idx = LVDS_10;
+			} else if (strcmp(overlay_name, "lvds_21") == 0) {
+				dtbo_idx = LVDS_21;
+			} else {
+				dtbo_idx = NO_OVERLAY;
+			}
+		}
+
+		if(is_imx8mm()) {
+			if (strcmp(overlay_name, "mipi_5") == 0) {
+				dtbo_idx = MIPI_5;
+			} else {
+				dtbo_idx = NO_OVERLAY;
+			}
 		}
 
 		if( dtbo_idx != NO_OVERLAY ) {
