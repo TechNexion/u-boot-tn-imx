@@ -73,13 +73,21 @@ boot_metric metrics = {
 #ifdef CONFIG_OF_LIBFDT_OVERLAY
 enum overlay_type {
 	/* NO_OVERLAY: all platforms */
-	NO_OVERLAY = 0,
-	/* LVDS_10: EDM-G-IMX8MP */
-	LVDS_10 = 1,
-	/* MIPI_5: PICO-IMX8MM */
-	MIPI_5 = 1,
-	/* LVDS_21: EDM-G-IMX8MP */
-	LVDS_21 = 2
+	NO_OVERLAY   = 0,
+	/* EDM-G-IMX8MP */
+	LVDS_10	     = 1,
+	LVDS_21	     = 2,
+	/* PICO-IMX8MM */
+	MIPI_5	     = 1,
+	VOICEHAT     = 2,
+	CLIX_NFC     = 3,
+	CLIX2_NFC    = 4,
+	MIPI_8	     = 5,
+	MIPI_10	     = 6,
+	MIPI_HDMI    = 7,
+	MIPI_LVDS_10 = 8,
+	MIPI_LVDS_15 = 9,
+	MIPI_LVDS_21 = 10,
 };
 #endif
 
