@@ -79,15 +79,17 @@ enum overlay_type {
 	LVDS_21	     = 2,
 	/* PICO-IMX8MM */
 	MIPI_5	     = 1,
-	VOICEHAT     = 2,
-	CLIX_NFC     = 3,
-	CLIX2_NFC    = 4,
-	MIPI_8	     = 5,
-	MIPI_10	     = 6,
-	MIPI_HDMI    = 7,
-	MIPI_LVDS_10 = 8,
-	MIPI_LVDS_15 = 9,
-	MIPI_LVDS_21 = 10,
+	CAM_5640     = 2,
+	CAM_5645     = 3,
+	VOICEHAT     = 4,
+	CLIX_NFC     = 5,
+	CLIX2_NFC    = 6,
+	MIPI_8	     = 7,
+	MIPI_10	     = 8,
+	MIPI_HDMI    = 9,
+	MIPI_LVDS_10 = 10,
+	MIPI_LVDS_15 = 11,
+	MIPI_LVDS_21 = 12,
 };
 #endif
 
