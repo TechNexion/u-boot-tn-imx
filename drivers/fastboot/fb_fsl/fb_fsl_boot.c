@@ -861,6 +861,14 @@ int do_boota(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]) {
 	}
 
 	struct dt_table_entry *dt_entry;
+	ulong *dtbo_addr = NULL;
+	struct dt_table_entry *dt_entry_overlay = NULL;
+	enum overlay_type dtbo_idx = NO_OVERLAY;
+
+	u32 fdt_overlay_size = 0;
+	char overlay_name[32];
+	char *overlay_name_ptr = NULL, *dtbo_token = NULL;
+
 	dt_entry = (struct dt_table_entry *)((ulong)dt_img +
 			be32_to_cpu(dt_img->dt_entries_offset));
 	fdt_size = be32_to_cpu(dt_entry->dt_size);
@@ -871,42 +879,46 @@ int do_boota(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]) {
 	if (gki_is_supported) {
 		check_image_arm64  = image_arm64((void *)(ulong)vendor_boot_hdr->kernel_addr);
 #ifdef CONFIG_OF_LIBFDT_OVERLAY
-		ulong *dtbo_addr = NULL;
-		struct dt_table_entry *dt_entry_overlay = NULL;
-		enum overlay_type dtbo_idx = NO_OVERLAY;
+		overlay_name_ptr = env_get("overlay_name");
+		sprintf(overlay_name, "%s", overlay_name_ptr);
+		dtbo_token = strtok(overlay_name, " ");
 
-		u32 fdt_overlay_size = 0;
-		char *overlay_name = NULL;
-
-		overlay_name = env_get("overlay_name");
-
-		if(is_imx8mp()) {
-			if (strcmp(overlay_name, "lvds_10") == 0) {
-				dtbo_idx = LVDS_10;
-			} else if (strcmp(overlay_name, "lvds_21") == 0) {
-				dtbo_idx = LVDS_21;
-			} else {
-				dtbo_idx = NO_OVERLAY;
+		while(dtbo_token != NULL) {
+			if(is_imx8mp()) {
+				if (strcmp(dtbo_token, "lvds_10") == 0) {
+					dtbo_idx = LVDS_10;
+				} else if (strcmp(dtbo_token, "lvds_21") == 0) {
+					dtbo_idx = LVDS_21;
+				} else {
+					dtbo_idx = NO_OVERLAY;
+				}
 			}
-		}
 
-		if(is_imx8mm()) {
-			if (strcmp(overlay_name, "mipi_5") == 0) {
-				dtbo_idx = MIPI_5;
-			} else {
-				dtbo_idx = NO_OVERLAY;
+			if(is_imx8mm()) {
+				if (strcmp(dtbo_token, "mipi_5") == 0) {
+					dtbo_idx = MIPI_5;
+				} else if (strcmp(dtbo_token, "cam_ov5640") == 0) {
+					dtbo_idx = CAM_5640;
+				} else if (strcmp(dtbo_token, "cam_ov5645") == 0) {
+					dtbo_idx = CAM_5645;
+				} else {
+					dtbo_idx = NO_OVERLAY;
+				}
 			}
-		}
 
-		if( dtbo_idx != NO_OVERLAY ) {
-			dt_entry_overlay = (struct dt_table_entry *)((ulong)dt_img +
-				be32_to_cpu(dt_img->dt_entries_offset) + (u32)dtbo_idx * be32_to_cpu(dt_img->dt_entry_size));
+			dtbo_token = strtok(NULL, " ");
 
-			fdt_overlay_size = be32_to_cpu(dt_entry_overlay->dt_size);
-			memcpy((void *)(ulong)dtbo_addr, (void *)((ulong)dt_img +
-			be32_to_cpu(dt_entry_overlay->dt_offset)), fdt_overlay_size);
-			fdt_increase_size((void *)(ulong)fdt_addr, fdt_totalsize((void *)dtbo_addr));
-			fdt_overlay_apply((void *)(ulong)fdt_addr, (void *)dtbo_addr);
+			if( dtbo_idx != NO_OVERLAY ) {
+				dt_entry_overlay = (struct dt_table_entry *)((ulong)dt_img +
+					be32_to_cpu(dt_img->dt_entries_offset) + (u32)dtbo_idx * be32_to_cpu(dt_img->dt_entry_size));
+
+				fdt_overlay_size = be32_to_cpu(dt_entry_overlay->dt_size);
+				printf("### fdt_overlay_size = %d\n", fdt_overlay_size);
+				memcpy((void *)(ulong)dtbo_addr, (void *)((ulong)dt_img +
+				be32_to_cpu(dt_entry_overlay->dt_offset)), fdt_overlay_size);
+				fdt_increase_size((void *)(ulong)fdt_addr, fdt_totalsize((void *)dtbo_addr));
+				fdt_overlay_apply((void *)(ulong)fdt_addr, (void *)dtbo_addr);
+			}
 		}
 #endif
 		android_image_get_kernel_v3(hdr_v3, vendor_boot_hdr);
