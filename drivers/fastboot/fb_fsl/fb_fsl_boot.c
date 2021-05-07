@@ -1005,15 +1005,7 @@ int do_boota(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]) {
 		avb_slot_verify_data_free(avb_out_data);
 
 	/* Images are loaded, start to boot. */
-	if (check_image_arm64) {
-#ifdef CONFIG_CMD_BOOTI
-		do_booti(NULL, 0, 4, boot_args);
-#else
-		debug("please enable CONFIG_CMD_BOOTI when kernel are Image");
-#endif
-	} else {
-		do_bootm(NULL, 0, 4, boot_args);
-	}
+	do_booti(NULL, 0, 4, boot_args);
 
 	/* This only happens if image is somehow faulty so we start over */
 	do_reset(NULL, 0, 0, NULL);
@@ -1179,13 +1171,7 @@ int do_boota(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	sprintf(fdt_addr, "0x%x", hdr->second_addr);
 	if (check_image_arm64) {
 		android_image_get_kernel(hdr, 0, NULL, NULL);
-#ifdef CONFIG_CMD_BOOTI
 		do_booti(NULL, 0, 4, boot_args);
-#else
-		debug("please enable CONFIG_CMD_BOOTI when kernel are Image");
-#endif
-	} else {
-		do_bootm(NULL, 0, 4, boot_args);
 	}
 	/* This only happens if image is somehow faulty so we start over */
 	do_reset(NULL, 0, 0, NULL);
