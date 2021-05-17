@@ -376,26 +376,6 @@ static void enable_ft5x06_wvga(struct display_info_t const *dev)
 }
 
 struct display_info_t const displays[] = {{
-	.bus	= 1,
-	.addr	= 0x38,
-	.pixfmt	= IPU_PIX_FMT_RGB24,
-	.detect	= detect_i2c,
-	.enable	= enable_ft5x06_wvga,
-	.mode	= {
-		.name           = "FT5x06-WVGA",
-		.refresh        = 60,
-		.xres           = 800,
-		.yres           = 480,
-		.pixclock       = 30303,
-		.left_margin    = 45,
-		.right_margin   = 210,
-		.upper_margin   = 22,
-		.lower_margin   = 22,
-		.hsync_len      = 1,
-		.vsync_len      = 1,
-		.sync           = 0,
-		.vmode          = FB_VMODE_NONINTERLACED
-} }, {
 	.bus	= -1,
 	.addr	= 0,
 	.pixfmt = IPU_PIX_FMT_RGB24,
@@ -415,6 +395,26 @@ struct display_info_t const displays[] = {{
 		.vsync_len	= 10,
 		.sync		= FB_SYNC_EXT,
 		.vmode		= FB_VMODE_NONINTERLACED
+} }, {
+	.bus	= 1,
+	.addr	= 0x38,
+	.pixfmt	= IPU_PIX_FMT_RGB24,
+	.detect	= detect_i2c,
+	.enable	= enable_ft5x06_wvga,
+	.mode	= {
+		.name           = "FT5x06-WVGA",
+		.refresh        = 60,
+		.xres           = 800,
+		.yres           = 480,
+		.pixclock       = 30303,
+		.left_margin    = 45,
+		.right_margin   = 210,
+		.upper_margin   = 22,
+		.lower_margin   = 22,
+		.hsync_len      = 1,
+		.vsync_len      = 1,
+		.sync           = 0,
+		.vmode          = FB_VMODE_NONINTERLACED
 } }, {
 	.bus	= -1,
 	.addr	= 0,
