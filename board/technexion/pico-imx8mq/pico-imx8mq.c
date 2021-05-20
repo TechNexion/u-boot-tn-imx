@@ -510,10 +510,11 @@ int ft_board_setup(void *blob, bd_t *bd)
 
 int board_late_init(void)
 {
-
+#ifndef CONFIG_AVB_SUPPORT
 	detect_baseboard();
 	detect_display_panel();
 	detect_tevi_camera();
+#endif
 
 #ifdef CONFIG_ENV_IS_IN_MMC
 	board_late_mmc_env_init();
