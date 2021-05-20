@@ -249,7 +249,7 @@
 #endif
 
 #ifdef CONFIG_ANDROID_SUPPORT
-#include "imx8mq_evk_android.h"
+#include "pico-imx8mq_android.h"
 #endif
 
 #endif
