@@ -73,23 +73,30 @@ boot_metric metrics = {
 #ifdef CONFIG_OF_LIBFDT_OVERLAY
 enum overlay_type {
 	/* NO_OVERLAY: all platforms */
-	NO_OVERLAY   = 0,
+	NO_OVERLAY       = 0,
 	/* EDM-G-IMX8MP */
-	LVDS_10	     = 1,
-	LVDS_21	     = 2,
+	LVDS_10_8MP      = 1,
+	LVDS_21_8MP      = 2,
 	/* PICO-IMX8MM */
-	MIPI_5	     = 1,
-	CAM_5640     = 2,
-	CAM_5645     = 3,
-	VOICEHAT     = 4,
-	CLIX_NFC     = 5,
-	CLIX2_NFC    = 6,
-	MIPI_8	     = 7,
-	MIPI_10	     = 8,
-	MIPI_HDMI    = 9,
-	MIPI_LVDS_10 = 10,
-	MIPI_LVDS_15 = 11,
-	MIPI_LVDS_21 = 12,
+	MIPI_5_8MM       = 1,
+	CAM_5640_8MM     = 2,
+	CAM_5645_8MM     = 3,
+	VOICEHAT_8MM     = 4,
+	CLIX_NFC_8MM     = 5,
+	CLIX2_NFC_8MM    = 6,
+	MIPI_8_8MM	 = 7,
+	MIPI_10_8MM	 = 8,
+	MIPI_HDMI_8MM    = 9,
+	MIPI_LVDS_10_8MM = 10,
+	MIPI_LVDS_15_8MM = 11,
+	MIPI_LVDS_21_8MM = 12,
+	/* PICO-IMX8MQ */
+	CLIX_NFC_8MQ     = 1,
+	CSI_8MQ          = 2,
+	CAM_5640_1_8MQ   = 3,
+	CAM_5640_2_8MQ   = 4,
+	CAM_5645_1_8MQ   = 5,
+	CAM_5645_2_8MQ   = 6,
 };
 #endif
 
@@ -621,12 +628,7 @@ int do_boota(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]) {
 	bool allow_fail = (lock_status == FASTBOOT_UNLOCK ? true : false);
 	avb_metric = get_timer(0);
 
-	if (gki_is_enabled())
-		/* set flag when GKI is enabled, vendor_boot partition will be supported. */
-		gki_is_supported = true;
-	else {
-		requested_partitions_boot[2] = NULL;
-	}
+	gki_is_supported = true;
 
 	/* For imx6 on Android, we don't have a/b slot and we want to verify boot/recovery with AVB.
 	 * For imx8 and Android Things we don't have recovery and support a/b slot for boot */
@@ -866,6 +868,7 @@ int do_boota(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]) {
 	enum overlay_type dtbo_idx = NO_OVERLAY;
 
 	u32 fdt_overlay_size = 0;
+	int ret;
 	char overlay_name[32];
 	char *overlay_name_ptr = NULL, *dtbo_token = NULL;
 
@@ -878,54 +881,12 @@ int do_boota(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]) {
 	/* Combine cmdline and Print image info  */
 	if (gki_is_supported) {
 		check_image_arm64  = image_arm64((void *)(ulong)vendor_boot_hdr->kernel_addr);
-#ifdef CONFIG_OF_LIBFDT_OVERLAY
-		overlay_name_ptr = env_get("overlay_name");
-		sprintf(overlay_name, "%s", overlay_name_ptr);
-		dtbo_token = strtok(overlay_name, " ");
-
-		while(dtbo_token != NULL) {
-			if(is_imx8mp()) {
-				if (strcmp(dtbo_token, "lvds_10") == 0) {
-					dtbo_idx = LVDS_10;
-				} else if (strcmp(dtbo_token, "lvds_21") == 0) {
-					dtbo_idx = LVDS_21;
-				} else {
-					dtbo_idx = NO_OVERLAY;
-				}
-			}
-
-			if(is_imx8mm()) {
-				if (strcmp(dtbo_token, "mipi_5") == 0) {
-					dtbo_idx = MIPI_5;
-				} else if (strcmp(dtbo_token, "cam_ov5640") == 0) {
-					dtbo_idx = CAM_5640;
-				} else if (strcmp(dtbo_token, "cam_ov5645") == 0) {
-					dtbo_idx = CAM_5645;
-				} else {
-					dtbo_idx = NO_OVERLAY;
-				}
-			}
-
-			dtbo_token = strtok(NULL, " ");
-
-			if( dtbo_idx != NO_OVERLAY ) {
-				dt_entry_overlay = (struct dt_table_entry *)((ulong)dt_img +
-					be32_to_cpu(dt_img->dt_entries_offset) + (u32)dtbo_idx * be32_to_cpu(dt_img->dt_entry_size));
-
-				fdt_overlay_size = be32_to_cpu(dt_entry_overlay->dt_size);
-				printf("### fdt_overlay_size = %d\n", fdt_overlay_size);
-				memcpy((void *)(ulong)dtbo_addr, (void *)((ulong)dt_img +
-				be32_to_cpu(dt_entry_overlay->dt_offset)), fdt_overlay_size);
-				fdt_increase_size((void *)(ulong)fdt_addr, fdt_totalsize((void *)dtbo_addr));
-				fdt_overlay_apply((void *)(ulong)fdt_addr, (void *)dtbo_addr);
-			}
-		}
-#endif
 		android_image_get_kernel_v3(hdr_v3, vendor_boot_hdr);
 		addr = vendor_boot_hdr->kernel_addr;
 		printf("kernel   @ %08x (%d)\n", vendor_boot_hdr->kernel_addr, hdr_v3->kernel_size);
 		printf("ramdisk  @ %08x (%d)\n", vendor_boot_hdr->ramdisk_addr,
 						vendor_boot_hdr->vendor_ramdisk_size + hdr_v3->ramdisk_size);
+
 	} else {
 		check_image_arm64  = image_arm64((void *)(ulong)hdr->kernel_addr);
 		if (check_image_arm64) {
@@ -937,6 +898,78 @@ int do_boota(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]) {
 		printf("kernel   @ %08x (%d)\n", hdr->kernel_addr, hdr->kernel_size);
 		printf("ramdisk  @ %08x (%d)\n", hdr->ramdisk_addr, hdr->ramdisk_size);
 	}
+
+
+#ifdef CONFIG_OF_LIBFDT_OVERLAY
+	overlay_name_ptr = env_get("overlay_name");
+	sprintf(overlay_name, "%s", overlay_name_ptr);
+	dtbo_token = strtok(overlay_name, " ");
+
+	while(dtbo_token != NULL) {
+		if(is_imx8mp()) {
+			if (strcmp(dtbo_token, "lvds_10") == 0) {
+				dtbo_idx = LVDS_10_8MP;
+			} else if (strcmp(dtbo_token, "lvds_21") == 0) {
+				dtbo_idx = LVDS_21_8MP;
+			} else {
+				dtbo_idx = NO_OVERLAY;
+			}
+		} else if(is_imx8mm()) {
+			if (strcmp(dtbo_token, "mipi_5") == 0) {
+				dtbo_idx = MIPI_5_8MM;
+			} else if (strcmp(dtbo_token, "cam_ov5640") == 0) {
+				dtbo_idx = CAM_5640_8MM;
+			} else if (strcmp(dtbo_token, "cam_ov5645") == 0) {
+				dtbo_idx = CAM_5645_8MM;
+			} else {
+				dtbo_idx = NO_OVERLAY;
+			}
+		} else if(is_imx8mq()) {
+			if (strcmp(dtbo_token, "clixnfc") == 0) {
+				dtbo_idx = CLIX_NFC_8MQ;
+			} else if (strcmp(dtbo_token, "csi") == 0) {
+				dtbo_idx = CSI_8MQ;
+			} else if (strcmp(dtbo_token, "cam_ov5640_1") == 0) {
+				dtbo_idx = CAM_5640_1_8MQ;
+			} else if (strcmp(dtbo_token, "cam_ov5640_2") == 0) {
+				dtbo_idx = CAM_5640_2_8MQ;
+			} else if (strcmp(dtbo_token, "cam_ov5645_1") == 0) {
+				dtbo_idx = CAM_5645_1_8MQ;
+			} else if (strcmp(dtbo_token, "cam_ov5645_2") == 0) {
+				dtbo_idx = CAM_5645_2_8MQ;
+			} else {
+				dtbo_idx = NO_OVERLAY;
+			}
+		}
+
+		dtbo_token = strtok(NULL, " ");
+
+		if( dtbo_idx != NO_OVERLAY ) {
+			dt_entry_overlay = (struct dt_table_entry *)((ulong)dt_img +
+				be32_to_cpu(dt_img->dt_entries_offset) + (u32)dtbo_idx * be32_to_cpu(dt_img->dt_entry_size));
+
+			fdt_overlay_size = be32_to_cpu(dt_entry_overlay->dt_size);
+
+			memcpy((void *)(ulong)dtbo_addr, (void *)((ulong)dt_img +
+				be32_to_cpu(dt_entry_overlay->dt_offset)), fdt_overlay_size + 1);
+
+			ret = fdt_increase_size((void *)(ulong)fdt_addr, fdt_totalsize((void *)dtbo_addr));
+
+			if(!ret)
+				printf("ANDROID: fdt increase OK\n");
+			else
+				printf("ANDROID: fdt increase failed, ret=%d\n", ret);
+
+			ret = fdt_overlay_apply((void *)(ulong)fdt_addr, (void *)dtbo_addr);
+
+			if(!ret)
+				printf("ANDROID: fdt overlay OK\n");
+			else
+				printf("ANDROID: fdt overlay failed, ret=%d\n", ret);
+		}
+	}
+#endif
+
 	if (fdt_size)
 		printf("fdt      @ %08x (%d)\n", fdt_addr, fdt_size);
 
