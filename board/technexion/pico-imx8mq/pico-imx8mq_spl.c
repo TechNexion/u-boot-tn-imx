@@ -67,7 +67,7 @@ void spl_dram_init(void)
 	
 	if (!gpio_get_value(DDR_DET_1) && !gpio_get_value(DDR_DET_2) && gpio_get_value(DDR_DET_3)) {
 		puts("dram_init: LPDDR4 4GB\n");
-		if ((get_cpu_rev() & 0xfff) == CHIP_REV_2_1) {
+		if (soc_rev() >= CHIP_REV_2_1) {
 			/* Silicon rev B1. Overwrite DDRC_CFG for 4GB LPDDR4*/
 			dram_timing_2gb_b1.ddrc_cfg[2].val = 0xa3080020;
 			dram_timing_2gb_b1.ddrc_cfg[38].val = 0x17;
@@ -102,7 +102,7 @@ void spl_dram_init(void)
 		writel(0x4, MCU_BOOTROM_BASE_ADDR);
 	} else if (gpio_get_value(DDR_DET_1) && gpio_get_value(DDR_DET_2) && !gpio_get_value(DDR_DET_3)) {
 		puts("dram_init: LPDDR4 2GB\n");
-		if ((get_cpu_rev() & 0xfff) == CHIP_REV_2_1) {
+		if (soc_rev() >= CHIP_REV_2_1) {
 			/* Silicon rev B1 */
 			ddr_init(&dram_timing_2gb_b1);
 		} else {
@@ -112,7 +112,7 @@ void spl_dram_init(void)
 		writel(0x2, MCU_BOOTROM_BASE_ADDR);
 	} else if (gpio_get_value(DDR_DET_1) && !gpio_get_value(DDR_DET_2) && gpio_get_value(DDR_DET_3)) {
 		puts("dram_init: LPDDR4 1GB\n");
-		if ((get_cpu_rev() & 0xfff) == CHIP_REV_2_1) {
+		if (soc_rev() >= CHIP_REV_2_1) {
 			/* Silicon rev B1. Overwrite DDRC_CFG for 1GB LPDDR4*/
 			dram_timing_2gb_b1.ddrc_cfg[6].val = 0x300090;
 			dram_timing_2gb_b1.ddrc_cfg[22].val = 0x96;
