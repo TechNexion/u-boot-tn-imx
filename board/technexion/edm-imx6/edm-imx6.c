@@ -59,21 +59,10 @@ DECLARE_GLOBAL_DATA_PTR;
 #define USDHC3_CD_GPIO		IMX_GPIO_NR(3, 9)
 #define ETH_PHY_RESET		IMX_GPIO_NR(3, 29)
 #define ETH_PHY_AR8035_POWER	IMX_GPIO_NR(7, 13)
-#define EDM_SOM_DET_R149	IMX_GPIO_NR(2, 28)
 
 #define PMIC_I2C_ADDR 0x08
 
 #define STRING(s) #s
-
-#define RETURN_SOM_TYPE(def)						\
-if (is_mx6dqp()) {							\
-	return STRING(imx6qp-def);					\
-} else if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D)) {	\
-	return STRING(imx6q-def);					\
-} else {								\
-	return STRING(imx6dl-def);					\
-}
-
 
 static bool with_pmic = false;
 
@@ -285,24 +274,7 @@ int board_phy_config(struct phy_device *phydev)
 
 static const char* form_type(void)
 {
-	/*
-	 * EDM boots from i-NAND or SD1
-	 */
-	gpio_direction_input(EDM_SOM_DET_R149);
-
-	if (!gpio_get_value(EDM_SOM_DET_R149)) {
-		if (with_pmic) {
-			return STRING(edm1);
-		} else {
-			return STRING(edm1-cf);
-		}
-	} else {
-		if (with_pmic) {
-			return STRING(edm2);
-		} else {
-			return STRING(edm2-cf);
-		}
-	}
+	return STRING(edm1);
 }
 
 /* setup board specific PMIC */
@@ -743,13 +715,7 @@ int board_init(void)
 int checkboard(void)
 {
 	printf("SOM: %s-%s\n", get_som_type(), form_type());
-	if (!gpio_get_value(EDM_SOM_DET_R149)) {
-		/* EDM1 */
-		printf("Available EDM1 baseboard: Fairy, Gnome, TC0700 \n");
-	} else {
-		/* EDM2 */
-		printf("Available EDM2 baseboard: Elf, Gremlin, TC1000 \n");
-	}
+	printf("Available EDM1 baseboard: Fairy, Gnome, TC0700 \n");
 
 	return 0;
 }
