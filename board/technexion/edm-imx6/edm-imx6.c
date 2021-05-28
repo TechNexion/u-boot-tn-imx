@@ -56,15 +56,10 @@ DECLARE_GLOBAL_DATA_PTR;
 #define USDHC3_CD_GPIO		IMX_GPIO_NR(3, 9)
 #define ETH_PHY_RESET		IMX_GPIO_NR(3, 29)
 #define ETH_PHY_AR8035_POWER	IMX_GPIO_NR(7, 13)
-#define EDM_SOM_DET_R149	IMX_GPIO_NR(2, 28)
 
 #define STRING(s) #s
 
 static bool with_pmic = false;
-
-#if CONFIG_IS_ENABLED(DM_GPIO)
-static struct gpio_desc board_gpios_desc[1];
-#endif
 
 int dram_init(void)
 {
@@ -132,28 +127,6 @@ static iomux_v3_cfg_t const som_detection_pads[] = {
 	/* R149 */
 	IOMUX_PADS(PAD_EIM_EB0__GPIO2_IO28  | MUX_PAD_CTRL(NO_PAD_CTRL)),
 };
-
-#if CONFIG_IS_ENABLED(DM_GPIO)
-static int request_board_gpios(void)
-{
-	int node;
-
-	node = fdt_node_offset_by_compatible(gd->fdt_blob, 0,
-		"technexion,edm-gpios");
-	if (node < 0)
-		return -ENODEV;
-
-	return gpio_request_list_by_name_nodev(offset_to_ofnode(node),
-		"edm-gpios", board_gpios_desc,
-		ARRAY_SIZE(board_gpios_desc), GPIOD_IS_IN);
-}
-
-static int free_board_gpios(void)
-{
-	return gpio_free_list_nodev(board_gpios_desc,
-		ARRAY_SIZE(board_gpios_desc));
-}
-#endif
 
 static void setup_iomux_uart(void)
 {
@@ -258,32 +231,7 @@ int board_mmc_init(bd_t *bis)
 
 static const char* form_type(void)
 {
-	/*
-	 * EDM boots from i-NAND or SD1
-	 */
-#if CONFIG_IS_ENABLED(DM_GPIO)
-	request_board_gpios();
-	if (!dm_gpio_get_value(&board_gpios_desc[0])) {
-#else
-	gpio_direction_input(EDM_SOM_DET_R149);
-
-	if (!gpio_get_value(EDM_SOM_DET_R149)) {
-#endif
-		if (with_pmic) {
-			return STRING(edm1);
-		} else {
-			return STRING(edm1-cf);
-		}
-	} else {
-		if (with_pmic) {
-			return STRING(edm2);
-		} else {
-			return STRING(edm2-cf);
-		}
-	}
-#if CONFIG_IS_ENABLED(DM_GPIO)
-	free_board_gpios();
-#endif
+	return STRING(edm1);
 }
 
 /* setup board specific PMIC */
@@ -799,15 +747,8 @@ int board_init(void)
 
 int checkboard(void)
 {
-	const char *form = form_type();
-	printf("SOM: %s-%s\n", get_som_type(), form);
-	if (!strncmp(form, "edm1", 4)) {
-		/* EDM1 */
-		printf("Available EDM1 baseboard: Fairy, Gnome, TC0700 \n");
-	} else {
-		/* EDM2 */
-		printf("Available EDM2 baseboard: Elf, Gremlin, TC1000 \n");
-	}
+	/* EDM1 */
+	printf("Available EDM1 baseboard: Fairy, Gnome, TC0700 \n");
 
 	return 0;
 }

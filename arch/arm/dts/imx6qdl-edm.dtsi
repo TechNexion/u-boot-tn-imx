@@ -20,13 +20,6 @@
 		stdout-path = &uart1;
 	};
 
-	board-gpios {
-		compatible = "technexion,edm-gpios";
-		edm-gpios = <
-			&gpio2 28 0
-		>;
-	};
-
 	reg_2p5v: regulator-2p5v {
 		compatible = "regulator-fixed";
 		regulator-name = "2P5V";
