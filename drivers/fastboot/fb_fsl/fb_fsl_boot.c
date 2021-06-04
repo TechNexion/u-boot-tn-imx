@@ -77,6 +77,13 @@ enum overlay_type {
 	/* EDM-G-IMX8MP */
 	LVDS_10_8MP      = 1,
 	LVDS_21_8MP      = 2,
+#if defined(CONFIG_TARGET_EDM_G_IMX8MM)
+	/* EDM-G-IMX8MM */
+	MIPI_LVDS_10_8MM = 1,
+	MIPI_LVDS_15_8MM = 2,
+	MIPI_LVDS_21_8MM = 3,
+	CAM_5640_8MM     = 4,
+#elif defined(CONFIG_TARGET_PICO_IMX8MM)
 	/* PICO-IMX8MM */
 	MIPI_5_8MM       = 1,
 	CAM_5640_8MM     = 2,
@@ -90,6 +97,7 @@ enum overlay_type {
 	MIPI_LVDS_10_8MM = 10,
 	MIPI_LVDS_15_8MM = 11,
 	MIPI_LVDS_21_8MM = 12,
+#endif
 	/* PICO-IMX8MQ */
 	CLIX_NFC_8MQ     = 1,
 	CSI_8MQ          = 2,
@@ -915,6 +923,19 @@ int do_boota(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]) {
 				dtbo_idx = NO_OVERLAY;
 			}
 		} else if(is_imx8mm()) {
+#if defined(CONFIG_TARGET_EDM_G_IMX8MM)
+			if (strcmp(dtbo_token, "lvds_10") == 0) {
+				dtbo_idx = MIPI_LVDS_10_8MM;
+			} else if (strcmp(dtbo_token, "lvds_15") == 0) {
+				dtbo_idx = MIPI_LVDS_15_8MM;
+			} else if (strcmp(dtbo_token, "lvds_21") == 0) {
+				dtbo_idx = MIPI_LVDS_21_8MM;
+			} else if (strcmp(dtbo_token, "cam_ov5640") == 0) {
+				dtbo_idx = CAM_5640_8MM;
+			} else {
+				dtbo_idx = NO_OVERLAY;
+			}
+#elif defined(CONFIG_TARGET_PICO_IMX8MM)
 			if (strcmp(dtbo_token, "mipi_5") == 0) {
 				dtbo_idx = MIPI_5_8MM;
 			} else if (strcmp(dtbo_token, "cam_ov5640") == 0) {
@@ -924,6 +945,7 @@ int do_boota(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]) {
 			} else {
 				dtbo_idx = NO_OVERLAY;
 			}
+#endif
 		} else if(is_imx8mq()) {
 			if (strcmp(dtbo_token, "clixnfc") == 0) {
 				dtbo_idx = CLIX_NFC_8MQ;
