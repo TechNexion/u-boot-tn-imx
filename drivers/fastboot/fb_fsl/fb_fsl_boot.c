@@ -922,8 +922,8 @@ int do_boota(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]) {
 			} else {
 				dtbo_idx = NO_OVERLAY;
 			}
-		} else if(is_imx8mm()) {
 #if defined(CONFIG_TARGET_EDM_G_IMX8MM)
+		} else if(is_imx8mm()) {
 			if (strcmp(dtbo_token, "lvds_10") == 0) {
 				dtbo_idx = MIPI_LVDS_10_8MM;
 			} else if (strcmp(dtbo_token, "lvds_15") == 0) {
@@ -936,6 +936,7 @@ int do_boota(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]) {
 				dtbo_idx = NO_OVERLAY;
 			}
 #elif defined(CONFIG_TARGET_PICO_IMX8MM)
+		} else if(is_imx8mm()) {
 			if (strcmp(dtbo_token, "mipi_5") == 0) {
 				dtbo_idx = MIPI_5_8MM;
 			} else if (strcmp(dtbo_token, "cam_ov5640") == 0) {
