@@ -40,7 +40,7 @@
 	"androidboot.vendor.sysrq=1 "			\
 	"androidboot.lcd_density=240 "			\
 	"androidboot.primary_display=imx-dcss "		\
-	"androidboot.gui_resolution=1080p "		\
+	"androidboot.displaymode=1080p "		\
 	"androidboot.wificountrycode=TW "		\
 	"androidboot.usb.debugging=1 "			\
 	"cma=736M "					\
