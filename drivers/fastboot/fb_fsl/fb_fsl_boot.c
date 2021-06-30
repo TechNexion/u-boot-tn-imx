@@ -939,6 +939,8 @@ int do_boota(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]) {
 		} else if(is_imx8mm()) {
 			if (strcmp(dtbo_token, "mipi_5") == 0) {
 				dtbo_idx = MIPI_5_8MM;
+			} else if (strcmp(dtbo_token, "mipi_10") == 0) {
+				dtbo_idx = MIPI_10_8MM;
 			} else if (strcmp(dtbo_token, "cam_ov5640") == 0) {
 				dtbo_idx = CAM_5640_8MM;
 			} else if (strcmp(dtbo_token, "cam_ov5645") == 0) {
