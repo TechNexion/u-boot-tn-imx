@@ -187,9 +187,11 @@ extern size_t uart_base_reg_addr;
 		"if test ${bootdev} = SD0; then " \
 			"setenv mmcrootdev /dev/mmcblk2; " \
 			"setenv mmcroot /dev/mmcblk2p2 rootwait rw; " \
+			"setenv mmcdev 0; " \
 		"else " \
 			"setenv mmcrootdev /dev/mmcblk0; " \
 			"setenv mmcroot /dev/mmcblk0p2 rootwait rw; " \
+			"setenv mmcdev 2; " \
 		"fi\0" \
 	"mmcargs=setenv bootargs console=${console},${baudrate} " \
 		"root=${mmcroot} \0" \
