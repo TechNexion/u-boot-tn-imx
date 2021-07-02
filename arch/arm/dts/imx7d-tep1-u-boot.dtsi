@@ -1,8 +1,8 @@
 /{
 	aliases {
 		mmc0 = &usdhc3;
+		mmc2 = &usdhc1;
 		usb0 = &usbotg1;
-		display0 = &lcdif;
 	};
 };
 

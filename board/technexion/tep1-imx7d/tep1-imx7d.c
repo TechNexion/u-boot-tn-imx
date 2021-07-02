@@ -158,6 +158,17 @@ static iomux_v3_cfg_t const uart3_pads[] = {
 	MX7D_PAD_UART3_RX_DATA__UART3_DCE_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
 };
 
+static iomux_v3_cfg_t const usdhc1_pads[] = {
+	MX7D_PAD_SD1_CLK__SD1_CLK | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX7D_PAD_SD1_CMD__SD1_CMD | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX7D_PAD_SD1_DATA0__SD1_DATA0 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX7D_PAD_SD1_DATA1__SD1_DATA1 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX7D_PAD_SD1_DATA2__SD1_DATA2 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX7D_PAD_SD1_DATA3__SD1_DATA3 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	/* Carrier MicroSD Card Detect */
+	MX7D_PAD_SD1_CD_B__GPIO5_IO0  | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+};
+
 /* EMMC/SD */
 static iomux_v3_cfg_t const usdhc3_emmc_pads[] = {
 	MX7D_PAD_SD3_CLK__SD3_CLK | MUX_PAD_CTRL(USDHC_PAD_CTRL),
@@ -399,21 +410,34 @@ static void setup_iomux_uart(void)
 	imx_iomux_v3_setup_multiple_pads(uart3_pads, ARRAY_SIZE(uart3_pads));
 }
 
-#ifdef CONFIG_FSL_ESDHC_IMX
 #define USDHC1_CD_GPIO	IMX_GPIO_NR(5, 0)
 
-static struct fsl_esdhc_cfg usdhc_cfg[1] = {
+static struct fsl_esdhc_cfg usdhc_cfg[2] = {
 	{USDHC3_BASE_ADDR},
+	{USDHC1_BASE_ADDR},
 };
 
 int board_mmc_getcd(struct mmc *mmc)
 {
-	return 1; /* Assume uSDHC3 emmc is always present */
+	struct fsl_esdhc_cfg *cfg = (struct fsl_esdhc_cfg *)mmc->priv;
+	int ret = 0;
+
+	switch (cfg->esdhc_base) {
+	case USDHC1_BASE_ADDR:
+		ret = !gpio_get_value(USDHC1_CD_GPIO); /* Assume uSDHC1 sd is always present */
+		break;
+	case USDHC3_BASE_ADDR:
+		ret = 1; /* Assume uSDHC3 emmc is always present */
+		break;
+	}
+
+	return ret;
 }
 
 int board_mmc_init(bd_t *bis)
 {
 	int ret;
+	u32 index = 0;
 
 	/*
 	 * Following map is done:
@@ -426,24 +450,35 @@ int board_mmc_init(bd_t *bis)
 	imx_iomux_v3_setup_multiple_pads(
 				usdhc3_emmc_pads, ARRAY_SIZE(usdhc3_emmc_pads));
 
-	usdhc_cfg[0].esdhc_base = USDHC3_BASE_ADDR;
-	usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC3_CLK);
-	usdhc_cfg[0].max_bus_width = 4;
+	imx_iomux_v3_setup_multiple_pads(
+				usdhc1_pads, ARRAY_SIZE(usdhc1_pads));
+	gpio_direction_input(USDHC1_CD_GPIO);
 
-	ret = fsl_esdhc_initialize(bis, &usdhc_cfg[0]);
-	if (ret)
-		return ret;
+	switch (get_boot_device()) {
+	case SD1_BOOT:
+		usdhc_cfg[0].esdhc_base = USDHC1_BASE_ADDR;
+		usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC_CLK);
+		usdhc_cfg[0].max_bus_width = 4;
+		usdhc_cfg[1].esdhc_base = USDHC3_BASE_ADDR;
+		usdhc_cfg[1].sdhc_clk = mxc_get_clock(MXC_ESDHC3_CLK);
+		usdhc_cfg[1].max_bus_width = 8;
+		break;
+	case MMC3_BOOT:
+	case SD3_BOOT:
+	default:
+		usdhc_cfg[0].esdhc_base = USDHC3_BASE_ADDR;
+		usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC3_CLK);
+		usdhc_cfg[0].max_bus_width = 8;
+		usdhc_cfg[1].esdhc_base = USDHC1_BASE_ADDR;
+		usdhc_cfg[1].sdhc_clk = mxc_get_clock(MXC_ESDHC_CLK);
+		usdhc_cfg[1].max_bus_width = 4;
+		break;
+	}
 
-	return 0;
-}
-
-int check_mmc_autodetect(void)
-{
-	char *autodetect_str = env_get("mmcautodetect");
-
-	if ((autodetect_str != NULL) &&
-		(strcmp(autodetect_str, "yes") == 0)) {
-		return 1;
+	for (index = 0; index < CONFIG_SYS_FSL_USDHC_NUM; ++index) {
+		ret = fsl_esdhc_initialize(bis, &usdhc_cfg[index]);
+		if (ret)
+			return ret;
 	}
 
 	return 0;
@@ -451,20 +486,18 @@ int check_mmc_autodetect(void)
 
 void board_late_mmc_init(void)
 {
-	if (!check_mmc_autodetect())
-		return;
-
 	switch (get_boot_device()) {
 	case SD3_BOOT:
 	case MMC3_BOOT:
-		env_set("bootdev", "MMC3");
+		env_set("bootdev", "SD0");
+		break;
+	case SD1_BOOT:
+		env_set("bootdev", "SD1");
 		break;
 	default:
 		printf("Wrong boot device!");
 	}
 }
-
-#endif
 
 #ifdef CONFIG_FEC_MXC
 int board_eth_init(bd_t *bis)
@@ -509,7 +542,6 @@ static int setup_fec(int fec_id)
 
 	return set_clk_enet(ENET_125MHZ);
 }
-
 
 int board_phy_config(struct phy_device *phydev)
 {
@@ -638,9 +670,9 @@ int board_late_init(void)
 	add_board_boot_modes(board_boot_modes);
 #endif
 
-#ifdef CONFIG_ENV_IS_IN_MMC
 	board_late_mmc_init();
-#endif
+
+	char *s;
 
 	imx_iomux_v3_setup_multiple_pads(wdog_pads, ARRAY_SIZE(wdog_pads));
 
@@ -651,6 +683,21 @@ int board_late_init(void)
 	env_set("baseboard", "tep1-a2");
 	env_set("console", "ttymxc2");
 
+	s = env_get ("bootdev_autodetect");
+	if (s != NULL) {
+		if (strncmp (s, "off", 3) != 0) {
+			switch (get_boot_device()) {
+			case SD3_BOOT:
+				env_set("bootdev", "SD0");
+				break;
+			case SD1_BOOT:
+				env_set("bootdev", "SD1");
+				break;
+			default:
+				printf("Wrong boot device!");
+			}
+		}
+	}
 	return 0;
 }
 

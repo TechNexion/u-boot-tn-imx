@@ -46,7 +46,7 @@ extern size_t uart_base_reg_addr;
 #define CONFIG_BAUDRATE			115200
 
 /* MMC Configs */
-#define CONFIG_SYS_FSL_ESDHC_ADDR	0
+#define CONFIG_SYS_FSL_ESDHC_ADDR	USDHC3_BASE_ADDR
 
 /*  */
 #define CONFIG_FEC_MXC
@@ -183,7 +183,7 @@ extern size_t uart_base_reg_addr;
 	"fdt_addr=0x83000000\0" \
 	"boot_fdt=try\0" \
 	"ip_dyn=yes\0" \
-	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
+	"mmcdev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
 	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
 	"searchbootdev=" \
 		"if test ${bootdev} = SD0; then " \
@@ -193,7 +193,6 @@ extern size_t uart_base_reg_addr;
 			"setenv mmcrootdev /dev/mmcblk0; " \
 			"setenv mmcroot /dev/mmcblk0p2 rootwait rw; " \
 		"fi\0" \
-	"mmcautodetect=yes\0" \
 	"mmcargs=setenv bootargs console=${console},${baudrate} " \
 		"root=${mmcroot} \0" \
 	"loadbootscript=" \
@@ -204,6 +203,7 @@ extern size_t uart_base_reg_addr;
 	"setfdt=setenv fdtfile ${som}-${baseboard}.dtb;\0" \
 	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdtfile}\0" \
 	"mmcboot=echo Booting from mmc ...; " \
+		"run searchbootdev; " \
 		"run m4boot; " \
 		"run mmcargs; " \
 		"echo ${bootargs}; " \
@@ -377,9 +377,9 @@ extern size_t uart_base_reg_addr;
 #else
 #define CONFIG_SYS_FSL_USDHC_NUM	2
 #endif
-#define CONFIG_SYS_MMC_ENV_DEV		0   /* USDHC1 */
-#define CONFIG_SYS_MMC_ENV_PART		0	/* user area */
-#define CONFIG_MMCROOT			"/dev/mmcblk2p2"  /* USDHC1 */
+#define CONFIG_SYS_MMC_ENV_DEV		0   /* USDHC3 */
+#define CONFIG_SUPPORT_EMMC_BOOT
+#define CONFIG_SYS_FSL_ESDHC_HAS_DDR_MODE
 
 /*
  * FDT options
