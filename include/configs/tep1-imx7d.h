@@ -48,9 +48,7 @@ extern size_t uart_base_reg_addr;
 /* MMC Configs */
 #define CONFIG_SYS_FSL_ESDHC_ADDR	USDHC3_BASE_ADDR
 
-/*  */
-#define CONFIG_FEC_MXC
-#define CONFIG_MII
+/* FEC Configs */
 #define CONFIG_FEC_XCV_TYPE             RGMII
 #define CONFIG_ETHPRIME                 "FEC"
 
