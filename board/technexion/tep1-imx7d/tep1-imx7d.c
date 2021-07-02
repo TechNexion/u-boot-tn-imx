@@ -266,9 +266,16 @@ void do_enable_parallel_lcd(struct lcd_panel_info_t const *dev)
 	imx_iomux_v3_setup_multiple_pads(pwm_pads, ARRAY_SIZE(pwm_pads));
 
 	/* Set Brightness to high */
-	gpio_direction_output(IMX_GPIO_NR(1, 10), 1);
+	gpio_request(IMX_GPIO_NR(1, 10), "Brightness");
+	gpio_direction_output(IMX_GPIO_NR(1, 10), 0);
+	udelay(500);
+	gpio_set_value(IMX_GPIO_NR(1, 10), 1);
+
 	/* Set LCD enable to high */
-	gpio_direction_output(IMX_GPIO_NR(3, 4), 1);
+	gpio_request(IMX_GPIO_NR(3, 4), "LCD enable pin");
+	gpio_direction_output(IMX_GPIO_NR(3, 4), 0);
+	udelay(500);
+	gpio_set_value(IMX_GPIO_NR(3, 4), 1);
 }
 
 static struct lcd_panel_info_t const displays[] = {{
