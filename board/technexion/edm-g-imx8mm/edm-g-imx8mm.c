@@ -264,6 +264,57 @@ void board_late_mmc_env_init(void)
 	run_command(cmd, 0);
 }
 
+int add_dtoverlay(char *ov_name)
+{
+	char *dtoverlay, arr_dtov[64];
+
+	dtoverlay = env_get("dtoverlay");
+	if (dtoverlay) {
+		strcpy(arr_dtov, dtoverlay);
+		if (!strstr(arr_dtov, ov_name)) {
+			strcat(arr_dtov, " ");
+			strcat(arr_dtov, ov_name);
+			env_set("dtoverlay", arr_dtov);
+		}
+	} else
+		env_set("dtoverlay", ov_name);
+
+	return 0;
+}
+
+struct camera_cfg {
+       u8 camera_index;
+       u8 i2c_bus_index;
+       u8 eeprom_i2c_addr;
+};
+
+const struct camera_cfg tevi_camera[] = {
+       {1, 1, 0x54},
+};
+
+#define NUMS(x)        (sizeof(x) / sizeof(x[0]))
+
+int detect_tevi_camera(void)
+{
+	struct udevice *bus = NULL;
+	struct udevice *i2c_dev = NULL;
+	int i, ret;
+
+	for (i = 0; i < NUMS(tevi_camera); i++) {
+	        ret = uclass_get_device_by_seq(UCLASS_I2C, tevi_camera[i].i2c_bus_index, &bus);
+	        if (ret) {
+	                printf("%s: Can't find bus\n", __func__);
+	                continue;
+	        }
+	        ret = dm_i2c_probe(bus, tevi_camera[i].eeprom_i2c_addr, 0, &i2c_dev);
+	        if (! ret) {
+	                add_dtoverlay("ov5640");
+	                return 0;
+	        }
+	}
+	return 0;
+}
+
 #ifdef CONFIG_OF_BOARD_SETUP
 int ft_board_setup(void *blob, bd_t *bd)
 {
@@ -288,8 +339,8 @@ int ft_board_setup(void *blob, bd_t *bd)
 
 int board_late_init(void)
 {
-#ifdef CONFIG_ENV_IS_IN_MMC
-	board_late_mmc_env_init();
+#ifndef CONFIG_AVB_SUPPORT
+	detect_tevi_camera();
 #endif
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
