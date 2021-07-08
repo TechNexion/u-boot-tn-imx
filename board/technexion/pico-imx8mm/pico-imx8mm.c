@@ -220,10 +220,22 @@ static struct splash_location imx_splash_locations[] = {
 	},
 };
 
+/*This function is defined in common/splash.c.
+  Declare here to remove warning. */
+int splash_video_logo_load(void);
+
 int splash_screen_prepare(void)
 {
 	imx_splash_locations[1].devpart[0] = mmc_get_env_dev() + '0';
-	return splash_source_load(imx_splash_locations, ARRAY_SIZE(imx_splash_locations));
+	int ret;
+	ret = splash_source_load(imx_splash_locations, ARRAY_SIZE(imx_splash_locations));
+	if (!ret)
+		return 0;
+	else {
+		printf("\nNo splash.bmp in boot partition!!\n");
+		printf("Using default logo!!\n\n");
+		return splash_video_logo_load();
+	}
 }
 #endif /* CONFIG_SPLASH_SCREEN */
 
