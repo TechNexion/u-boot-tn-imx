@@ -386,29 +386,6 @@ extern size_t uart_base_reg_addr;
  */
 #define CONFIG_LMB
 
-/* #define CONFIG_SPLASH_SCREEN*/
-/* #define CONFIG_MXC_EPDC*/
-
-/*
- * SPLASH SCREEN Configs
- */
-#if defined(CONFIG_SPLASH_SCREEN) && defined(CONFIG_MXC_EPDC)
-/*
- * Framebuffer and LCD
- */
-#define	CONFIG_CFB_CONSOLE
-#define CONFIG_CMD_BMP
-#define CONFIG_LCD
-#define CONFIG_SYS_CONSOLE_IS_IN_ENV
-
-#undef LCD_TEST_PATTERN
-/* #define CONFIG_SPLASH_IS_IN_MMC			1 */
-#define LCD_BPP					LCD_MONOCHROME
-/* #define CONFIG_SPLASH_SCREEN_ALIGN		1 */
-
-#define CONFIG_WAVEFORM_BUF_SIZE		0x400000
-#endif
-
 /* USB Configs */
 #define CONFIG_EHCI_HCD_INIT_AFTER_RESET
 #define CONFIG_USB_HOST_ETHER
