@@ -397,8 +397,52 @@ void board_late_mmc_env_init(void)
 	run_command(cmd, 0);
 }
 
+int add_dtoverlay(char *ov_name)
+{
+	char *dtoverlay, arr_dtov[64];
+
+	dtoverlay = env_get("dtoverlay");
+	if (dtoverlay) {
+		strcpy(arr_dtov, dtoverlay);
+		if (!strstr(arr_dtov, ov_name)) {
+			strcat(arr_dtov, " ");
+			strcat(arr_dtov, ov_name);
+			env_set("dtoverlay", arr_dtov);
+		}
+	} else
+		env_set("dtoverlay", ov_name);
+
+	return 0;
+}
+
+#define EETI_TOUCH_I2C_BUS 4
+#define EETI_TOUCH_I2C_ADDR 0x2a
+
+int detect_display_panel(void)
+{
+	struct udevice *bus = NULL;
+	struct udevice *i2c_dev = NULL;
+	int ret, touch_id;
+
+	ret = uclass_get_device_by_seq(UCLASS_I2C, EETI_TOUCH_I2C_BUS, &bus);
+	if (ret) {
+		printf("%s: Can't find bus\n", __func__);
+		return -EINVAL;
+	}
+	/* detect LVDS panel type by identifying touch controller */
+	ret = dm_i2c_probe(bus, EETI_TOUCH_I2C_ADDR, 0, &i2c_dev);
+	if (! ret) {
+			add_dtoverlay("lvds-vl10112880");
+	}
+	return 0;
+}
+
 int board_late_init(void)
 {
+#ifndef CONFIG_AVB_SUPPORT
+	detect_display_panel();
+#endif
+
 #ifdef CONFIG_ENV_IS_IN_MMC
 	board_late_mmc_env_init();
 #endif
