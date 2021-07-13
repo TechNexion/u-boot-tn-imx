@@ -116,6 +116,8 @@
 	"m7boot=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${m7image}; " \
 	"cp.b ${loadaddr} ${m7loadaddr} ${filesize}; " \
 	"dcache flush; bootaux ${m7loadaddr}\0" \
+	"mtdparts=30bb0000.spi:3840k(u-boot),1M(env),-(none)\0" \
+	"mtdids=nor0=30bb0000.spi\0" \
 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
 	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
 	"mmcroot=" CONFIG_MMCROOT " rootwait rw\0" \
