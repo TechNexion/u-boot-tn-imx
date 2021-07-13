@@ -25,6 +25,9 @@
 #include <dwc3-uboot.h>
 #include <mmc.h>
 #include <asm/armv8/mmu.h>
+#include <fdt_support.h>
+#include <jffs2/load_kernel.h>
+#include <mtd_node.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -146,6 +149,12 @@ int ft_board_setup(void *blob, bd_t *bd)
 		cma_size = min((uint32_t)(mem_map[DRAM1_INDEX].size >> 1), cma_size);
 		fdt_setprop_u64(blob, offs, "size", (uint64_t)cma_size);
 	}
+
+	static const struct node_info nodes[] = {
+		{ "jedec,spi-nor", MTD_DEV_TYPE_NOR, },
+	};
+
+	fdt_fixup_mtdparts(blob, nodes, ARRAY_SIZE(nodes));
 
 	return 0;
 }
