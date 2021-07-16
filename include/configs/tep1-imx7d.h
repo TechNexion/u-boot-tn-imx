@@ -120,7 +120,7 @@ extern size_t uart_base_reg_addr;
 #define MFG_NAND_PARTITION ""
 #endif
 
-#ifdef CONFIG_VIDEO
+#ifdef CONFIG_DM_VIDEO
 #define	CONFIG_VIDEO_MXS
 #define	CONFIG_VIDEO_LOGO
 #define	CONFIG_SPLASH_SCREEN
@@ -171,6 +171,7 @@ extern size_t uart_base_reg_addr;
 	"image=zImage\0" \
 	"stdout=serial\0" \
 	"console=ttymxc1\0" \
+	"splashimage=0x8c000000\0" \
 	"splashpos=m,m\0" \
 	"splashsource=mmc_fs\0" \
 	"som=imx7d\0" \

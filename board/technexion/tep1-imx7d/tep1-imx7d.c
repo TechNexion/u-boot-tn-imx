@@ -225,126 +225,6 @@ static void setup_gpmi_nand(void)
 }
 #endif
 
-#ifdef CONFIG_VIDEO_MXS
-static iomux_v3_cfg_t const lcd_pads[] = {
-	MX7D_PAD_LCD_CLK__LCD_CLK | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX7D_PAD_LCD_ENABLE__LCD_ENABLE | MUX_PAD_CTRL(LCD_SYNC_PAD_CTRL),
-	MX7D_PAD_LCD_HSYNC__LCD_HSYNC | MUX_PAD_CTRL(LCD_SYNC_PAD_CTRL),
-	MX7D_PAD_LCD_VSYNC__LCD_VSYNC | MUX_PAD_CTRL(LCD_SYNC_PAD_CTRL),
-	MX7D_PAD_LCD_DATA00__LCD_DATA0 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX7D_PAD_LCD_DATA01__LCD_DATA1 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX7D_PAD_LCD_DATA02__LCD_DATA2 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX7D_PAD_LCD_DATA03__LCD_DATA3 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX7D_PAD_LCD_DATA04__LCD_DATA4 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX7D_PAD_LCD_DATA05__LCD_DATA5 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX7D_PAD_LCD_DATA06__LCD_DATA6 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX7D_PAD_LCD_DATA07__LCD_DATA7 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX7D_PAD_LCD_DATA08__LCD_DATA8 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX7D_PAD_LCD_DATA09__LCD_DATA9 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX7D_PAD_LCD_DATA10__LCD_DATA10 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX7D_PAD_LCD_DATA11__LCD_DATA11 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX7D_PAD_LCD_DATA12__LCD_DATA12 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX7D_PAD_LCD_DATA13__LCD_DATA13 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX7D_PAD_LCD_DATA14__LCD_DATA14 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX7D_PAD_LCD_DATA15__LCD_DATA15 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX7D_PAD_LCD_DATA16__LCD_DATA16 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX7D_PAD_LCD_DATA17__LCD_DATA17 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX7D_PAD_LCD_DATA18__LCD_DATA18 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX7D_PAD_LCD_DATA19__LCD_DATA19 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX7D_PAD_LCD_DATA20__LCD_DATA20 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX7D_PAD_LCD_DATA21__LCD_DATA21 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX7D_PAD_LCD_DATA22__LCD_DATA22 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX7D_PAD_LCD_DATA23__LCD_DATA23 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-
-	MX7D_PAD_LCD_RESET__GPIO3_IO4	| MUX_PAD_CTRL(LCD_PAD_CTRL), /* LCD_VDD_EN */
-};
-
-static iomux_v3_cfg_t const pwm_pads[] = {
-	/* Use GPIO for Brightness adjustment, duty cycle = period */
-	MX7D_PAD_GPIO1_IO10__GPIO1_IO10 | MUX_PAD_CTRL(NO_PAD_CTRL), /* LCD_BLT_CTRL */
-};
-
-struct lcd_panel_info_t {
-	unsigned int lcdif_base_addr;
-	int depth;
-	void	(*enable)(struct lcd_panel_info_t const *dev);
-	struct fb_videomode mode;
-};
-
-void do_enable_parallel_lcd(struct lcd_panel_info_t const *dev)
-{
-	imx_iomux_v3_setup_multiple_pads(lcd_pads, ARRAY_SIZE(lcd_pads));
-
-	imx_iomux_v3_setup_multiple_pads(pwm_pads, ARRAY_SIZE(pwm_pads));
-
-	/* Set Brightness to high */
-	gpio_request(IMX_GPIO_NR(1, 10), "Brightness");
-	gpio_direction_output(IMX_GPIO_NR(1, 10), 0);
-	udelay(500);
-	gpio_set_value(IMX_GPIO_NR(1, 10), 1);
-
-	/* Set LCD enable to high */
-	gpio_request(IMX_GPIO_NR(3, 4), "LCD enable pin");
-	gpio_direction_output(IMX_GPIO_NR(3, 4), 0);
-	udelay(500);
-	gpio_set_value(IMX_GPIO_NR(3, 4), 1);
-}
-
-static struct lcd_panel_info_t const displays[] = {{
-	.lcdif_base_addr = ELCDIF1_IPS_BASE_ADDR,
-	.depth = 24,
-	.enable	= do_enable_parallel_lcd,
-	.mode	= {
-		.name			= "MCIMX28LCD",
-		.xres           = 800,
-		.yres           = 480,
-		.pixclock       = 29850,
-		.left_margin    = 89,
-		.right_margin   = 164,
-		.upper_margin   = 23,
-		.lower_margin   = 10,
-		.hsync_len      = 10,
-		.vsync_len      = 10,
-		.sync           = 0,
-		.vmode          = FB_VMODE_NONINTERLACED
-} } };
-
-int board_video_skip(void)
-{
-	int i;
-	int ret;
-	char const *panel = env_get("panel");
-	if (!panel) {
-		panel = displays[0].mode.name;
-		printf("No panel detected: default to %s\n", panel);
-		i = 0;
-	} else {
-		for (i = 0; i < ARRAY_SIZE(displays); i++) {
-			if (!strcmp(panel, displays[i].mode.name))
-				break;
-		}
-	}
-	if (i < ARRAY_SIZE(displays)) {
-		ret = mxs_lcd_panel_setup(displays[i].mode, displays[i].depth,
-				    displays[i].lcdif_base_addr);
-		if (!ret) {
-			if (displays[i].enable)
-				displays[i].enable(displays + i);
-			printf("Display: %s (%ux%u)\n",
-			       displays[i].mode.name,
-			       displays[i].mode.xres,
-			       displays[i].mode.yres);
-		} else
-			printf("LCD %s cannot be configured: %d\n",
-			       displays[i].mode.name, ret);
-	} else {
-		printf("unsupported panel %s\n", panel);
-		return -EINVAL;
-	}
-
-	return 0;
-}
-
 #ifdef CONFIG_SPLASH_SCREEN
 static struct splash_location imx_splash_locations[] = {
 	{
@@ -373,13 +253,24 @@ static struct splash_location imx_splash_locations[] = {
 	},
 };
 
+/*This function is defined in common/splash.c.
+  Declare here to remove warning. */
+int splash_video_logo_load(void);
+
 int splash_screen_prepare(void)
 {
 	imx_splash_locations[1].devpart[0] = mmc_get_env_dev() + '0';
-	return splash_source_load(imx_splash_locations, ARRAY_SIZE(imx_splash_locations));
+	int ret;
+	ret = splash_source_load(imx_splash_locations, ARRAY_SIZE(imx_splash_locations));
+	if (!ret)
+		return 0;
+	else {
+		printf("\nNo splash.bmp in boot partition!!\n");
+		printf("Using default logo!!\n\n");
+		return splash_video_logo_load();
+	}
 }
 #endif /* CONFIG_SPLASH_SCREEN */
-#endif
 
 static iomux_v3_cfg_t const ccm_clko_pads[] = {
 	MX7D_PAD_GPIO1_IO03__CCM_CLKO2 | MUX_PAD_CTRL(NO_PAD_CTRL),
@@ -584,11 +475,31 @@ int board_early_init_f(void)
 	return 0;
 }
 
+#ifdef CONFIG_DM_VIDEO
+void setup_lcd(void)
+{
+	/* Set Brightness to high */
+	gpio_request(IMX_GPIO_NR(1, 10), "Brightness");
+	gpio_direction_output(IMX_GPIO_NR(1, 10), 0);
+	udelay(500);
+	gpio_set_value(IMX_GPIO_NR(1, 10), 1);
+
+	/* Set LCD enable to high */
+	gpio_request(IMX_GPIO_NR(3, 4), "LCD enable pin");
+	gpio_direction_output(IMX_GPIO_NR(3, 4), 0);
+	udelay(500);
+	gpio_set_value(IMX_GPIO_NR(3, 4), 1);
+}
+#endif
+
 int board_init(void)
 {
 	/* address of boot parameters */
 	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
 
+#ifdef CONFIG_DM_VIDEO
+	setup_lcd();
+#endif
 #ifdef CONFIG_FEC_MXC
 	setup_fec(CONFIG_FEC_ENET_DEV);
 #endif
