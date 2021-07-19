@@ -241,8 +241,8 @@ usage()
     * TEK3-IMX8MP:
     ./install_uboot_imx8.sh -b imx8mp-tek3.dtb -d /dev/sdX
 
-    * TEK3-IMX8MP with flexspi boot:
-    ./install_uboot_imx8.sh -b imx8mp-tek3.dtb -f -d /dev/sdX
+    * TEK3-IMX8MP with flexspi boot (only generate flash.bin):
+    ./install_uboot_imx8.sh -b imx8mp-tek3.dtb -f -d /dev/null
 
     i.MX8MN:
     * EDM-G-IMX8MN with WB:
@@ -270,7 +270,7 @@ if [ $# -eq 0 ]; then
 	exit 1
 fi
 
-while getopts "tchdf:b:" OPTION
+while getopts "tcfhd:b:" OPTION
 do
     case $OPTION in
         d) 
@@ -282,7 +282,7 @@ do
         t) 
            MKIMAGE_TARGET='flash_spl_uboot';
            ;;
-        f)
+        f) 
            MKIMAGE_TARGET='flash_evk_flexspi';
            ;;
 		c) 
