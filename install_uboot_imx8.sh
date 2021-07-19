@@ -241,8 +241,8 @@ usage()
     * TEK-IMX8MP:
     ./install_uboot_imx8.sh -b imx8mp-tek.dtb -d /dev/sdX
 
-    * TEK-IMX8MP with flexspi boot:
-    ./install_uboot_imx8.sh -b imx8mp-tek.dtb -f -d /dev/sdX
+    * TEK-IMX8MP with flexspi boot (only generate flash.bin):
+    ./install_uboot_imx8.sh -b imx8mp-tek.dtb -f -d /dev/null
 
     i.MX8MN:
     * EDM-G-IMX8MN with WB:
@@ -270,7 +270,7 @@ if [ $# -eq 0 ]; then
 	exit 1
 fi
 
-while getopts "tchdf:b:" OPTION
+while getopts "tcfhd:b:" OPTION
 do
     case $OPTION in
         d) 
