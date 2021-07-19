@@ -234,9 +234,15 @@ usage()
     i.mx8MP:
     * AXON-IMX8MP:
     ./install_uboot_imx8.sh -b imx8mp-axon.dtb -d /dev/sdX
-    
+
     * EDM-G-IMX8MP with WB:
     ./install_uboot_imx8.sh -b imx8mp-edm-g.dtb -d /dev/sdX
+
+    * TEK3-IMX8MP:
+    ./install_uboot_imx8.sh -b imx8mp-tek3.dtb -d /dev/sdX
+
+    * TEK3-IMX8MP with flexspi boot:
+    ./install_uboot_imx8.sh -b imx8mp-tek3.dtb -f -d /dev/sdX
 
     i.MX8MN:
     * EDM-G-IMX8MN with WB:
@@ -264,7 +270,7 @@ if [ $# -eq 0 ]; then
 	exit 1
 fi
 
-while getopts "tchd:b:" OPTION
+while getopts "tchdf:b:" OPTION
 do
     case $OPTION in
         d) 
@@ -275,6 +281,9 @@ do
            ;;
         t) 
            MKIMAGE_TARGET='flash_spl_uboot';
+           ;;
+        f)
+           MKIMAGE_TARGET='flash_evk_flexspi';
            ;;
 		c) 
 		   rm -rf ${FIRMWARE_DIR} ${MKIMAGE_DIR}
