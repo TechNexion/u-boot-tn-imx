@@ -578,6 +578,7 @@ int board_late_init(void)
 #endif
 
 #ifdef CONFIG_ENV_IS_IN_MMC
+	board_late_mmc_init();
 	board_late_mmc_env_init();
 #endif
 
