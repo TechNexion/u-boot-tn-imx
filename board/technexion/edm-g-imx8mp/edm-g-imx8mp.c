@@ -334,6 +334,16 @@ void setup_wifi(void)
 	gpio_set_value(BT_ON_PAD, 0);
 }
 
+
+static iomux_v3_cfg_t const touch_rst_pads[] = {
+	MX8MP_PAD_SAI1_TXD1__GPIO4_IO13 | MUX_PAD_CTRL(PAD_CTL_PUE),
+};
+
+void setup_touch(void)
+{
+	imx_iomux_v3_setup_multiple_pads(touch_rst_pads, ARRAY_SIZE(touch_rst_pads));
+}
+
 #define FSL_SIP_GPC			0xC2000000
 #define FSL_SIP_CONFIG_GPC_PM_DOMAIN	0x3
 #define DISPMIX				13
@@ -342,6 +352,7 @@ void setup_wifi(void)
 int board_init(void)
 {
 	setup_wifi();
+	setup_touch();
 
 #ifdef CONFIG_DWC_ETH_QOS
 	/* clock, pin, gpr */
@@ -432,7 +443,7 @@ int detect_display_panel(void)
 	/* detect LVDS panel type by identifying touch controller */
 	ret = dm_i2c_probe(bus, EETI_TOUCH_I2C_ADDR, 0, &i2c_dev);
 	if (! ret) {
-			add_dtoverlay("lvds-vl10112880");
+		add_dtoverlay("lvds-vl10112880");
 	}
 	return 0;
 }
