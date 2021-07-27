@@ -480,6 +480,74 @@ int checkboard(void)
 	return 0;
 }
 
+#ifdef CONFIG_LDO_BYPASS_CHECK
+#ifdef CONFIG_POWER
+void ldo_mode_set(int ldo_bypass)
+{
+	unsigned int value;
+	struct pmic *p = pmic_get("PFUZE100");
+
+	if (!p) {
+		printf("No PMIC found!\n");
+		return;
+	}
+
+	/* increase VDDARM/VDDSOC to support 1.2G chip */
+	if (check_1_2G()) {
+		ldo_bypass = 0;	/* ldo_enable on 1.2G chip */
+		printf("1.2G chip, increase VDDARM_IN/VDDSOC_IN\n");
+
+		if (is_mx6dqp()) {
+			/* increase VDDARM to 1.425V */
+			pmic_reg_read(p, PFUZE100_SW2VOL, &value);
+			value &= ~0x3f;
+			value |= 0x29;
+			pmic_reg_write(p, PFUZE100_SW2VOL, value);
+		} else {
+			/* increase VDDARM to 1.425V */
+			pmic_reg_read(p, PFUZE100_SW1ABVOL, &value);
+			value &= ~0x3f;
+			value |= 0x2d;
+			pmic_reg_write(p, PFUZE100_SW1ABVOL, value);
+		}
+		/* increase VDDSOC to 1.425V */
+		pmic_reg_read(p, PFUZE100_SW1CVOL, &value);
+		value &= ~0x3f;
+		value |= 0x2d;
+		pmic_reg_write(p, PFUZE100_SW1CVOL, value);
+	}
+}
+#elif defined(CONFIG_DM_PMIC_PFUZE100)
+void ldo_mode_set(int ldo_bypass)
+{
+	struct udevice *dev;
+	int ret;
+
+	ret = pmic_get("pfuze100@8", &dev);
+	if (ret == -ENODEV) {
+		printf("No PMIC found!\n");
+		return;
+	}
+
+	/* increase VDDARM/VDDSOC to support 1.2G chip */
+	if (check_1_2G()) {
+		ldo_bypass = 0; /* ldo_enable on 1.2G chip */
+		printf("1.2G chip, increase VDDARM_IN/VDDSOC_IN\n");
+
+		if (is_mx6dqp()) {
+			/* increase VDDARM to 1.425V */
+			pmic_clrsetbits(dev, PFUZE100_SW2VOL, 0x3f, 0x29);
+		} else {
+			/* increase VDDARM to 1.425V */
+			pmic_clrsetbits(dev, PFUZE100_SW1ABVOL, 0x3f, 0x2d);
+		}
+		/* increase VDDSOC to 1.425V */
+		pmic_clrsetbits(dev, PFUZE100_SW1CVOL, 0x3f, 0x2d);
+	}
+}
+#endif
+#endif
+
 #ifdef CONFIG_SPL_LOAD_FIT
 int board_fit_config_name_match(const char *name)
 {
