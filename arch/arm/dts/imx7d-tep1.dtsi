@@ -5,7 +5,6 @@
 /dts-v1/;
 
 #include "imx7d.dtsi"
-#include "imx7d-tep1-u-boot.dtsi"
 
 / {
 	/* Will be filled by the bootloader */

@@ -8,6 +8,12 @@
 	model = "TechNexion TEP1-IMX7D rev A2 board";
 	compatible = "technexion,imx7d-tep1-a2", "fsl,imx7d";
 
+	aliases {
+		mmc0 = &usdhc1;
+		mmc2 = &usdhc3;
+		usb0 = &usbotg1;
+	};
+
 	leds {
 		compatible = "gpio-leds";
 		pinctrl-names = "default";
