@@ -24,6 +24,7 @@
 #include <env.h>
 #include <linux/sizes.h>
 #include <common.h>
+#include <fsl_esdhc_imx.h>
 #include <miiphy.h>
 #include <netdev.h>
 #include <phy.h>
@@ -56,6 +57,8 @@ DECLARE_GLOBAL_DATA_PTR;
 #define I2C1_SPEED_NON_DM	CONFIG_SYS_MXC_I2C1_SPEED
 #define I2C2_SPEED_NON_DM	CONFIG_SYS_MXC_I2C2_SPEED
 #endif
+
+#define STRING(s) #s
 
 static bool with_pmic;
 
@@ -138,6 +141,11 @@ static int ar8031_phy_fixup(struct phy_device *phydev)
 	phy_write(phydev, MDIO_DEVAD_NONE, 0x1e, val);
 
 	return 0;
+}
+
+static const char *form_type(void)
+{
+	return STRING(wandboard);
 }
 
 int board_phy_config(struct phy_device *phydev)
@@ -383,6 +391,46 @@ int power_init_board(void)
 	return 0;
 }
 
+#ifdef CONFIG_ENV_IS_IN_MMC
+static int check_mmc_autodetect(void)
+{
+	char *autodetect_str = env_get("mmcautodetect");
+
+	if ((autodetect_str != NULL) &&
+		(strcmp(autodetect_str, "yes") == 0)) {
+		return 1;
+	}
+
+	return 0;
+}
+
+/* This should be defined for each board */
+__weak int mmc_map_to_kernel_blk(int dev_no)
+{
+	return dev_no;
+}
+
+void board_late_mmc_env_init(void)
+{
+	char cmd[32];
+	char mmcblk[32];
+	u32 dev_no = mmc_get_env_dev();
+
+	if (!check_mmc_autodetect())
+		return;
+
+	env_set_ulong("mmcdev", dev_no);
+
+	/* Set mmcblk env */
+	sprintf(mmcblk, "/dev/mmcblk%dp2 rootwait rw",
+		mmc_map_to_kernel_blk(dev_no));
+	env_set("mmcroot", mmcblk);
+
+	sprintf(cmd, "mmc dev %d", dev_no);
+	run_command(cmd, 0);
+}
+#endif
+
 /*
  * Do not overwrite the console
  * Use always serial for U-Boot console
@@ -426,6 +474,10 @@ int board_late_init(void)
 	add_board_boot_modes(board_boot_modes);
 #endif
 
+#ifdef CONFIG_ENV_IS_IN_MMC
+	board_late_mmc_env_init();
+#endif
+
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	if (is_mx6dqp())
 		env_set("board_rev", "MX6QP");
@@ -440,6 +492,45 @@ int board_late_init(void)
 		env_set("board_name", "C1");
 	else
 		env_set("board_name", "B1");
+
+	char *s;
+	s = env_get("fdtfile_autodetect");
+	if (s != NULL) {
+		if (strncmp (s, "off", 3) != 0) {
+			if (is_mx6dqp())
+				env_set("som", "imx6qp");
+			else if (is_mx6dq())
+				env_set("som", "imx6q");
+			else if (is_mx6sdl())
+				env_set("som", "imx6dl");
+			else
+				printf("CPU type is not supported!!!\r\n");
+		}
+		env_set("form", form_type());
+	}
+
+	s = env_get("bootdev_autodetect");
+	if (s != NULL) {
+		if (strncmp (s, "off", 3) != 0) {
+			switch (get_boot_device()) {
+			case MMC3_BOOT:
+			case SD3_BOOT:
+				env_set("bootdev", "MMC3");
+				env_set("bootmedia", "mmc");
+				break;
+			case SD1_BOOT:
+				env_set("bootdev", "SD1");
+				env_set("bootmedia", "mmc");
+				break;
+			case SATA_BOOT:
+				env_set("bootdev", "SATA");
+				env_set("bootmedia", "sata");
+				break;
+			default:
+				printf("Wrong boot device!\r\n");
+			}
+		}
+	}
 #endif
 	setup_iomux_enet();
 	return 0;
