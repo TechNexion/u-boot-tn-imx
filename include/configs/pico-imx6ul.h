@@ -64,6 +64,7 @@
 	"image=zImage\0" \
 	"ip_dyn=no\0" \
 	"console=ttymxc5\0" \
+	"splashimage=0x8c000000\0" \
 	"splashpos=m,m\0" \
 	"splashsource=mmc_fs\0" \
 	"baseboard=pi\0" \
@@ -260,12 +261,15 @@
 #define CONFIG_SYS_MMC_ENV_DEV		0
 #define CONFIG_SYS_MMC_ENV_PART		0
 #define CONFIG_MMCROOT			"/dev/mmcblk0p2"  /* USDHC2 */
-#ifdef CONFIG_VIDEO
+#ifdef CONFIG_DM_VIDEO
 #define CONFIG_VIDEO_MXS
 #define CONFIG_VIDEO_LOGO
 #define CONFIG_SPLASH_SCREEN
 #define CONFIG_SPLASH_SCREEN_ALIGN
+#define CONFIG_SPLASH_SOURCE
 #define CONFIG_BMP_16BPP
+#define CONFIG_BMP_24BPP
+#define CONFIG_BMP_32BPP
 #define CONFIG_VIDEO_BMP_RLE8
 #define CONFIG_VIDEO_BMP_LOGO
 #endif

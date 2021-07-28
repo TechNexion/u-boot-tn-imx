@@ -23,6 +23,12 @@
 #include <power/pfuze3000_pmic.h>
 #include "../../freescale/common/pfuze.h"
 
+#ifdef CONFIG_DM_VIDEO
+#include <linux/fb.h>
+#include <mxsfb.h>
+#include <splash.h>
+#endif
+
 DECLARE_GLOBAL_DATA_PTR;
 
 #define UART_PAD_CTRL  (PAD_CTL_PKE | PAD_CTL_PUE |		\
@@ -120,36 +126,9 @@ static int setup_fec(void)
 	return 0;
 }
 
-#ifdef CONFIG_VIDEO_MXS
+#ifdef CONFIG_DM_VIDEO
+
 static iomux_v3_cfg_t const lcd_pads[] = {
-	MX6_PAD_LCD_CLK__LCDIF_CLK | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX6_PAD_LCD_ENABLE__LCDIF_ENABLE | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX6_PAD_LCD_HSYNC__LCDIF_HSYNC | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX6_PAD_LCD_VSYNC__LCDIF_VSYNC | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX6_PAD_LCD_DATA00__LCDIF_DATA00 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX6_PAD_LCD_DATA01__LCDIF_DATA01 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX6_PAD_LCD_DATA02__LCDIF_DATA02 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX6_PAD_LCD_DATA03__LCDIF_DATA03 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX6_PAD_LCD_DATA04__LCDIF_DATA04 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX6_PAD_LCD_DATA05__LCDIF_DATA05 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX6_PAD_LCD_DATA06__LCDIF_DATA06 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX6_PAD_LCD_DATA07__LCDIF_DATA07 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX6_PAD_LCD_DATA08__LCDIF_DATA08 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX6_PAD_LCD_DATA09__LCDIF_DATA09 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX6_PAD_LCD_DATA10__LCDIF_DATA10 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX6_PAD_LCD_DATA11__LCDIF_DATA11 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX6_PAD_LCD_DATA12__LCDIF_DATA12 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX6_PAD_LCD_DATA13__LCDIF_DATA13 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX6_PAD_LCD_DATA14__LCDIF_DATA14 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX6_PAD_LCD_DATA15__LCDIF_DATA15 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX6_PAD_LCD_DATA16__LCDIF_DATA16 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX6_PAD_LCD_DATA17__LCDIF_DATA17 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX6_PAD_LCD_DATA18__LCDIF_DATA18 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX6_PAD_LCD_DATA19__LCDIF_DATA19 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX6_PAD_LCD_DATA20__LCDIF_DATA20 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX6_PAD_LCD_DATA21__LCDIF_DATA21 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX6_PAD_LCD_DATA22__LCDIF_DATA22 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-	MX6_PAD_LCD_DATA23__LCDIF_DATA23 | MUX_PAD_CTRL(LCD_PAD_CTRL),
 	/* LCD_BLT_CTRL: GPIO for Brightness adjustment  */
 	MX6_PAD_NAND_ALE__GPIO4_IO10 | MUX_PAD_CTRL(NO_PAD_CTRL),
 	/* LCD_VDD_EN: LCD enabled */
@@ -196,6 +175,53 @@ static iomux_v3_cfg_t const uart6_pads[] = {
 static iomux_v3_cfg_t const usb_otg_pad[] = {
 	MX6_PAD_GPIO1_IO00__ANATOP_OTG1_ID | MUX_PAD_CTRL(OTG_ID_PAD_CTRL),
 };
+
+#ifdef CONFIG_SPLASH_SCREEN
+static struct splash_location imx_splash_locations[] = {
+	{
+		.name = "sf",
+		.storage = SPLASH_STORAGE_SF,
+		.flags = SPLASH_STORAGE_RAW,
+		.offset = 0x100000,
+	},
+	{
+		.name = "mmc_fs",
+		.storage = SPLASH_STORAGE_MMC,
+		.flags = SPLASH_STORAGE_FS,
+		.devpart = "0:1",
+	},
+	{
+		.name = "usb_fs",
+		.storage = SPLASH_STORAGE_USB,
+		.flags = SPLASH_STORAGE_FS,
+		.devpart = "0:1",
+	},
+	{
+		.name = "sata_fs",
+		.storage = SPLASH_STORAGE_SATA,
+		.flags = SPLASH_STORAGE_FS,
+		.devpart = "0:1",
+	},
+};
+
+/*This function is defined in common/splash.c.
+  Declare here to remove warning. */
+int splash_video_logo_load(void);
+
+int splash_screen_prepare(void)
+{
+	imx_splash_locations[1].devpart[0] = mmc_get_env_dev() + '0';
+	int ret;
+	ret = splash_source_load(imx_splash_locations, ARRAY_SIZE(imx_splash_locations));
+	if (!ret)
+		return 0;
+	else {
+		printf("\nNo splash.bmp in boot partition!!\n");
+		printf("Using default logo!!\n\n");
+		return splash_video_logo_load();
+	}
+}
+#endif /* CONFIG_SPLASH_SCREEN */
 
 static void setup_iomux_uart(void)
 {
@@ -277,9 +303,12 @@ int board_init(void)
 
 	setup_fec();
 	setup_usb();
-#ifdef CONFIG_VIDEO_MXS
+
+#ifdef CONFIG_DM_VIDEO
 	setup_lcd();
 #endif
+
+
 	return 0;
 }
 
