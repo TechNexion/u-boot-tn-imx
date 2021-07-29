@@ -54,8 +54,8 @@ DECLARE_GLOBAL_DATA_PTR;
 #define I2C1_SPEED_NON_DM	0
 #define I2C2_SPEED_NON_DM	0
 #else
-#define I2C1_SPEED_NON_DM	CONFIG_SYS_MXC_I2C1_SPEED
-#define I2C2_SPEED_NON_DM	CONFIG_SYS_MXC_I2C2_SPEED
+#define I2C1_SPEED_NON_DM	100000
+#define I2C2_SPEED_NON_DM	100000
 #endif
 
 #define STRING(s) #s
@@ -364,33 +364,29 @@ int board_early_init_f(void)
 
 #define PMIC_I2C_BUS		2
 
+/* setup board specific PMIC */
 int power_init_board(void)
 {
-	struct udevice *dev;
-	int reg, ret;
+	struct pmic *p;
+	u32 reg;
 
-	ret = pmic_get("pfuze100@8", &dev);
-	if (ret < 0) {
-		debug("pmic_get() ret %d\n", ret);
-		return 0;
+	/* configure PFUZE100 PMIC */
+	power_pfuze100_init(I2C_PMIC_BUS);
+	p = pmic_get("PFUZE100");
+	if (p && !pmic_probe(p)) {
+		pmic_reg_read(p, PFUZE100_DEVICEID, &reg);
+		printf("PMIC:  PFUZE100 ID=0x%02x\n", reg);
+		with_pmic = true;
+
+		/* Set VGEN2 to 1.5V and enable */
+		pmic_reg_read(p, PFUZE100_VGEN2VOL, &reg);
+		reg &= ~(LDO_VOL_MASK);
+		reg |= (LDOA_1_50V | (1 << (LDO_EN)));
+		pmic_reg_write(p, PFUZE100_VGEN2VOL, reg);
 	}
 
-	reg = pmic_reg_read(dev, PFUZE100_DEVICEID);
-	if (reg < 0) {
-		printf("pmic_reg_read() ret %d\n", reg);
-		return 0;
-	}
-	printf("PMIC:  PFUZE100 ID=0x%02x\n", reg);
-	with_pmic = true;
-
-	/* Set VGEN2 to 1.5V and enable */
-	reg = pmic_reg_read(dev, PFUZE100_VGEN2VOL);
-	reg &= ~(LDO_VOL_MASK);
-	reg |= (LDOA_1_50V | (1 << (LDO_EN)));
-	pmic_reg_write(dev, PFUZE100_VGEN2VOL, reg);
 	return 0;
 }
-
 #ifdef CONFIG_ENV_IS_IN_MMC
 static int check_mmc_autodetect(void)
 {
