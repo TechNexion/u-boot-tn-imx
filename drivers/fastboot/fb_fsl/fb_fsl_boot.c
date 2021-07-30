@@ -871,7 +871,7 @@ int do_boota(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]) {
 	}
 
 	struct dt_table_entry *dt_entry;
-	ulong *dtbo_addr = NULL;
+	u32 dtbo_addr = -1;
 	struct dt_table_entry *dt_entry_overlay = NULL;
 	enum overlay_type dtbo_idx = NO_OVERLAY;
 
@@ -975,17 +975,18 @@ int do_boota(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]) {
 
 			fdt_overlay_size = be32_to_cpu(dt_entry_overlay->dt_size);
 
+			dtbo_addr = fdt_addr + 0xF0000;
 			memcpy((void *)(ulong)dtbo_addr, (void *)((ulong)dt_img +
-				be32_to_cpu(dt_entry_overlay->dt_offset)), fdt_overlay_size + 1);
+				be32_to_cpu(dt_entry_overlay->dt_offset)), fdt_overlay_size);
 
-			ret = fdt_increase_size((void *)(ulong)fdt_addr, fdt_totalsize((void *)dtbo_addr));
+			ret = fdt_increase_size((void *)(ulong)fdt_addr, fdt_overlay_size);
 
 			if(!ret)
 				printf("ANDROID: fdt increase OK\n");
 			else
 				printf("ANDROID: fdt increase failed, ret=%d\n", ret);
 
-			ret = fdt_overlay_apply((void *)(ulong)fdt_addr, (void *)dtbo_addr);
+			ret = fdt_overlay_apply((void *)(ulong)fdt_addr, (void *)(ulong)dtbo_addr);
 
 			if(!ret)
 				printf("ANDROID: fdt overlay OK\n");
