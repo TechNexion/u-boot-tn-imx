@@ -196,6 +196,12 @@ config TARGET_PHYCORE_IMX8MM
         select SUPPORT_SPL
 	select IMX8M_LPDDR4
 
+config TARGET_PICO_IMX8MM
+	bool "TechNexion PICO-IMX8MM"
+	select IMX8MM
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+
 config TARGET_PHYCORE_IMX8MP
 	bool "PHYTEC PHYCORE i.MX8MP"
 	select IMX8MP
@@ -212,6 +218,7 @@ source "board/freescale/imx8mp_evk/Kconfig"
 source "board/gateworks/venice/Kconfig"
 source "board/google/imx8mq_phanbell/Kconfig"
 source "board/technexion/pico-imx8mq/Kconfig"
+source "board/technexion/pico-imx8mm/Kconfig"
 source "board/toradex/verdin-imx8mm/Kconfig"
 source "board/beacon/imx8mm/Kconfig"
 source "board/beacon/imx8mn/Kconfig"
