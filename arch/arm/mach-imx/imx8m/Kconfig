@@ -528,6 +528,12 @@ config TARGET_IMX8MP_LIBRA_FPSC
 	help
 	  Libra i.MX8M Plus FPSC is an SBC based on the NXP i.MX 8M Plus SoC.
 
+config TARGET_PICO_IMX8MM
+	bool "TechNexion PICO-IMX8MM"
+	select IMX8MM
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+
 config TARGET_IMX8MM_CL_IOT_GATE
 	bool "CompuLab iot-gate-imx8"
 	select IMX8MM
@@ -602,6 +608,7 @@ source "board/polyhex/imx8mp_debix_model_a/Kconfig"
 source "board/purism/librem5/Kconfig"
 source "board/ronetix/imx8mq-cm/Kconfig"
 source "board/technexion/pico-imx8mq/Kconfig"
+source "board/technexion/pico-imx8mm/Kconfig"
 source "board/variscite/imx8mn_var_som/Kconfig"
 source "board/toradex/smarc-imx8mp/Kconfig"
 source "board/toradex/verdin-imx8mm/Kconfig"
