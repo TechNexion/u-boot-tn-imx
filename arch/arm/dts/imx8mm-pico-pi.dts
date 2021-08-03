@@ -1,0 +1,213 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright 2020 Technexion Ltd.
+ *
+ * Author: Richard Hu <richard.hu@technexion.com>
+ *
+ */
+
+/dts-v1/;
+
+#include "imx8mm-pico.dtsi"
+
+/ {
+	model = "TechNexion PICO-IMX8MM and PI baseboard";
+	compatible = "fsl,imx8mm-pico", "fsl,imx8mm";
+
+	regulators {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		reg_usb_otg_vbus: usb_otg_vbus {
+			pinctrl-names = "default";
+			pinctrl-0 = <&pinctrl_otg_vbus>;
+			compatible = "regulator-fixed";
+			regulator-name = "usb_otg_vbus";
+			regulator-min-microvolt = <5000000>;
+			regulator-max-microvolt = <5000000>;
+			gpio = <&gpio1 9 GPIO_ACTIVE_LOW>;
+			enable-active-low;
+		};
+
+		reg_backlight_pwr: regulator_blpwr {
+			pinctrl-names = "default";
+			pinctrl-0 = <&pinctrl_backlight_pwr>;
+			compatible = "regulator-fixed";
+			regulator-name = "backlight_pwr";
+			regulator-min-microvolt = <5000000>;
+			regulator-max-microvolt = <5000000>;
+			gpio = <&gpio1 10 GPIO_ACTIVE_HIGH>;
+			enable-active-high;
+		};
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_gpio_led>;
+
+		led {
+			label = "gpio-led";
+			gpios = <&gpio5 5 GPIO_ACTIVE_HIGH>;
+		};
+	};
+
+	dsi_host: dsi-host {
+		compatible = "samsung,sec-mipi-dsi";
+		status = "okay";
+	};
+
+	ili9881c_panel {
+		compatible = "ilitek,ili9881c";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_mipi_dsi_rst>;
+		power-supply = <&reg_backlight_pwr>;
+		reset-gpio = <&gpio3 9 GPIO_ACTIVE_LOW>;
+		backlight-gpio = <&gpio1 1 GPIO_ACTIVE_LOW>;
+		dsi-lanes = <4>;
+		video-mode = <2>;	/* 0: burst mode
+					 * 1: non-burst mode with sync event
+					 * 2: non-burst mode with sync pulse
+					 */
+		status = "okay";
+
+		port {
+			ili9881c_from_dsim: endpoint {
+				remote-endpoint = <&dsim_to_ili9881c>;
+			};
+		};
+	};
+};
+
+&lcdif {
+	enable_polarity_low;
+	/delete-property/ assigned-clocks;
+	/delete-property/ assigned-clock-parents;
+	/delete-property/ assigned-clock-rates;
+	display = <&display0>;
+	status = "okay";
+
+	display0: display@0 {
+		bits-per-pixel = <24>;
+		bus-width = <24>;
+	};
+};
+
+&mipi_dsi {
+	/delete-property/ assigned-clocks;
+	/delete-property/ assigned-clock-parents;
+	/delete-property/ assigned-clock-rates;
+	status = "okay";
+
+	port@1 {
+		dsim_to_ili9881c: endpoint {
+			remote-endpoint = <&ili9881c_from_dsim>;
+		};
+	};
+};
+
+&iomuxc {
+	pinctrl_otg_vbus: otgvbusgrp {
+		fsl,pins = <
+			MX8MM_IOMUXC_GPIO1_IO09_GPIO1_IO9		0x19   /* USB OTG VBUS Enable */
+		>;
+	}; 
+	pinctrl_backlight_pwr: backlight_pwrgrp {
+		fsl,pins = <
+			MX8MM_IOMUXC_GPIO1_IO10_GPIO1_IO10		0x19
+			MX8MM_IOMUXC_GPIO1_IO01_GPIO1_IO1		0x16
+		>;
+	};
+	pinctrl_dsi_pwm: dsi_pwm {
+		fsl,pins = <
+			MX8MM_IOMUXC_GPIO1_IO01_PWM1_OUT		0x16	/* DSI PWM */
+		>;
+	};
+	pinctrl_fan_pwm: fan_pwm {
+		fsl,pins = <
+			MX8MM_IOMUXC_SAI3_MCLK_PWM4_OUT			0x16	/* PWM for FAN */
+		>;
+	};
+	pinctrl_tusb320_irq: tusb320_irqgrp {
+		fsl,pins = <
+			MX8MM_IOMUXC_NAND_CE0_B_GPIO3_IO1		0x41
+		>;
+	};
+	pinctrl_csi_pwn: csi_pwn_grp {
+		fsl,pins = <
+			MX8MM_IOMUXC_ECSPI2_MOSI_GPIO5_IO11		0x19
+		>;
+	};
+	pinctrl_csi_rst: csi_rst_grp {
+		fsl,pins = <
+			MX8MM_IOMUXC_GPIO1_IO05_GPIO1_IO5		0x19
+			MX8MM_IOMUXC_GPIO1_IO14_CCMSRCGPCMIX_CLKO1	0x59
+		>;
+	};
+	pinctrl_mipi_dsi_rst: mipi_dsi_rst {
+		fsl,pins = <
+			MX8MM_IOMUXC_NAND_DATA03_GPIO3_IO9	0x16   /* DSI RST */
+		>;
+	};
+	pinctrl_touch_irq: touch_irqgrp {
+		fsl,pins = <
+			MX8MM_IOMUXC_GPIO1_IO07_GPIO1_IO7	0x19   /* Touch INT */
+		>;
+	};
+	pinctrl_touch_rst: touch_rstgrp {
+		fsl,pins = <
+			MX8MM_IOMUXC_SAI3_RXFS_GPIO4_IO28	0x16   /* GPIO_P42, Touch RST */
+		>;
+	};
+	pinctrl_gpio_led: gpioledgrp {
+		fsl,pins = <
+			MX8MM_IOMUXC_SPDIF_EXT_CLK_GPIO5_IO5	0x19
+		>;
+	};
+	pinctrl_tfa98xx: tfa98xx_ctrlgrp {
+		fsl,pins = <
+			MX8MM_IOMUXC_ECSPI2_SCLK_GPIO5_IO10	0x19 /* RST */
+			MX8MM_IOMUXC_ECSPI2_MISO_GPIO5_IO12	0x19 /* INT */
+		>;
+	};
+	pinctrl_gpio_key_voicehat: gpiokey_voicehatgrp {
+		fsl,pins = <
+			MX8MM_IOMUXC_NAND_ALE_GPIO3_IO0			0x41 /* GPIO_P25, KEY_PREV */
+			MX8MM_IOMUXC_SPDIF_RX_GPIO5_IO4			0x41 /* PWM2, KEY_PLAY */
+			MX8MM_IOMUXC_I2C4_SCL_GPIO5_IO20		0x41 /* GPIO_P44, KEY_NEXT */
+			MX8MM_IOMUXC_NAND_DATA01_GPIO3_IO7		0x41 /* GPIO_P30, KEY_UP */
+			MX8MM_IOMUXC_NAND_READY_B_GPIO3_IO16		0x41 /* GPIO_P26, KEY_DOWN */
+			MX8MM_IOMUXC_NAND_DATA00_GPIO3_IO6		0x41 /* GPIO_P28, KEY_MUTE */
+			MX8MM_IOMUXC_ECSPI2_SS0_GPIO5_IO13		0x41 /* ECSPI2_SS0, KEY_PAIR */
+			MX8MM_IOMUXC_SPDIF_TX_GPIO5_IO3			0x41 /* PWM3, KEY_ACT */
+		>;
+	};
+};
+
+&usbotg1 {
+	dr_mode = "peripheral";
+	status = "okay";
+};
+
+&usbotg2 {
+	dr_mode = "host";
+	status = "okay";
+};
+
+/* SD card on CLIX connector */
+&usdhc2 {
+	status = "okay";
+};
+
+&pwm1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_dsi_pwm>;
+	status = "okay";
+};
+
+&pwm4 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_fan_pwm>;
+	status = "okay";
+};
