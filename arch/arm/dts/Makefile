@@ -957,6 +957,7 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mp-dhcom-pdk3-overlay-rev100.dtbo \
 	imx8mp-dhcom-picoitx.dtb \
 	imx8mp-ddr4-evk.dtb \
+	imx8mp-edm-g.dtb \
 	imx8mp-icore-mx8mp-edimm2.2.dtb \
 	imx8mp-msc-sm2s.dtb \
 	imx8mq-pico-pi.dtb \
