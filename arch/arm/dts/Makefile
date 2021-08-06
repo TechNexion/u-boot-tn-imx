@@ -982,6 +982,7 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mm-venice-gw7902.dtb \
 	imx8mm-verdin.dtb \
 	imx8mm-pico-pi.dtb \
+	imx8mm-edm-g-wb.dtb \
 	phycore-imx8mm.dtb \
 	imx8mn-ddr3l-evk.dtb \
 	imx8mn-ddr4-evk.dtb \
