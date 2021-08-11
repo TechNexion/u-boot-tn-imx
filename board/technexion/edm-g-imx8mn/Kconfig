@@ -1,0 +1,18 @@
+if TARGET_EDM_G_IMX8MN
+
+config SYS_BOARD
+	default "edm-g-imx8mn"
+
+config SYS_VENDOR
+	default "technexion"
+
+config SYS_CONFIG_NAME
+	default "edm-g-imx8mn"
+
+config IMX8MN_LOW_DRIVE_MODE
+	bool "Enable the low drive mode of iMX8MN"
+	default n
+
+source "board/freescale/common/Kconfig"
+
+endif
