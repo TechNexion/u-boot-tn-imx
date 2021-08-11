@@ -259,7 +259,7 @@ void board_late_mmc_env_init(void)
 }
 
 #define EXPANSION_IC_I2C_BUS 2
-#define EXPANSION_IC_I2C_ADDR 0x23
+#define EXPANSION_IC_I2C_ADDR 0x27
 
 int board_late_init(void)
 {
