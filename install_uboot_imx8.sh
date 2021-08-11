@@ -223,6 +223,9 @@ usage()
     * EDM-G-IMX8MM with WB:
     ./install_uboot_imx8.sh -b imx8mm-edm-g-wb.dtb -d /dev/sdX
 
+    * AXON-IMX8MM with AXON-WIZARD:
+    ./install_uboot_imx8.sh -b imx8mm-axon-pi.dtb -d /dev/sdX
+
     i.mx8MQ:
     * EDM-IMX8MQ with EDM-WIZARD baseDTBS:
     ./install_uboot_imx8.sh -b imx8mq-edm-wizard.dtb -d /dev/sdX
