@@ -263,26 +263,29 @@ void board_late_mmc_env_init(void)
 
 int board_late_init(void)
 {
+	char *fdt_file = NULL;
 	struct udevice *bus = NULL;
 	struct udevice *i2c_dev = NULL;
 	int ret;
 
-	ret = uclass_get_device_by_seq(UCLASS_I2C, EXPANSION_IC_I2C_BUS, &bus);
-	if (ret) {
-		printf("%s: Can't find bus\n", __func__);
-		return -EINVAL;
-	}
+	fdt_file = env_get("fdt_file");
+	if (fdt_file && !strcmp(fdt_file, "undefined")) {
+		ret = uclass_get_device_by_seq(UCLASS_I2C, EXPANSION_IC_I2C_BUS, &bus);
+		if (ret) {
+			printf("%s: Can't find bus\n", __func__);
+			return -EINVAL;
+		}
 
-	ret = dm_i2c_probe(bus, EXPANSION_IC_I2C_ADDR, 0, &i2c_dev);
-	if (ret) {
-		env_set("fdt_file", "imx8mm-axon-pi.dtb");
-		env_set("baseboard", "pi");
+		ret = dm_i2c_probe(bus, EXPANSION_IC_I2C_ADDR, 0, &i2c_dev);
+		if (ret) {
+			env_set("fdt_file", "imx8mm-axon-pi.dtb");
+			env_set("baseboard", "pi");
+		}
+		else {
+			env_set("fdt_file", "imx8mm-axon-wizard.dtb");
+			env_set("baseboard", "wizard");
+		}
 	}
-	else {
-		env_set("fdt_file", "imx8mm-axon-wizard.dtb");
-		env_set("baseboard", "wizard");
-	}
-
 #ifdef CONFIG_ENV_IS_IN_MMC
 	board_late_mmc_env_init();
 #endif
