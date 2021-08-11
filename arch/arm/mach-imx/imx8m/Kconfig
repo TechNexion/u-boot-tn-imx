@@ -318,6 +318,16 @@ config TARGET_IMX8MP_ICORE_MX8MP
 	  * i.Core MX8M Plus needs to mount on top of EDIMM2.2 for
 	    creating complete i.Core MX8M Plus EDIMM2.2 Starter Kit.
 
+config TARGET_EDM_G_IMX8MN
+	bool "Technexion EDM-G-IMX8MN"
+	select IMX8MN
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+	select FSL_CAAM
+	select FSL_BLOB
+	select MISC
+	select SPL_CRYPTO_SUPPORT if SPL
+
 config TARGET_IMX8MP_EVK
 	bool "imx8mp LPDDR4 EVK board"
 	select IMX8MP
@@ -492,6 +502,7 @@ source "board/freescale/imx8mm_ab2/Kconfig"
 source "board/freescale/imx8mm_evk/Kconfig"
 source "board/freescale/imx8mm_val/Kconfig"
 source "board/freescale/imx8mn_evk/Kconfig"
+source "board/technexion/edm-g-imx8mn/Kconfig"
 source "board/freescale/imx8mp_evk/Kconfig"
 source "board/technexion/edm-g-imx8mp/Kconfig"
 source "board/gateworks/venice/Kconfig"
