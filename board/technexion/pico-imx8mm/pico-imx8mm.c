@@ -314,10 +314,10 @@ int detect_baseboard(void)
 	struct udevice *bus = NULL;
 	struct udevice *i2c_dev = NULL;
 	int ret;
-	char *fdt_file, *baseboard, str_fdtfile[64];
+	char *fdtfile, *baseboard, str_fdtfile[64];
 
-	fdt_file = env_get("fdt_file");
-	if (fdt_file && !strcmp(fdt_file, "undefined")) {
+	fdtfile = env_get("fdtfile");
+	if (fdtfile && !strcmp(fdtfile, "undefined")) {
 		ret = uclass_get_device_by_seq(UCLASS_I2C, EXPANSION_IC_I2C_BUS, &bus);
 		if (ret) {
 			printf("%s: Can't find bus\n", __func__);
@@ -335,7 +335,7 @@ int detect_baseboard(void)
 		strcpy(str_fdtfile, "imx8mm-pico-");
 		strcat(str_fdtfile, baseboard);
 		strcat(str_fdtfile, ".dtb");
-		env_set("fdt_file", str_fdtfile);
+		env_set("fdtfile", str_fdtfile);
 	}
 	return 0;
 
