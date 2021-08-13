@@ -103,9 +103,11 @@
 	"fdt_addr_r=0x43000000\0"			\
 	"fdt_addr=0x43000000\0"			\
 	"fdt_high=0xffffffffffffffff\0"		\
+	"fdt_buffer=8192\0"     \
 	"boot_fdt=try\0" \
-	"fdtfile=" CONFIG_DEFAULT_FDT_FILE "\0" \
+	"fdtfile=undefined\0" \
 	"bootm_size=0x10000000\0" \
+	"baseboard=autodetect\0" \
 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
 	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
 	"mmcroot=" CONFIG_MMCROOT " rootwait rw\0" \
@@ -116,10 +118,19 @@
 		"source\0" \
 	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
 	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr_r} ${fdtfile}\0" \
+	"loadoverlay=" \
+		"fdt addr ${fdt_addr} && fdt resize ${fdt_buffer}; " \
+		"setexpr fdtovaddr ${fdt_addr} + 0xF0000; " \
+		"for ov in ${dtoverlay}; do " \
+		"echo Overlaying ${ov}...; " \
+			"echo Loading imx8mq-pico-${baseboard}-${ov}.dtbo...; " \
+			"fatload mmc ${mmcdev}:${mmcpart} ${fdtovaddr} imx8mq-pico-${baseboard}-${ov}.dtbo && fdt apply ${fdtovaddr}; " \
+			"done\0" \
 	"mmcboot=echo Booting from mmc ...; " \
 		"run mmcargs; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
 			"if run loadfdt; then " \
+				 "run loadoverlay; " \
 				"booti ${loadaddr} - ${fdt_addr_r}; " \
 			"else " \
 				"echo WARN: Cannot load the DT; " \
