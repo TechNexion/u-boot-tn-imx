@@ -1,0 +1,12 @@
+if TARGET_TEK3_IMX8MP
+
+config SYS_BOARD
+	default "tek3-imx8mp"
+
+config SYS_VENDOR
+	default "technexion"
+
+config SYS_CONFIG_NAME
+	default "tek3-imx8mp"
+
+endif
