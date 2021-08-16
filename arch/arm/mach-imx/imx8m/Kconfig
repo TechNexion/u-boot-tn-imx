@@ -93,6 +93,16 @@ config TARGET_EDM_G_IMX8MP
 	select MISC
 	select SPL_CRYPTO if SPL
 
+config TARGET_TEK_IMX8MP
+	bool "TechNexion TEK IMX8MP box PC"
+	select IMX8MP
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+	select FSL_CAAM
+	select FSL_BLOB
+	select MISC
+	select SPL_CRYPTO if SPL
+
 config TARGET_IMX8MQ_CM
 	bool "Ronetix iMX8MQ-CM SoM"
 	select IMX8MQ
@@ -648,6 +658,7 @@ source "board/technexion/edm-g-imx8mn/Kconfig"
 source "board/technexion/edm-imx8mq/Kconfig"
 source "board/technexion/pico-imx8mq/Kconfig"
 source "board/technexion/pico-imx8mm/Kconfig"
+source "board/technexion/tek-imx8mp/Kconfig"
 source "board/variscite/imx8mn_var_som/Kconfig"
 source "board/toradex/smarc-imx8mp/Kconfig"
 source "board/toradex/verdin-imx8mm/Kconfig"
