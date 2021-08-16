@@ -1155,6 +1155,7 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mn-var-som-symphony.dtb \
 	imx8mn-venice.dtb \
 	imx8mn-venice-gw7902.dtb \
+	imx8mq-edm-wizard.dtb \
 	imx8mq-evk.dtb \
 	imx8mm-beacon-kit.dtb \
 	imx8mn-beacon-kit.dtb \
