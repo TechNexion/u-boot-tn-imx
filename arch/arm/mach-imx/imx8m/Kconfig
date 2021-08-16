@@ -357,6 +357,11 @@ config TARGET_IMX8MP_DDR4_EVK
 	select ARCH_MISC_INIT
 	select SPL_CRYPTO if SPL
 
+config TARGET_EDM_IMX8MQ
+	bool "TechNexion EDM-IMX8MQ"
+	select IMX8MQ
+	select IMX8M_LPDDR4
+
 config TARGET_PICO_IMX8MQ
 	bool "Support Technexion Pico iMX8MQ"
 	select BINMAN
@@ -508,6 +513,7 @@ source "board/technexion/edm-g-imx8mp/Kconfig"
 source "board/gateworks/venice/Kconfig"
 source "board/google/imx8mq_phanbell/Kconfig"
 source "board/technexion/edm-g-imx8mm/Kconfig"
+source "board/technexion/edm-imx8mq/Kconfig"
 source "board/technexion/pico-imx8mm/Kconfig"
 source "board/kontron/pitx_imx8m/Kconfig"
 source "board/kontron/sl-mx8mm/Kconfig"
