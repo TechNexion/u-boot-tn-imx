@@ -142,6 +142,15 @@ void setup_wifi(void)
 	gpio_set_value(BT_ON_PAD, 0);
 }
 
+static iomux_v3_cfg_t const touch_rst_pads[] = {
+	IMX8MN_PAD_SAI5_MCLK__GPIO3_IO25 | MUX_PAD_CTRL(PAD_CTL_PUE),
+};
+
+void setup_touch(void)
+{
+	imx_iomux_v3_setup_multiple_pads(touch_rst_pads, ARRAY_SIZE(touch_rst_pads));
+}
+
 #define FSL_SIP_GPC			0xC2000000
 #define FSL_SIP_CONFIG_GPC_PM_DOMAIN	0x3
 #define DISPMIX				9
@@ -150,6 +159,7 @@ void setup_wifi(void)
 int board_init(void)
 {
 	setup_wifi();
+	setup_touch();
 	if (IS_ENABLED(CONFIG_FEC_MXC))
 		setup_fec();
 
@@ -197,8 +207,84 @@ void board_late_mmc_env_init(void)
 	run_command(cmd, 0);
 }
 
+int add_dtoverlay(char *ov_name)
+{
+	char *dtoverlay, arr_dtov[64];
+
+	dtoverlay = env_get("dtoverlay");
+	if (dtoverlay) {
+		strcpy(arr_dtov, dtoverlay);
+		if (!strstr(arr_dtov, ov_name)) {
+			strcat(arr_dtov, " ");
+			strcat(arr_dtov, ov_name);
+			env_set("dtoverlay", arr_dtov);
+		}
+	} else
+		env_set("dtoverlay", ov_name);
+
+	return 0;
+}
+
+struct camera_cfg {
+       u8 camera_index;
+       u8 i2c_bus_index;
+       u8 eeprom_i2c_addr;
+};
+
+const struct camera_cfg tevi_camera[] = {
+       {1, 1, 0x54},
+};
+
+#define NUMS(x)        (sizeof(x) / sizeof(x[0]))
+
+int detect_tevi_camera(void)
+{
+	struct udevice *bus = NULL;
+	struct udevice *i2c_dev = NULL;
+	int i, ret;
+
+	for (i = 0; i < NUMS(tevi_camera); i++) {
+	        ret = uclass_get_device_by_seq(UCLASS_I2C, tevi_camera[i].i2c_bus_index, &bus);
+	        if (ret) {
+	                printf("%s: Can't find bus\n", __func__);
+	                continue;
+	        }
+	        ret = dm_i2c_probe(bus, tevi_camera[i].eeprom_i2c_addr, 0, &i2c_dev);
+	        if (! ret) {
+	                add_dtoverlay("ov5640");
+	                return 0;
+	        }
+	}
+	return 0;
+}
+
+#define EETI_TOUCH_I2C_BUS 2
+#define EETI_TOUCH_I2C_ADDR 0x2a
+
+int detect_display_panel(void)
+{
+       struct udevice *bus = NULL;
+       struct udevice *i2c_dev = NULL;
+       int ret;
+
+       ret = uclass_get_device_by_seq(UCLASS_I2C, EETI_TOUCH_I2C_BUS, &bus);
+       if (ret) {
+               printf("%s: Can't find bus\n", __func__);
+               return -EINVAL;
+       }
+       /* detect LVDS panel type by identifying touch controller */
+       ret = dm_i2c_probe(bus, EETI_TOUCH_I2C_ADDR, 0, &i2c_dev);
+       if (! ret) {
+		add_dtoverlay("sn65dsi84-vl10112880");
+       }
+       return 0;
+}
+
 int board_late_init(void)
 {
+	detect_display_panel();
+	detect_tevi_camera();
+
 #ifdef CONFIG_ENV_IS_IN_MMC
 	board_late_mmc_env_init();
 #endif
