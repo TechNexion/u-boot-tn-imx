@@ -157,22 +157,10 @@ static iomux_v3_cfg_t const eqos_rst_pads[] = {
 	MX8MP_PAD_GPIO1_IO09__GPIO1_IO09 | MUX_PAD_CTRL(NO_PAD_CTRL),
 };
 
-#define EQOS_PWR_PAD IMX_GPIO_NR(1, 11)
-static iomux_v3_cfg_t const eqos_pwr_pads[] = {
-	MX8MP_PAD_GPIO1_IO11__GPIO1_IO11 | MUX_PAD_CTRL(NO_PAD_CTRL),
-};
-
 static void setup_iomux_eqos(void)
 {
 	imx_iomux_v3_setup_multiple_pads(eqos_rst_pads,
 					 ARRAY_SIZE(eqos_rst_pads));
-
-	imx_iomux_v3_setup_multiple_pads(eqos_pwr_pads,
-					 ARRAY_SIZE(eqos_pwr_pads));
-
-	gpio_request(EQOS_PWR_PAD, "eqos_pwr");
-	gpio_direction_output(EQOS_PWR_PAD, 1);
-	mdelay(20);
 
 	gpio_request(EQOS_RST_PAD, "eqos_rst");
 	gpio_direction_output(EQOS_RST_PAD, 0);
