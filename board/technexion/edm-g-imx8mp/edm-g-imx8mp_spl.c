@@ -97,7 +97,7 @@ BOARD_ID0    BOARD_ID1   BOARD_ID2
 
 void spl_dram_init(void)
 {
-	//setup_iomux_ver_det();
+	setup_iomux_ver_det();
 	/*************************************************
 	ToDo: It's a dirty workaround to store the
 	information of DDR size into start address of OCRAM.
@@ -131,9 +131,6 @@ void spl_dram_init(void)
 	}
 	else
 		puts("Unknown DDR type!!!\n");
-		ddr_init(&dram_timing_4gb);
-		writel(0x3, OCRAM_BASE_ADDR);
-
 }
 
 #define I2C_PAD_CTRL (PAD_CTL_DSE6 | PAD_CTL_HYS | PAD_CTL_PUE | PAD_CTL_PE)
