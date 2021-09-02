@@ -24,8 +24,6 @@
 #define CONFIG_INITRD_TAG
 #define CONFIG_REVISION_TAG
 
-#undef CONFIG_LDO_BYPASS_CHECK
-
 /* Size of malloc() pool */
 #define CONFIG_SYS_MALLOC_LEN		(10 * SZ_1M)
 
@@ -75,7 +73,10 @@
 
 /* MMC Configuration */
 #define CONFIG_SYS_FSL_USDHC_NUM	2
-#define CONFIG_SYS_FSL_ESDHC_ADDR	0
+
+#define CONFIG_SYS_FSL_ESDHC_ADDR	USDHC3_BASE_ADDR
+#define CONFIG_SUPPORT_EMMC_BOOT
+#define CONFIG_SYS_FSL_ESDHC_HAS_DDR_MODE
 
 /* SATA Configuration */
 /* #define CONFIG_CMD_SATA -- removed due to redefinition */
@@ -135,6 +136,7 @@
 	"boot_fdt=try\0" \
 	"mmcdev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
 	"mmcpart=1\0" \
+	"mmcautodetect=yes\0" \
 	"silent=" __stringify(SILENT_ENABLE) "\0" \
 	"searchbootdev=" \
 		"if test ${bootdev} = MMC3; then " \
