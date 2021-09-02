@@ -22,13 +22,10 @@
 #include <linux/sizes.h>
 #include <common.h>
 #include <fsl_esdhc_imx.h>
-#include <mmc.h>
 #include <miiphy.h>
 #include <netdev.h>
 #include <usb.h>
 #include <phy.h>
-#include <input.h>
-#include <i2c.h>
 #include <power/pmic.h>
 #include <power/pfuze100_pmic.h>
 #ifdef CONFIG_CMD_SATA
@@ -58,6 +55,8 @@ DECLARE_GLOBAL_DATA_PTR;
 #define ETH_PHY_POWER		IMX_GPIO_NR(7, 13)
 #define VERSION_DET_R1310	IMX_GPIO_NR(5, 31)
 #define VERSION_DET_R1311	IMX_GPIO_NR(6, 0)
+
+static bool with_pmic = true;
 
 int dram_init(void)
 {
@@ -109,9 +108,12 @@ static iomux_v3_cfg_t const enet_pads[] = {
 	IOMUX_PADS(PAD_RGMII_RD2__RGMII_RD2  | MUX_PAD_CTRL(ENET_PAD_CTRL)),
 	IOMUX_PADS(PAD_RGMII_RD3__RGMII_RD3  | MUX_PAD_CTRL(ENET_PAD_CTRL)),
 	IOMUX_PADS(PAD_RGMII_RX_CTL__RGMII_RX_CTL | MUX_PAD_CTRL(ENET_PAD_CTRL)),
-	/* AR8035 PHY Reset */
+	/* AR8031/AR8035 PHY Reset */
 	IOMUX_PADS(PAD_EIM_D29__GPIO3_IO29    | MUX_PAD_CTRL(NO_PAD_CTRL)),
-	/* AR8035 PHY Power */
+};
+
+static iomux_v3_cfg_t const enet_ar8035_power_pads[] = {
+	/* AR8035 POWER */
 	IOMUX_PADS(PAD_GPIO_18__GPIO7_IO13    | MUX_PAD_CTRL(NO_PAD_CTRL)),
 };
 
@@ -131,11 +133,16 @@ static void setup_iomux_enet(void)
 {
 	SETUP_IOMUX_PADS(enet_pads);
 
-	/* enable AR8035 POWER */
-	gpio_direction_output(ETH_PHY_POWER, 0);
+	if (with_pmic) {
+		SETUP_IOMUX_PADS(enet_ar8035_power_pads);
+		/* enable AR8035 POWER */
+		gpio_request(ETH_PHY_POWER, "enet_phy_power");
+		gpio_direction_output(ETH_PHY_POWER, 0);
+	}
 	/* wait until 3.3V of PHY and clock become stable */
 	mdelay(10);
 	/* Reset AR8031/AR8035 PHY */
+	gpio_request(ETH_PHY_RESET, "enet_phy_reset");
 	gpio_direction_output(ETH_PHY_RESET, 0);
 	mdelay(10);
 	gpio_set_value(ETH_PHY_RESET, 1);
@@ -217,18 +224,25 @@ int board_mmc_init(bd_t *bis)
 	return 0;
 }
 
-static int mx6_rgmii_rework(struct phy_device *phydev)
+int board_phy_config(struct phy_device *phydev)
 {
 	unsigned short val;
 
-	/* To enable AR8035 ouput a 125MHz clk from CLK_25M */
+	/* To enable AR8031/AR8035 output a 125MHz clk from CLK_25M */
 	phy_write(phydev, MDIO_DEVAD_NONE, 0xd, 0x7);
 	phy_write(phydev, MDIO_DEVAD_NONE, 0xe, 0x8016);
 	phy_write(phydev, MDIO_DEVAD_NONE, 0xd, 0x4007);
 
 	val = phy_read(phydev, MDIO_DEVAD_NONE, 0xe);
-	val &= 0xffe7;
-	val |= 0x18;
+	if (with_pmic) {
+		/* AR8035 */
+		val &= 0xffe7;
+		val |= 0x18;
+	} else {
+		/* AR8031 */
+		val &= 0xffe3;
+		val |= 0x18;
+	}
 	phy_write(phydev, MDIO_DEVAD_NONE, 0xe, val);
 
 	/* introduce tx clock delay */
@@ -236,13 +250,6 @@ static int mx6_rgmii_rework(struct phy_device *phydev)
 	val = phy_read(phydev, MDIO_DEVAD_NONE, 0x1e);
 	val |= 0x0100;
 	phy_write(phydev, MDIO_DEVAD_NONE, 0x1e, val);
-
-	return 0;
-}
-
-int board_phy_config(struct phy_device *phydev)
-{
-	mx6_rgmii_rework(phydev);
 
 	if (phydev->drv->config)
 		phydev->drv->config(phydev);
@@ -433,7 +440,8 @@ int power_init_board(void)
 		reg &= ~(LDO_VOL_MASK);
 		reg |= (LDOA_1_50V | (1 << (LDO_EN)));
 		pmic_reg_write(p, PFUZE100_VGEN2VOL, reg);
-	}
+	} else
+		with_pmic = false;
 
 	return 0;
 }
@@ -881,7 +889,6 @@ int checkboard(void)
 #ifdef CONFIG_SPL_LOAD_FIT
 int board_fit_config_name_match(const char *name)
 {
-	//printf("JOEJOE name=%s\n",name);
 	if (is_mx6dq() && !strcmp(name, "imx6q-tep5"))
 		return 0;
 	else if ((is_mx6dl() || is_mx6solo()) && !strcmp(name, "imx6dl-tep5"))
