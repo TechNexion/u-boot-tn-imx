@@ -857,6 +857,8 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mm-ddr4-evk.dtb \
 	imx8mm-ddr3l-val.dtb \
 	imx8mm-ddr4-val.dtb \
+	imx8mm-flex-pi.dtb \
+	imx8mm-flex-wizard.dtb \
 	imx8mm-venice.dtb \
 	imx8mm-venice-gw71xx-0x.dtb \
 	imx8mm-venice-gw72xx-0x.dtb \
