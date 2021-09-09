@@ -19,7 +19,7 @@
 #include "imx6qdl-tep5.dtsi"
 
 / {
-	model = "TechNexion TEP5-IMX6 Quad board with 10-inch panel";
+	model = "TechNexion TEP5-IMX6 Quad board";
 	compatible = "fsl,tep5-imx6q", "fsl,imx6q";
 };
 

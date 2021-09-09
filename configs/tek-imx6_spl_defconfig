@@ -55,7 +55,7 @@ CONFIG_EFI_PARTITION=y
 # CONFIG_SPL_PARTITION_UUIDS is not set
 CONFIG_OF_CONTROL=y
 CONFIG_DEFAULT_DEVICE_TREE="imx6dl-tek3"
-CONFIG_OF_LIST="imx6q-tek3 imx6dl-tek3 imx6q-tep5-15inch imx6dl-tep5 imx6dl-tep5-15inch imx6q-tep5"
+CONFIG_OF_LIST="imx6q-tek3 imx6dl-tek3 imx6dl-tep5 imx6q-tep5"
 CONFIG_MULTI_DTB_FIT=y
 CONFIG_ENV_IS_IN_MMC=y
 CONFIG_DM_MMC=y

@@ -519,33 +519,36 @@ static int detect_usb(struct display_info_t const *dev)
 	struct usb_device *udev;
 	int device_num;
 
-	if (usb_inited_dm != 1) {
-		usb_init();
-		usb_inited_dm = 1;
-	}
-
-	uclass_find_first_device(UCLASS_USB, &bus);
-	while (bus) {
-		priv = dev_get_uclass_priv(bus);
-		device_num = priv->next_addr;
-
-		for (int i = 0 ; i < device_num; i++) {
-			if (i == 0)
-				device_find_first_child(bus, &child);
-			else
-				device_find_first_child(child, &child);
-			if (child) {
-				udev = dev_get_parent_priv(child);	//Get usb_device pointer
-				if (udev->descriptor.idVendor != touch_matches[dev->addr].idVendor)
-					continue;
-
-				if (udev->descriptor.bDescriptorType == USB_DT_DEVICE)
-					if (strncmp(udev->prod, touch_matches[dev->addr].prod, strlen(touch_matches[dev->addr].prod)) == 0)
-						return 1;
-			}
+	char *s = strdup(sbc_type());
+	if (!strcmp(s, "tep5")) {
+		if (usb_inited_dm != 1) {
+			usb_init();
+			usb_inited_dm = 1;
 		}
-		//Find next bus
-		uclass_find_next_device(&bus);
+
+		uclass_find_first_device(UCLASS_USB, &bus);
+		while (bus) {
+			priv = dev_get_uclass_priv(bus);
+			device_num = priv->next_addr;
+
+			for (int i = 0 ; i < device_num; i++) {
+				if (i == 0)
+					device_find_first_child(bus, &child);
+				else
+					device_find_first_child(child, &child);
+				if (child) {
+					udev = dev_get_parent_priv(child);	//Get usb_device pointer
+					if (udev->descriptor.idVendor != touch_matches[dev->addr].idVendor)
+						continue;
+
+					if (udev->descriptor.bDescriptorType == USB_DT_DEVICE)
+						if (strncmp(udev->prod, touch_matches[dev->addr].prod, strlen(touch_matches[dev->addr].prod)) == 0)
+							return 1;
+				}
+			}
+			//Find next bus
+			uclass_find_next_device(&bus);
+		}
 	}
 #endif /* !define(CONFIG_DM_USB) */
 	return 0;
@@ -610,7 +613,7 @@ struct display_info_t const displays[] = {{
 	.bus	= 1,
 	.addr	= 1,
 	.pixfmt = IPU_PIX_FMT_RGB24,
-	.detect = NULL,
+	.detect = detect_usb,
 	.enable = enable_lvds,
 	.mode	= {
 		.name           = "LVDS_SIN_1368x768",
