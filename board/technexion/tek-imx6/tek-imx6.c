@@ -886,7 +886,7 @@ int board_late_init(void)
 #endif
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
-	char *s;
+	char *s, *board;
 	char fdt_name[24];
 
 	env_set("som", get_som_type());
@@ -894,13 +894,16 @@ int board_late_init(void)
 	env_set("baseboard", sbc_type());
 
 	s = env_get ("fdtfile_autodetect");
+	board = env_get ("baseboard");
 	if (s != NULL) {
 		if (strncmp (s, "off", 3) != 0) {
-			if (detect_usb(&displays[1]) || detect_usb(&displays[2])) {		// detect 15-inch panel
-				strncpy(s, "-15inch", 7);
+			if (!strcmp (board, "tep5")) {
+				if (detect_usb(&displays[1]) || detect_usb(&displays[2])) {		// detect 15-inch panel
+					strncpy(s, "-15inch", 7);
+				} else
+					s[0] = 0;
 			} else
 				s[0] = 0;
-
 			if (is_mx6dqp())
 				sprintf(fdt_name, "imx6qp-%s%s.dtb", sbc_type(), s);
 			else if (is_mx6dq())
@@ -963,11 +966,24 @@ int checkboard(void)
 #ifdef CONFIG_SPL_LOAD_FIT
 int board_fit_config_name_match(const char *name)
 {
-	if (is_mx6dq() && !strcmp(name, "imx6q-tep5"))
-		return 0;
-	else if ((is_mx6dl() || is_mx6solo()) && !strcmp(name, "imx6dl-tep5"))
-		return 0;
-
+	char *s = strdup(sbc_type());
+	if (!strcmp(s, "tep5")) {
+		if (is_mx6dq()) {
+			if (!strcmp(name, "imx6q-tep5"))
+			return 0;
+		} else if (is_mx6dl() || is_mx6solo()) {
+			if (!strcmp(name, "imx6dl-tep5"))
+			return 0;
+		}
+	} else if (!strcmp(s, "tek3")) {
+		if (is_mx6dq()) {
+			if (!strcmp(name, "imx6q-tek"))
+			return 0;
+		} else if (is_mx6dl() || is_mx6solo()) {
+			if (!strcmp(name, "imx6dl-tek"))
+			return 0;
+		}
+	}
 	return -EINVAL;
 }
 #endif
