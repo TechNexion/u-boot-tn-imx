@@ -89,7 +89,7 @@ install_firmware()
 
 	PWD=$(pwd)
 	[ -n "${PWD##*imx-atf}" ] && cd imx-atf
-	if ( git diff-index --quiet HEAD -- plat/imx/imx8mm/imx8mm_bl31_setup.c ); then
+	if ( git diff-index --quiet HEAD -- plat/imx/imx8m/imx8mm/imx8mm_bl31_setup.c ); then
 		if [ -z "${DTBS##*imx8mm-axon*}" ]; then
 			# AXON: Change UART2 base address to UART1 and released UART4 from M4
 			sed -i 's/(RDC_PDAP_UART4, D1R | D1W),/(RDC_PDAP_UART4, D0R | D0W),/g' plat/imx/imx8m/imx8mm/imx8mm_bl31_setup.c
@@ -98,7 +98,7 @@ install_firmware()
 		fi
 	else
 		if [ -n "${DTBS##*imx8mm-axon*}" ]; then
-			git checkout plat/imx/imx8mm/imx8mm_bl31_setup.c
+			git checkout plat/imx/imx8m/imx8mm/imx8mm_bl31_setup.c
 			git checkout plat/imx/imx8m/imx8mm/include/platform_def.h
 			rm build/${PLATFORM}/release/bl31.bin
 		fi
