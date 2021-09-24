@@ -266,6 +266,29 @@ int board_late_init(void)
 	return 0;
 }
 
+#ifdef CONFIG_OF_BOARD_SETUP
+int ft_board_setup(void *blob, bd_t *bd)
+{
+	const int *cell;
+	int offs;
+	uint32_t cma_size;
+	unsigned int dram_size;
+
+	dram_size = imx_ddr_size() / 1024 / 1024;
+	offs = fdt_path_offset(blob, "/reserved-memory/linux,cma");
+	cell = fdt_getprop(blob, offs, "size", NULL);
+	cma_size = fdt32_to_cpu(cell[0]);
+	if (dram_size == 512) {
+		/* CMA is aligned by 32MB on i.mx8mq,
+		   so CMA size can only be multiple of 32MB */
+		cma_size = env_get_ulong("cma_size", 10, (6 * 32) * 1024 * 1024);
+		fdt_setprop_u32(blob, offs, "size", (uint64_t)cma_size);
+	}
+
+	return 0;
+}
+#endif
+
 int checkboard(void)
 {
 	puts("Board: i.MX7D PICOSOM\n");
