@@ -77,6 +77,10 @@ enum overlay_type {
 	/* EDM-G-IMX8MP */
 	LVDS_10_8MP      = 1,
 	LVDS_21_8MP      = 2,
+	CAM_OV5640_8MP   = 3,
+	CAM_AR0521_8MP   = 4,
+	CAM_AR0144_8MP   = 5,
+	CAM_AR0234_8MP   = 6,
 #if defined(CONFIG_TARGET_EDM_G_IMX8MM)
 	/* EDM-G-IMX8MM */
 	MIPI_LVDS_10_8MM = 1,
@@ -919,6 +923,14 @@ int do_boota(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]) {
 				dtbo_idx = LVDS_10_8MP;
 			} else if (strcmp(dtbo_token, "lvds_21") == 0) {
 				dtbo_idx = LVDS_21_8MP;
+			} else if (strcmp(dtbo_token, "cam_ov5640") == 0) {
+				dtbo_idx = CAM_OV5640_8MP;
+			} else if (strcmp(dtbo_token, "cam_ar0521") == 0) {
+				dtbo_idx = CAM_AR0521_8MP;
+			} else if (strcmp(dtbo_token, "cam_ar0144") == 0) {
+				dtbo_idx = CAM_AR0144_8MP;
+			} else if (strcmp(dtbo_token, "cam_ar0234") == 0) {
+				dtbo_idx = CAM_AR0234_8MP;
 			} else {
 				dtbo_idx = NO_OVERLAY;
 			}
