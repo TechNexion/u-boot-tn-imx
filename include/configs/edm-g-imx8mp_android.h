@@ -26,7 +26,7 @@
 	"splashimage=0x50000000\0"		\
 	"fdt_high=0xffffffffffffffff\0"		\
 	"initrd_high=0xffffffffffffffff\0"	\
-	"overlay_name=no_overlay\0"		\
+	"overlay_name=cam_ov5640\0"		\
 	"bootargs="				\
 	"console=ttymxc1,115200 "		\
 	"init=/init "				\
