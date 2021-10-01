@@ -87,28 +87,33 @@ enum overlay_type {
 	MIPI_LVDS_15_8MM = 2,
 	MIPI_LVDS_21_8MM = 3,
 	CAM_5640_8MM     = 4,
+	HDMI_INPUT_8MM   = 5,
 #elif defined(CONFIG_TARGET_PICO_IMX8MM)
 	/* PICO-IMX8MM */
 	MIPI_5_8MM       = 1,
 	CAM_5640_8MM     = 2,
 	CAM_5645_8MM     = 3,
 	VOICEHAT_8MM     = 4,
-	CLIX_NFC_8MM     = 5,
+	CLIX1_NFC_8MM     = 5,
 	CLIX2_NFC_8MM    = 6,
-	MIPI_8_8MM	 = 7,
-	MIPI_10_8MM	 = 8,
-	MIPI_HDMI_8MM    = 9,
-	MIPI_LVDS_10_8MM = 10,
-	MIPI_LVDS_15_8MM = 11,
-	MIPI_LVDS_21_8MM = 12,
+	MIPI_10_8MM	 = 7,
+	MIPI_HDMI_8MM    = 8,
+	MIPI_LVDS_10_8MM = 9,
+	MIPI_LVDS_15_8MM = 10,
+	MIPI_LVDS_21_8MM = 11,
 #endif
 	/* PICO-IMX8MQ */
-	CLIX_NFC_8MQ     = 1,
-	CSI_8MQ          = 2,
-	CAM_5640_1_8MQ   = 3,
-	CAM_5640_2_8MQ   = 4,
-	CAM_5645_1_8MQ   = 5,
-	CAM_5645_2_8MQ   = 6,
+	MIPI_5_8MQ       = 1,
+	CAM_OV5640_8MQ   = 2,
+	CAM_OV5645_8MQ   = 3,
+	VOICEHAT_8MQ     = 4,
+	CLIX1_NFC_8MQ    = 5,
+	CLIX2_NFC_8MQ    = 6,
+	MIPI_10_8MQ      = 7,
+	MIPI_HDMI_8MQ    = 8,
+	MIPI_LVDS_10_8MQ = 9,
+	MIPI_LVDS_15_8MQ = 10,
+	MIPI_LVDS_21_8MQ = 11,
 };
 #endif
 
@@ -944,6 +949,8 @@ int do_boota(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]) {
 				dtbo_idx = MIPI_LVDS_21_8MM;
 			} else if (strcmp(dtbo_token, "cam_ov5640") == 0) {
 				dtbo_idx = CAM_5640_8MM;
+			} else if (strcmp(dtbo_token, "hdmi_input") == 0) {
+				dtbo_idx = HDMI_INPUT_8MM;
 			} else {
 				dtbo_idx = NO_OVERLAY;
 			}
@@ -951,29 +958,53 @@ int do_boota(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]) {
 		} else if(is_imx8mm()) {
 			if (strcmp(dtbo_token, "mipi_5") == 0) {
 				dtbo_idx = MIPI_5_8MM;
-			} else if (strcmp(dtbo_token, "mipi_10") == 0) {
-				dtbo_idx = MIPI_10_8MM;
 			} else if (strcmp(dtbo_token, "cam_ov5640") == 0) {
 				dtbo_idx = CAM_5640_8MM;
 			} else if (strcmp(dtbo_token, "cam_ov5645") == 0) {
 				dtbo_idx = CAM_5645_8MM;
+			} else if (strcmp(dtbo_token, "voicehat") == 0) {
+				dtbo_idx = VOICEHAT_8MM;
+			} else if (strcmp(dtbo_token, "clix1_nfc") == 0) {
+				dtbo_idx = CLIX1_NFC_8MM;
+			} else if (strcmp(dtbo_token, "clix2_nfc") == 0) {
+				dtbo_idx = CLIX2_NFC_8MM;
+			} else if (strcmp(dtbo_token, "mipi_10") == 0) {
+				dtbo_idx = MIPI_10_8MM;
+			} else if (strcmp(dtbo_token, "mipi_to_hdmi") == 0) {
+				dtbo_idx = MIPI_HDMI_8MM;
+			} else if (strcmp(dtbo_token, "mipi_to_lvds_10") == 0) {
+				dtbo_idx = MIPI_LVDS_10_8MM;
+			} else if (strcmp(dtbo_token, "mipi_to_lvds_15") == 0) {
+				dtbo_idx = MIPI_LVDS_15_8MM;
+			} else if (strcmp(dtbo_token, "mipi_to_lvds_21") == 0) {
+				dtbo_idx = MIPI_LVDS_21_8MM;
 			} else {
 				dtbo_idx = NO_OVERLAY;
 			}
 #endif
 		} else if(is_imx8mq()) {
-			if (strcmp(dtbo_token, "clixnfc") == 0) {
-				dtbo_idx = CLIX_NFC_8MQ;
-			} else if (strcmp(dtbo_token, "csi") == 0) {
-				dtbo_idx = CSI_8MQ;
-			} else if (strcmp(dtbo_token, "cam_ov5640_1") == 0) {
-				dtbo_idx = CAM_5640_1_8MQ;
-			} else if (strcmp(dtbo_token, "cam_ov5640_2") == 0) {
-				dtbo_idx = CAM_5640_2_8MQ;
-			} else if (strcmp(dtbo_token, "cam_ov5645_1") == 0) {
-				dtbo_idx = CAM_5645_1_8MQ;
-			} else if (strcmp(dtbo_token, "cam_ov5645_2") == 0) {
-				dtbo_idx = CAM_5645_2_8MQ;
+			if (strcmp(dtbo_token, "mipi_5") == 0) {
+				dtbo_idx = MIPI_5_8MQ;
+			} else if (strcmp(dtbo_token, "cam_ov5640") == 0) {
+				dtbo_idx = CAM_OV5640_8MQ;
+			} else if (strcmp(dtbo_token, "cam_ov5645") == 0) {
+				dtbo_idx = CAM_OV5645_8MQ;
+			} else if (strcmp(dtbo_token, "voicehat") == 0) {
+				dtbo_idx = VOICEHAT_8MQ;
+			} else if (strcmp(dtbo_token, "clix1_nfc") == 0) {
+				dtbo_idx = CLIX1_NFC_8MQ;
+			} else if (strcmp(dtbo_token, "clix2_nfc") == 0) {
+				dtbo_idx = CLIX2_NFC_8MQ;
+			} else if (strcmp(dtbo_token, "mipi_10") == 0) {
+				dtbo_idx = MIPI_10_8MQ;
+			} else if (strcmp(dtbo_token, "mipi_to_hdmi") == 0) {
+				dtbo_idx = MIPI_LVDS_10_8MQ;
+			} else if (strcmp(dtbo_token, "mipi_to_lvds_10") == 0) {
+				dtbo_idx = MIPI_LVDS_10_8MQ;
+			} else if (strcmp(dtbo_token, "mipi_to_lvds_15") == 0) {
+				dtbo_idx = MIPI_LVDS_15_8MQ;
+			} else if (strcmp(dtbo_token, "mipi_to_lvds_21") == 0) {
+				dtbo_idx = MIPI_LVDS_21_8MQ;
 			} else {
 				dtbo_idx = NO_OVERLAY;
 			}
