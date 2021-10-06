@@ -33,6 +33,7 @@
 	"init=/init "				\
 	"androidboot.console=ttymxc1 "		\
 	"androidboot.hardware=nxp "		\
+	"androidboot.hwrotation=0 "		\
 	"firmware_class.path=/vendor/firmware "	\
 	"loop.max_part=7 "			\
 	"transparent_hugepage=never "		\
