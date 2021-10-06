@@ -32,7 +32,7 @@
 	"init=/init "					\
 	"androidboot.console=ttymxc0 "			\
 	"androidboot.hardware=nxp "			\
-	"androidboot.hwrotation=0 "			\
+	"androidboot.swrotation=0 "			\
 	"firmware_class.path=/vendor/firmware "		\
 	"loop.max_part=7 "				\
 	"androidboot.fbTileSupport=enable "		\
