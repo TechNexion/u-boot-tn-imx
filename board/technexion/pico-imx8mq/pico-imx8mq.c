@@ -406,17 +406,26 @@ int detect_baseboard(void)
 
 }
 
-int add_dtoverlay(char *ov_name)
+typedef enum dtoverlayType_t
+{
+	tDISPLAY = 0,
+	tCAMERA,
+} dtoverlayType_t;
+
+int add_dtoverlay(char *ov_name, dtoverlayType_t type)
 {
 	char *dtoverlay, arr_dtov[64];
 
 	dtoverlay = env_get("dtoverlay");
 	if (dtoverlay) {
 		strcpy(arr_dtov, dtoverlay);
-		if (!strstr(arr_dtov, ov_name)) {
-			strcat(arr_dtov, " ");
-			strcat(arr_dtov, ov_name);
-			env_set("dtoverlay", arr_dtov);
+		if ((type == tCAMERA) ||
+				((type == tDISPLAY) && (!strstr(arr_dtov, "dual")))) {
+			if (!strstr(arr_dtov, ov_name)) {
+				strcat(arr_dtov, " ");
+				strcat(arr_dtov, ov_name);
+				env_set("dtoverlay", arr_dtov);
+			}
 		}
 	} else
 		env_set("dtoverlay", ov_name);
@@ -441,13 +450,13 @@ int detect_display_panel(void)
 		touch_id = dm_i2c_reg_read(i2c_dev, 0xA3);
 		switch (touch_id) {
 		case 0x54:
-			add_dtoverlay("ili9881c");
+			add_dtoverlay("ili9881c", tDISPLAY);
 			break;
 		case 0x58:
-			add_dtoverlay("g080uan01");
+			add_dtoverlay("g080uan01", tDISPLAY);
 			break;
 		case 0x59:
-			add_dtoverlay("g101uan02");
+			add_dtoverlay("g101uan02", tDISPLAY);
 			break;
 		default:
 			printf("Unknown panel ID!\r\n");
@@ -457,7 +466,7 @@ int detect_display_panel(void)
 	/* detect MIPI2HDMI controller */
 	ret = dm_i2c_probe(bus, ADV7535_HDMI_I2C_ADDR, 0, &i2c_dev);
 	if (! ret) {
-		add_dtoverlay("mipi2hdmi-adv7535");
+		add_dtoverlay("mipi2hdmi-adv7535", tDISPLAY);
 	}
 
 	return 0;
@@ -490,11 +499,11 @@ int detect_tevi_camera(void)
 	        }
 	        ret = dm_i2c_probe(bus, tevi_camera[i].eeprom_i2c_addr, 0, &i2c_dev);
 	        if (! ret) {
-	                add_dtoverlay("tevi-ov5640");
+	                add_dtoverlay("tevi-ov5640", tCAMERA);
 	                return 0;
 	        }
 	}
-	add_dtoverlay("ov5645");
+	add_dtoverlay("ov5645", tCAMERA);
 	return 0;
 }
 
