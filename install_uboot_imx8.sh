@@ -18,11 +18,11 @@ DRIVE=/dev/sdX
 #DTBS="fsl-imx8mq-evk"
 #DTBS="pico-imx8m"
 
-BRANCH_VER="lf-5.10.y_2.0.0" #branch used by imx-mkimage and imx-atf under meta-imx
+BRANCH_VER="lf-5.10.52_2.1.0" #branch used by imx-mkimage and imx-atf under meta-imx
 ATF_BRANCH_VER="lf_v2.4"
-MKIMAGE_SRC_GIT_ID='5138add7602a50d1730a54d0b67219f0ce0666b4' #refer to 'imx-mkimage_git.inc' in Yocto
-ATF_SRC_GIT_ID='ec35fef92b71a79075f214f8cff0738cd4482ed0' #refer to 'imx-atf_2.0.bbappend' in Yocto
-DDR_FW_VER="8.12" #refer to the name of 'firmware-imx-8_8.8.bb'
+MKIMAGE_SRC_GIT_ID='1112c88470f339dc631e2a7117087f416af6d6b5' #refer to 'imx-mkimage_git.inc' in Yocto
+ATF_SRC_GIT_ID='bb4957067d4b96a6ee197a333425948e409e990d' #refer to 'imx-atf_2.0.bbappend' in Yocto
+DDR_FW_VER="8.13" #refer to the name of 'firmware-imx-8_8.8.bb'
 
 FSL_MIRROR="https://www.nxp.com/lgfiles/NMG/MAD/YOCTO"
 FIRMWARE_DIR="firmware_imx8"
@@ -71,7 +71,7 @@ install_firmware()
 	if [ ! -d ${MKIMAGE_DIR} ] ; then
 		git clone https://source.codeaurora.org/external/imx/imx-mkimage -b ${BRANCH_VER} || printf "Fails to fetch imx-mkimage source code \n"
 		cd imx-mkimage
-		git checkout ${MKIMAGE_SRC_GIT_ID}
+		git checkout -b ${BRANCH_VER}_local ${MKIMAGE_SRC_GIT_ID}
 	fi
 	cd ${TWD}
 	#Collect required firmware files to generate bootable binary
@@ -85,7 +85,7 @@ install_firmware()
 	if [ ! -d imx-atf ] ; then
 		git clone https://source.codeaurora.org/external/imx/imx-atf -b ${ATF_BRANCH_VER} || printf "Fails to fetch ATF source code \n"
 		cd imx-atf
-		git checkout ${ATF_SRC_GIT_ID}
+		git checkout -b ${BRANCH_VER}_local ${ATF_SRC_GIT_ID}
 	fi
 
 	PWD=$(pwd)
