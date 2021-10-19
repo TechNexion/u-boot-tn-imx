@@ -7,6 +7,7 @@
  */
 
 #include <common.h>
+#include <command.h>
 #include <env.h>
 #include <errno.h>
 #include <init.h>
@@ -429,7 +430,7 @@ int detect_display_panel(void)
 {
 	struct udevice *bus = NULL;
 	struct udevice *i2c_dev = NULL;
-	int ret, touch_id;
+	int ret;
 
 	ret = uclass_get_device_by_seq(UCLASS_I2C, EETI_TOUCH_I2C_BUS, &bus);
 	if (ret) {
