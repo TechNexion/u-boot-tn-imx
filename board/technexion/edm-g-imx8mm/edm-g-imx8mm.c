@@ -7,6 +7,7 @@
  *
  */
 #include <common.h>
+#include <command.h>
 #include <env.h>
 #include <init.h>
 #include <miiphy.h>
@@ -204,6 +205,15 @@ void setup_wifi(void)
 	gpio_set_value(BT_ON_PAD, 0);
 }
 
+static iomux_v3_cfg_t const touch_rst_pads[] = {
+	IMX8MM_PAD_SAI5_MCLK_GPIO3_IO25 | MUX_PAD_CTRL(PAD_CTL_PUE),
+};
+
+void setup_touch(void)
+{
+	imx_iomux_v3_setup_multiple_pads(touch_rst_pads, ARRAY_SIZE(touch_rst_pads));
+}
+
 #define FSL_SIP_GPC			0xC2000000
 #define FSL_SIP_CONFIG_GPC_PM_DOMAIN	0x3
 #define DISPMIX				9
@@ -214,6 +224,7 @@ int board_init(void)
 	struct arm_smccc_res res;
 
 	setup_wifi();
+	setup_touch();
 	if (IS_ENABLED(CONFIG_FEC_MXC))
 		setup_fec();
 
@@ -308,7 +319,7 @@ int detect_tevi_camera(void)
 	        }
 	        ret = dm_i2c_probe(bus, tevi_camera[i].eeprom_i2c_addr, 0, &i2c_dev);
 	        if (! ret) {
-	                add_dtoverlay("ov5640");
+	                add_dtoverlay("tevi-ov5640");
 	                return 0;
 	        }
 	}
@@ -337,10 +348,37 @@ int ft_board_setup(void *blob, struct bd_info *bd)
 }
 #endif
 
+#define EETI_TOUCH_I2C_BUS 2
+#define EETI_TOUCH_I2C_ADDR 0x2a
+
+int detect_display_panel(void)
+{
+       struct udevice *bus = NULL;
+       struct udevice *i2c_dev = NULL;
+       int ret;
+
+       ret = uclass_get_device_by_seq(UCLASS_I2C, EETI_TOUCH_I2C_BUS, &bus);
+       if (ret) {
+               printf("%s: Can't find bus\n", __func__);
+               return -EINVAL;
+       }
+       /* detect LVDS panel type by identifying touch controller */
+       ret = dm_i2c_probe(bus, EETI_TOUCH_I2C_ADDR, 0, &i2c_dev);
+       if (! ret) {
+               add_dtoverlay("sn65dsi84-vl10112880");
+       }
+       return 0;
+}
+
 int board_late_init(void)
 {
 #ifndef CONFIG_AVB_SUPPORT
+	detect_display_panel();
 	detect_tevi_camera();
+#endif
+
+#ifdef CONFIG_ENV_IS_IN_MMC
+	board_late_mmc_env_init();
 #endif
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
