@@ -60,11 +60,6 @@ int board_early_init_f(void)
 	return 0;
 }
 
-static int ddr_size;
-extern struct mm_region *mem_map;
-#define DRAM1_INDEX 5 /* Correspond to the index of DRAM1 of imx8m_mem_map
-						 in arch/arm/mach-imx/imx8m/soc.c */
-
 int board_phys_sdram_size(phys_size_t *size)
 {
 	if (!size)
@@ -75,26 +70,25 @@ int board_phys_sdram_size(phys_size_t *size)
 	information of DDR size into start address of TCM.
 	It'd be better to detect DDR size from DDR controller.
 	**************************************************/
-	ddr_size = readl(MCU_BOOTROM_BASE_ADDR);
+	u32 ddr_size = readl(MCU_BOOTROM_BASE_ADDR);
 
-	if (ddr_size == 0x4) {
+	switch (ddr_size) {
+	case 0x4: /* DRAM size: 4GB */
 		*size = SZ_4G;
-		mem_map[DRAM1_INDEX].size=SZ_4G;
-	}
-	else if (ddr_size == 0x3) {
+		break;
+	case 0x3: /* DRAM size: 3GB */
 		*size = SZ_3G;
-		mem_map[DRAM1_INDEX].size=SZ_3G;
-	}
-	else if (ddr_size == 0x2) {
+		break;
+	case 0x2: /* DRAM size: 2GB */
 		*size = SZ_2G;
-		mem_map[DRAM1_INDEX].size=SZ_2G;
-	}
-	else if (ddr_size == 0x1) {
+		break;
+	case 0x1: /* DRAM size: 1GB */
 		*size = SZ_1G;
-		mem_map[DRAM1_INDEX].size=SZ_1G;
-	}
-	else
+		break;
+	default:
 		puts("Unknown DDR type!!!\n");
+	}
+
 	return 0;
 }
 
@@ -433,7 +427,7 @@ int ft_board_setup(void *blob, bd_t *bd)
 	cell = fdt_getprop(blob, offs, "size", NULL);
 	cma_size = fdt32_to_cpu(cell[1]);
 	cmasize = env_get("cma_size");
-	if(cmasize || ((uint32_t)(mem_map[DRAM1_INDEX].size >> 1) < cma_size)) {
+	if(cmasize || ((u64)(gd->ram_size >> 1) < cma_size)) {
 		/* CMA is aligned by 32MB on i.mx8mq,
 		   so CMA size can only be multiple of 32MB */
 		cma_size = env_get_ulong("cma_size", 10, (18 * 32) * 1024 * 1024);
