@@ -65,13 +65,6 @@ int board_early_init_f(void)
 	return 0;
 }
 
-static int ddr_size;
-extern struct mm_region *mem_map;
-/* The following index corresponds to the index of DRAM1 of imx8m_mem_map
-   in arch/arm/mach-imx/imx8m/soc.c */
-#define DRAM1_INDEX 5
-#define DRAM2_INDEX 6
-
 int board_phys_sdram_size(phys_size_t *size)
 {
 	if (!size)
@@ -82,35 +75,28 @@ int board_phys_sdram_size(phys_size_t *size)
 	information of DDR size into start address of OCRAM.
 	It'd be better to detect DDR size from DDR controller.
 	**************************************************/
-	ddr_size = readl(OCRAM_BASE_ADDR);
+	u32 ddr_size = readl(OCRAM_BASE_ADDR);
 
-	if (ddr_size == 0x5) { /* DRAM size: 8GB */
-		*size = SZ_3G;
-		mem_map[DRAM1_INDEX].size=SZ_3G;
-		mem_map[DRAM2_INDEX].size=SZ_5G;
-	}
-	else if (ddr_size == 0x4) { /* DRAM size: 6GB */
-		*size = SZ_3G;
-		mem_map[DRAM1_INDEX].size=SZ_3G;
-		mem_map[DRAM2_INDEX].size=SZ_3G;
-	}
-	else if (ddr_size == 0x3) { /* DRAM size: 4GB */
-		*size = SZ_3G;
-		mem_map[DRAM1_INDEX].size=SZ_3G;
-		mem_map[DRAM2_INDEX].size=SZ_1G;
-	}
-	else if (ddr_size == 0x1) { /* DRAM size: 2GB */
+	switch (ddr_size) {
+	case 0x5: /* DRAM size: 8GB */
+		*size = SZ_8G;
+		break;
+	case 0x4: /* DRAM size: 6GB */
+		*size = SZ_6G;
+		break;
+	case 0x3: /* DRAM size: 4GB */
+		*size = SZ_4G;
+		break;
+	case 0x1: /* DRAM size: 2GB */
 		*size = SZ_2G;
-		mem_map[DRAM1_INDEX].size=SZ_2G;
-		mem_map[DRAM2_INDEX].size=0;
-	}
-	else if (ddr_size == 0x2) { /* DRAM size: 1GB */
+		break;
+	case 0x2: /* DRAM size: 1GB */
 		*size = SZ_1G;
-		mem_map[DRAM1_INDEX].size=SZ_1G;
-		mem_map[DRAM2_INDEX].size=0;
-	}
-	else
+		break;
+	default:
 		puts("Unknown DDR type!!!\n");
+	}
+
 	return 0;
 }
 
@@ -151,9 +137,9 @@ int ft_board_setup(void *blob, struct bd_info *bd)
 	cell = fdt_getprop(blob, offs, "size", NULL);
 	cma_size = fdt32_to_cpu(cell[1]);
 	cmasize = env_get("cma_size");
-	if(cmasize || ((uint32_t)(mem_map[DRAM1_INDEX].size >> 1) < cma_size)) {
+	if(cmasize || ((u64)(gd->ram_size >> 1) < cma_size)) {
 		cma_size = env_get_ulong("cma_size", 10, 320 * 1024 * 1024);
-		cma_size = min((uint32_t)(mem_map[DRAM1_INDEX].size >> 1), cma_size);
+		cma_size = min((u64)(gd->ram_size >> 1), (u64)cma_size);
 		fdt_setprop_u64(blob, offs, "size", (uint64_t)cma_size);
 	}
 
