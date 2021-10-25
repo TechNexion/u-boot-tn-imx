@@ -405,6 +405,39 @@ void board_late_mmc_env_init(void)
 	run_command(cmd, 0);
 }
 
+#define AT24C02D_55_I2C_ADDR 0x55
+#define GPIO_I2C_BUS 6	//imx8mp.dtsi has 6 i2c bus, i2c-gpio set as seq 7
+
+int detect_baseboard(void)
+{
+	struct udevice *bus = NULL;
+	struct udevice *i2c_dev = NULL;
+	int ret;
+	char *fdtfile, *baseboard, str_fdtfile[64];
+
+	fdtfile = env_get("fdtfile");
+	if (fdtfile && !strcmp(fdtfile, "undefined")) {
+		ret = uclass_get_device_by_seq(UCLASS_I2C, GPIO_I2C_BUS, &bus);
+		if (ret) {
+			printf("%s: Can't find bus\n", __func__);
+			return -EINVAL;
+		}
+
+		if (!dm_i2c_probe(bus, AT24C02D_55_I2C_ADDR, 0, &i2c_dev))
+			env_set("baseboard", "wizard");
+		else
+			env_set("baseboard", "wb");
+		baseboard = env_get("baseboard");
+
+		strcpy(str_fdtfile, "imx8mp-edm-g-");
+		strcat(str_fdtfile, baseboard);
+		strcat(str_fdtfile, ".dtb");
+		env_set("fdtfile", str_fdtfile);
+	}
+	return 0;
+
+}
+
 int add_dtoverlay(char *ov_name)
 {
 	char *dtoverlay, arr_dtov[64];
@@ -448,6 +481,7 @@ int detect_display_panel(void)
 int board_late_init(void)
 {
 #ifndef CONFIG_AVB_SUPPORT
+	detect_baseboard();
 	detect_display_panel();
 #endif
 
