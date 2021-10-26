@@ -104,7 +104,7 @@
 	"fdt_high=0xffffffffffffffff\0"		\
 	"fdt_buffer=8192\0"	\
 	"boot_fit=no\0" \
-	"fdtfile=" CONFIG_DEFAULT_FDT_FILE "\0" \
+	"fdtfile=undefined\0" \
 	"bootm_size=0x10000000\0" \
 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
 	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
@@ -114,6 +114,7 @@
 	"loadbootscript=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bsp_script};\0" \
 	"bootscript=echo Running bootscript from mmc ...; " \
 		"source\0" \
+	"baseboard=wb\0" \
 	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
 	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr_r} ${fdtfile}\0" \
 	"loadoverlay=" \
