@@ -32,6 +32,7 @@
 #include <linux/arm-smccc.h>
 #include <mmc.h>
 #include <asm/armv8/mmu.h>
+#include "edm-g-imx8mp-ddr.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -47,6 +48,63 @@ static iomux_v3_cfg_t const wdog_pads[] = {
 	MX8MP_PAD_GPIO1_IO02__WDOG1_WDOG_B  | MUX_PAD_CTRL(WDOG_PAD_CTRL),
 };
 
+
+#ifndef CONFIG_SPL_BUILD
+static iomux_v3_cfg_t const ver_det_pads[] = {
+	MX8MP_PAD_NAND_DATA00__GPIO3_IO06 | MUX_PAD_CTRL(NO_PAD_CTRL),	/* BOARD ID0 */
+	MX8MP_PAD_NAND_DATA01__GPIO3_IO07 | MUX_PAD_CTRL(NO_PAD_CTRL),	/* BOARD ID1 */
+	MX8MP_PAD_NAND_DATA02__GPIO3_IO08 | MUX_PAD_CTRL(NO_PAD_CTRL),	/* BOARD ID2 */
+};
+
+#define BOARD_ID0		IMX_GPIO_NR(3, 6)
+#define BOARD_ID1		IMX_GPIO_NR(3, 7)
+#define BOARD_ID2		IMX_GPIO_NR(3, 8)
+
+static u8 ddr_code __section("data");
+
+static void board_get_ddr_code(void)
+{
+	imx_iomux_v3_setup_multiple_pads(ver_det_pads, ARRAY_SIZE(ver_det_pads));
+
+	gpio_request(BOARD_ID0, "board_id0");
+	gpio_direction_input(BOARD_ID0);
+	gpio_request(BOARD_ID1, "board_id1");
+	gpio_direction_input(BOARD_ID1);
+	gpio_request(BOARD_ID2, "board_id2");
+	gpio_direction_input(BOARD_ID2);
+
+	ddr_code = gpio_get_value(BOARD_ID0) | gpio_get_value(BOARD_ID1) << 1 |  gpio_get_value(BOARD_ID2) << 2 ;
+}
+
+int board_phys_sdram_size(phys_size_t *size)
+{
+	if (!size)
+		return -EINVAL;
+
+	switch (ddr_code) {
+	case LPDDR4_8GB:
+		*size = SZ_8G;
+		break;
+	case LPDDR4_6GB:
+		*size = SZ_6G;
+		break;
+	case LPDDR4_4GB:
+		*size = SZ_4G;
+		break;
+	case LPDDR4_2GB:
+		*size = SZ_2G;
+		break;
+	case LPDDR4_1GB:
+		*size = SZ_1G;
+		break;
+	default:
+		puts("Unknown DDR type!!!\n");
+	}
+
+	return 0;
+}
+#endif
+
 int board_early_init_f(void)
 {
 	struct wdog_regs *wdog = (struct wdog_regs *)WDOG1_BASE_ADDR;
@@ -59,41 +117,9 @@ int board_early_init_f(void)
 
 	init_uart_clk(1);
 
-	return 0;
-}
-
-int board_phys_sdram_size(phys_size_t *size)
-{
-	if (!size)
-		return -EINVAL;
-
-	/*************************************************
-	ToDo: It's a dirty workaround to store the
-	information of DDR size into start address of OCRAM.
-	It'd be better to detect DDR size from DDR controller.
-	**************************************************/
-	u32 ddr_size = readl(OCRAM_BASE_ADDR);
-
-	switch (ddr_size) {
-	case 0x5: /* DRAM size: 8GB */
-		*size = SZ_8G;
-		break;
-	case 0x4: /* DRAM size: 6GB */
-		*size = SZ_6G;
-		break;
-	case 0x3: /* DRAM size: 4GB */
-		*size = SZ_4G;
-		break;
-	case 0x1: /* DRAM size: 2GB */
-		*size = SZ_2G;
-		break;
-	case 0x2: /* DRAM size: 1GB */
-		*size = SZ_1G;
-		break;
-	default:
-		puts("Unknown DDR type!!!\n");
-	}
-
+#ifndef CONFIG_SPL_BUILD
+	board_get_ddr_code();
+#endif
 	return 0;
 }
 
