@@ -153,7 +153,7 @@
 		"setexpr fdtovaddr ${fdt_addr} + 0xF0000; " \
 		"for ov in ${dtoverlay}; do " \
 			"echo Overlaying ${ov}...; " \
-			"fatload mmc ${mmcdev}:${mmcpart} ${fdtovaddr} imx8mp-edm-g-${baseboard}-${ov}.dtbo && fdt apply ${fdtovaddr}; " \
+			"fatload mmc ${mmcdev}:${mmcpart} ${fdtovaddr} imx8mp-tek3-${ov}.dtbo && fdt apply ${fdtovaddr}; " \
 		"done\0" \
 	"mmcboot=echo Booting from mmc ...; " \
 		"run mmcargs; " \
