@@ -299,7 +299,7 @@ int detect_baseboard(void)
 			env_set("baseboard", "wb");
 		baseboard = env_get("baseboard");
 
-		strcpy(str_fdtfile, "imx8mp-edm-g-");
+		strcpy(str_fdtfile, "imx8mm-edm-g-");
 		strcat(str_fdtfile, baseboard);
 		strcat(str_fdtfile, ".dtb");
 		env_set("fdtfile", str_fdtfile);
