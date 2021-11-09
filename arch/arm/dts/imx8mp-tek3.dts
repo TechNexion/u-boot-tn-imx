@@ -9,6 +9,26 @@
 #include <dt-bindings/usb/pd.h>
 #include "imx8mp.dtsi"
 
+&gpio4 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_gpio4>;
+	gpio-line-names =
+		"", "", "", "", "", "", "", "",
+		"", "", "", "", "", "", "", "",
+		"", "", "", "CSI1_RST", "", "", "", "",
+		"", "", "", "", "", "", "", "";
+	};
+
+&gpio5 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_gpio5>;
+	gpio-line-names =
+		"", "", "", "", "", "", "", "",
+		"", "", "", "", "", "", "", "",
+		"", "", "CSI0_RST", "", "", "", "", "",
+		"", "", "", "", "", "", "", "";
+	};
+
 / {
 	model = "TechNexion TEK3-IMX8MP box PC";
 	compatible = "fsl,imx8mp-tek3", "fsl,imx8mp";
@@ -580,6 +600,18 @@
 	pinctrl_wdog: wdoggrp {
 		fsl,pins = <
 			MX8MP_IOMUXC_GPIO1_IO02__WDOG1_WDOG_B	0xc6
+		>;
+	};
+
+	pinctrl_gpio5: gpio5_grp {
+		fsl,pins = <
+			MX8MP_IOMUXC_I2C3_SCL__GPIO5_IO18		0x29
+		>;
+	};
+
+	pinctrl_gpio4: gpio4_grp {
+		fsl,pins = <
+			MX8MP_IOMUXC_SAI1_TXD7__GPIO4_IO19		0x29
 		>;
 	};
 };
