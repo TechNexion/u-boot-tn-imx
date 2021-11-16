@@ -69,6 +69,16 @@ choice
 	prompt "NXP i.MX8M board select"
 	optional
 
+config TARGET_AXON_IMX8MP
+	bool "TechNexion AXON-IMX8MP"
+	select IMX8MP
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+	select FSL_CAAM
+	select FSL_BLOB
+	select MISC
+	select SPL_CRYPTO_SUPPORT if SPL
+
 config TARGET_EDM_G_IMX8MP
 	bool "TechNexion EDM-G-IMX8MP"
 	select IMX8MP
@@ -517,6 +527,7 @@ source "board/freescale/imx8mm_ab2/Kconfig"
 source "board/freescale/imx8mm_evk/Kconfig"
 source "board/freescale/imx8mm_val/Kconfig"
 source "board/freescale/imx8mn_evk/Kconfig"
+source "board/technexion/axon-imx8mp/Kconfig"
 source "board/technexion/edm-g-imx8mn/Kconfig"
 source "board/freescale/imx8mp_evk/Kconfig"
 source "board/technexion/edm-g-imx8mp/Kconfig"
