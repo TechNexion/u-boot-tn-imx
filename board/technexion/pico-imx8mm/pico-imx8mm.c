@@ -418,7 +418,7 @@ int detect_tevi_camera(void)
 	        }
 	        ret = dm_i2c_probe(bus, tevi_camera[i].eeprom_i2c_addr, 0, &i2c_dev);
 	        if (! ret) {
-	                add_dtoverlay("ov5640");
+	                add_dtoverlay("tevi-ov5640");
 	                return 0;
 	        }
 	}
