@@ -76,6 +76,8 @@
 #include <video.h>
 #include <asm/global_data.h>
 #include <linux/compiler.h>
+#include <mmc.h>
+#include <fat.h>
 
 #if defined(CONFIG_VIDEO_MXS)
 #define VIDEO_FB_16BPP_WORD_SWAP
@@ -1855,17 +1857,42 @@ static void plot_logo_or_black(void *screen, int x, int y, int black)
 #endif
 }
 
+#define SPLASH_SOURCE_DEFAULT_FILE_NAME		"splash.bmp"
+
 static void *video_logo(void)
 {
 	char info[128];
 	__maybe_unused int y_off = 0;
 	__maybe_unused ulong addr;
-	__maybe_unused char *s;
+	__maybe_unused char *s, *load_addr;
 	__maybe_unused int len, ret, space;
 
 	splash_get_pos(&video_logo_xpos, &video_logo_ypos);
 
 #ifdef CONFIG_SPLASH_SCREEN
+	s = env_get("splashsource");
+	if (s && !strcmp(s, "mmc_fs")) {
+		s = env_get("splashfile");
+		if (!s)
+			s = SPLASH_SOURCE_DEFAULT_FILE_NAME;
+
+		info[0] = mmc_get_env_dev() + '0';
+		info[1] = 0;
+		if(file_exists("mmc", info, s, FS_TYPE_ANY)) {
+			load_addr = env_get("loadaddr");
+			if (!load_addr)
+				load_addr = __stringify(CONFIG_LOADADDR);
+
+			s = env_get("splashimage");
+			if (!s)
+				env_set("splashimage", load_addr);
+		} else {
+			s = env_get("splashimage");
+			if (s)
+				env_set("splashimage", "");
+		}
+	}
+
 	s = env_get("splashimage");
 	if (s != NULL) {
 		ret = splash_screen_prepare();
