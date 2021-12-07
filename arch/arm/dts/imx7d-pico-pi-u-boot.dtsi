@@ -27,7 +27,7 @@
 	bootph-all;
 
 	display0: display {
-		bits-per-pixel = <16>;
+		bits-per-pixel = <24>;
 		bus-width = <24>;
 
 		display-timings {
