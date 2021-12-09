@@ -132,6 +132,7 @@
 	"fdt_addr=0x43000000\0"			\
 	"boot_fdt=try\0" \
 	"fdt_high=0xffffffffffffffff\0"		\
+	"fdt_buffer=8192\0"	\
 	"boot_fit=no\0" \
 	"fdtfile=undefined\0" \
 	"bootm_size=0x10000000\0" \
@@ -220,7 +221,7 @@
 /* Size of malloc() pool */
 #define CONFIG_SYS_MALLOC_LEN		SZ_32M
 
-/* Totally 6GB DDR */
+/* Totally 8GB DDR */
 #define CONFIG_SYS_SDRAM_BASE		0x40000000
 #define PHYS_SDRAM			0x40000000
 #define PHYS_SDRAM_SIZE			0xC0000000	/* 3 GB */
