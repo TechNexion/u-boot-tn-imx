@@ -1,0 +1,4 @@
+config TN_PHERIPHERAL_DETECT
+	bool "Support for panel/camera/gadget detection for TechNexion board"
+	help
+	   Support for panel/camera/gadget detection for TechNexion board
