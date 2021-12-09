@@ -33,6 +33,7 @@
 #include <mmc.h>
 #include <asm/armv8/mmu.h>
 #include "axon-imx8mp-ddr.h"
+#include "../common/periph_detect.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -431,14 +432,8 @@ void board_late_mmc_env_init(void)
 	run_command(cmd, 0);
 }
 
-#define AT24C02D_55_I2C_ADDR 0x55
-#define GPIO_I2C_BUS 6	//imx8mp.dtsi has 6 i2c bus, i2c-gpio set as seq 7
-
 int detect_baseboard(void)
 {
-	struct udevice *bus = NULL;
-	struct udevice *i2c_dev = NULL;
-	int ret;
 	char *fdtfile, *baseboard, str_fdtfile[64];
 
 	fdtfile = env_get("fdtfile");
@@ -455,45 +450,15 @@ int detect_baseboard(void)
 
 }
 
-int add_dtoverlay(char *ov_name)
-{
-	char *dtoverlay, arr_dtov[64];
+struct tn_display const displays[]= {
+/*  bus, addr, id_reg, id, detect */
+	{ 4, 0x38, 0xA3, 0x54, "ili9881c", detect_i2c },
+	{ 4, 0x38, 0xA3, 0x58, "g080uan01", detect_i2c },
+	{ 4, 0x38, 0xA3, 0x59, "g101uan02", detect_i2c },
+	{ 4, 0x3d, 0, 0, "mipi2hdmi-adv7535", detect_i2c },
+};
 
-	dtoverlay = env_get("dtoverlay");
-	if (dtoverlay) {
-		strcpy(arr_dtov, dtoverlay);
-		if (!strstr(arr_dtov, ov_name)) {
-			strcat(arr_dtov, " ");
-			strcat(arr_dtov, ov_name);
-			env_set("dtoverlay", arr_dtov);
-		}
-	} else
-		env_set("dtoverlay", ov_name);
-
-	return 0;
-}
-
-#define EETI_TOUCH_I2C_BUS 4
-#define EETI_TOUCH_I2C_ADDR 0x2a
-
-int detect_display_panel(void)
-{
-	struct udevice *bus = NULL;
-	struct udevice *i2c_dev = NULL;
-	int ret;
-
-	ret = uclass_get_device_by_seq(UCLASS_I2C, EETI_TOUCH_I2C_BUS, &bus);
-	if (ret) {
-		printf("%s: Can't find bus\n", __func__);
-		return -EINVAL;
-	}
-	/* detect LVDS panel type by identifying touch controller */
-	ret = dm_i2c_probe(bus, EETI_TOUCH_I2C_ADDR, 0, &i2c_dev);
-	if (! ret) {
-		add_dtoverlay("lvds-vl10112880");
-	}
-	return 0;
-}
+size_t tn_display_count = ARRAY_SIZE(displays);
 
 int board_late_init(void)
 {
