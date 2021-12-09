@@ -1,0 +1,1 @@
+obj-${CONFIG_TN_PHERIPHERAL_DETECT} += periph_detect.o
