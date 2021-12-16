@@ -123,6 +123,7 @@
 	"fdt_addr_r=0x43000000\0"			\
 	"fdt_addr=0x43000000\0"			\
 	"fdt_high=0xffffffffffffffff\0"		\
+	"fdt_buffer=8192\0"	\
 	"boot_fit=no\0" \
 	"fdtfile=undefined\0" \
 	"bootm_size=0x10000000\0" \
