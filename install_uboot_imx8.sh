@@ -238,6 +238,9 @@ usage()
     * EDM-G-IMX8MP with WB:
     ./install_uboot_imx8.sh -b imx8mp-edm-g.dtb -d /dev/sdX
 
+    * SC-IMX8MP:
+    ./install_uboot_imx8.sh -b imx8mp-sc.dtb -d /dev/sdX
+
     * TEK-IMX8MP:
     ./install_uboot_imx8.sh -b imx8mp-tek.dtb -d /dev/sdX
 
