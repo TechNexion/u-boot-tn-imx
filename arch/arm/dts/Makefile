@@ -980,6 +980,7 @@ dtb-$(CONFIG_MX7) += imx7d-sdb.dtb \
 	imx7d-pico-pi.dtb \
 	imx7d-pico-hobbit.dtb \
 	imx7d-smegw01.dtb \
+	imx7d-tep1-a2.dtb \
 	imx7d-12x12-lpddr3-val.dtb \
 	imx7d-12x12-lpddr3-val-ecspi.dtb \
 	imx7d-12x12-lpddr3-val-qspi.dtb \

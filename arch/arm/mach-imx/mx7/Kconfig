@@ -134,6 +134,14 @@ config TARGET_SMEGW01
 	select MX7D
 	imply CMD_DM
 
+config TARGET_TEP1_IMX7D
+	bool "TechNexion tep1-imx7d boards"
+	select BOARD_LATE_INIT
+	select MX7D
+	select DM
+	select DM_THERMAL
+	select SUPPORT_SPL
+
 config TARGET_WARP7
 	bool "warp7"
 	select BOARD_LATE_INIT
@@ -165,6 +173,7 @@ source "board/freescale/mx7d_19x19_lpddr3_val/Kconfig"
 source "board/novtech/meerkat96/Kconfig"
 source "board/storopack/smegw01/Kconfig"
 source "board/technexion/pico-imx7d/Kconfig"
+source "board/technexion/tep1-imx7d/Kconfig"
 source "board/toradex/colibri_imx7/Kconfig"
 source "board/warp7/Kconfig"
 
