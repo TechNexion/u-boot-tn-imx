@@ -217,7 +217,7 @@
 #define CONFIG_ENV_SPI_MODE		CONFIG_SF_DEFAULT_MODE
 #define CONFIG_ENV_SPI_MAX_HZ		CONFIG_SF_DEFAULT_SPEED
 
-#define CONFIG_MMCROOT			"/dev/mmcblk1p2"  /* USDHC2 */
+#define CONFIG_MMCROOT			"/dev/mmcblk2p2"  /* USDHC2 */
 
 /* Size of malloc() pool */
 #define CONFIG_SYS_MALLOC_LEN		SZ_32M
