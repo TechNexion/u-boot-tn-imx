@@ -1,16 +1,18 @@
 // SPDX-License-Identifier: GPL-2.0
 //
-// Copyright 2018 Technexion Ltd.
+// Copyright (C) 2020 TechNexion Ltd.
 //
 // Author: Wig Cheng <wig.cheng@technexion.com>
-//	   Richard Hu <richard.hu@technexion.com>
-//	   Tapani Utriainen <tapani@technexion.com>
+//         Richard Hu <richard.hu@technexion.com>
+//         Tapani Utriainen <tapani@technexion.com>
+//         Ray Chang <ray.chang@technexion.com>
 
 #include <dt-bindings/gpio/gpio.h>
 
 / {
 	aliases {
-		mmc0 = &usdhc3;
+		mmc0 = &usdhc1;
+		mmc2 = &usdhc3;
 		usb0 = &usbotg;
 	};
 
@@ -43,32 +45,12 @@
 	};
 
 	reg_usb_otg_vbus: regulator-usb-otg-vbus {
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_usbotg_vbus>;
 		compatible = "regulator-fixed";
 		regulator-name = "usb_otg_vbus";
 		regulator-min-microvolt = <5000000>;
 		regulator-max-microvolt = <5000000>;
 		gpio = <&gpio3 22 GPIO_ACTIVE_LOW>;
 	};
-};
-
-&audmux {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_audmux>;
-	status = "okay";
-};
-
-&can1 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_flexcan1>;
-	status = "okay";
-};
-
-&can2 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_flexcan2>;
-	status = "okay";
 };
 
 &clks {
@@ -89,6 +71,7 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_enet>;
 	phy-mode = "rgmii-id";
+	phy-reset-duration = <10>;
 	phy-reset-gpios = <&gpio1 26 GPIO_ACTIVE_LOW>;
 	status = "okay";
 };
@@ -114,13 +97,6 @@
 &i2c3 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_i2c3>;
-	status = "okay";
-};
-
-&pcie {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_pcie_reset>;
-	reset-gpio = <&gpio5 21 GPIO_ACTIVE_LOW>;
 	status = "okay";
 };
 
@@ -177,11 +153,7 @@
 };
 
 &usbotg {
-	vbus-supply = <&reg_usb_otg_vbus>;
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_usbotg>;
-	disable-over-current;
-	dr_mode = "otg";
+	dr_mode = "peripheral";
 	status = "okay";
 };
 
@@ -190,16 +162,6 @@
 	pinctrl-0 = <&pinctrl_usdhc1>;
 	bus-width = <8>;
 	cd-gpios = <&gpio3 9 GPIO_ACTIVE_LOW>;
-	status = "okay";
-};
-
-&usdhc2 {  /* Wifi/BT  */
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_usdhc2>;
-	bus-width = <4>;
-	no-1-8-v;
-	keep-power-in-suspend;
-	non-removable;
 	status = "okay";
 };
 
@@ -228,15 +190,7 @@
 			MX6QDL_PAD_CSI0_DAT12__GPIO5_IO30	0x4001b0b5 /* PICO_P42 */
 			MX6QDL_PAD_CSI0_DAT13__GPIO5_IO31	0x4001b0b5 /* PICO_P44 */
 			MX6QDL_PAD_CSI0_DAT15__GPIO6_IO01	0x4001b0b5 /* PICO_P48 */
-		>;
-	};
-
-	pinctrl_audmux: audmuxgrp {
-		fsl,pins = <
-			MX6QDL_PAD_CSI0_DAT7__AUD3_RXD		0x130b0
-			MX6QDL_PAD_CSI0_DAT4__AUD3_TXC		0x130b0
-			MX6QDL_PAD_CSI0_DAT5__AUD3_TXD		0x110b0
-			MX6QDL_PAD_CSI0_DAT6__AUD3_TXFS		0x130b0
+			MX6QDL_PAD_EIM_D22__GPIO3_IO22		0x1b0b0
 		>;
 	};
 
@@ -278,20 +232,6 @@
 			MX6QDL_PAD_RGMII_RX_CTL__RGMII_RX_CTL	0x1b0b0
 			MX6QDL_PAD_ENET_TX_EN__ENET_TX_EN	0x1b0b0
 			MX6QDL_PAD_ENET_RXD1__GPIO1_IO26	0x1f0b1
-		>;
-	};
-
-	pinctrl_flexcan1: flexcan1grp {
-		fsl,pins = <
-			MX6QDL_PAD_KEY_COL2__FLEXCAN1_TX	0x1b0b0
-			MX6QDL_PAD_KEY_ROW2__FLEXCAN1_RX	0x1b0b0
-		>;
-	};
-
-	pinctrl_flexcan2: flexcan2grp {
-		fsl,pins = <
-			MX6QDL_PAD_KEY_COL4__FLEXCAN2_TX	0x1b0b0
-			MX6QDL_PAD_KEY_ROW4__FLEXCAN2_RX	0x1b0b0
 		>;
 	};
 
@@ -377,12 +317,6 @@
 		>;
 	};
 
-	pinctrl_usbotg_vbus: usbotgvbusgrp {
-		fsl,pins = <
-			MX6QDL_PAD_EIM_D22__GPIO3_IO22		0x1b0b0
-		>;
-	};
-
 	pinctrl_usdhc1: usdhc1grp {
 		fsl,pins = <
 			MX6QDL_PAD_SD1_CMD__SD1_CMD		0x17071
@@ -392,17 +326,6 @@
 			MX6QDL_PAD_SD1_DAT2__SD1_DATA2		0x17071
 			MX6QDL_PAD_SD1_DAT3__SD1_DATA3		0x17071
 			MX6QDL_PAD_GPIO_2__GPIO1_IO02		0x1b0b0
-		>;
-	};
-
-	pinctrl_usdhc2: usdhc2grp {
-		fsl,pins = <
-			MX6QDL_PAD_SD2_CMD__SD2_CMD		0x17059
-			MX6QDL_PAD_SD2_CLK__SD2_CLK		0x10059
-			MX6QDL_PAD_SD2_DAT0__SD2_DATA0		0x17059
-			MX6QDL_PAD_SD2_DAT1__SD2_DATA1		0x17059
-			MX6QDL_PAD_SD2_DAT2__SD2_DATA2		0x17059
-			MX6QDL_PAD_SD2_DAT3__SD2_DATA3		0x17059
 		>;
 	};
 
