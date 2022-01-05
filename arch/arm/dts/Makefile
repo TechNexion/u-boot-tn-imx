@@ -776,7 +776,9 @@ dtb-$(CONFIG_MX6UL) += \
 	imx6ul-liteboard.dtb \
 	imx6ul-phytec-segin-ff-rdk-nand.dtb \
 	imx6ul-pico-hobbit.dtb \
-	imx6ul-pico-pi.dtb
+	imx6ul-pico-pi.dtb \
+	imx6ull-pico-pi.dtb
+
 
 dtb-$(CONFIG_MX6ULL) += \
 	imx6ull-14x14-ddr3-val.dtb \
