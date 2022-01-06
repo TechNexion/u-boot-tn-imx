@@ -1,0 +1,9 @@
+TECHNEXION EDM-IMX6 BOARD
+M:	Ray Chang <ray.chang@technexion.com>
+S:	Maintained
+F:	arch/arm/dts/imx6qdl-edm.dtsi
+F:	arch/arm/dts/imx6q-edm.dts
+F:	arch/arm/dts/imx6dl-edm.dts
+F:	board/technexion/edm-imx6/
+F:	include/configs/edm-imx6.h
+F:	configs/edm-imx6_spl_defconfig
