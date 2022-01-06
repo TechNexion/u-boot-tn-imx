@@ -1,0 +1,15 @@
+if TARGET_EDM_IMX6
+
+config SYS_BOARD
+	default "edm-imx6"
+
+config SYS_VENDOR
+	default "technexion"
+
+config SYS_SOC
+	default "mx6"
+
+config SYS_CONFIG_NAME
+	default "edm-imx6"
+
+endif
