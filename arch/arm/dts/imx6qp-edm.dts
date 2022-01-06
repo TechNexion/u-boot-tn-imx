@@ -1,0 +1,17 @@
+// SPDX-License-Identifier: GPL-2.0
+//
+// Copyright 2018 Technexion Ltd.
+//
+// Author: Wig Cheng <wig.cheng@technexion.com>
+//	   Richard Hu <richard.hu@technexion.com>
+//	   Tapani Utriainen <tapani@technexion.com>
+
+/dts-v1/;
+
+#include "imx6qp.dtsi"
+#include "imx6qdl-edm.dtsi"
+
+/ {
+	model = "TechNexion EDM-IMX6 Quad Plus";
+	compatible = "technexion,imx6qp-edm", "fsl,imx6qp";
+};

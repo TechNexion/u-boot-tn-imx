@@ -937,6 +937,7 @@ dtb-y += \
 	imx6dl-sabreauto-gpmi-weim.dtb \
 	imx6dl-sabresd.dtb \
 	imx6dl-sielaff.dtb \
+	imx6dl-edm.dtb \
 	imx6dl-wandboard-revd1.dtb \
 	imx6s-dhcom-drc02.dtb
 
@@ -992,11 +993,13 @@ dtb-y += \
 	imx6q-sabrelite.dtb \
 	imx6q-sabresd.dtb \
 	imx6q-tbs2910.dtb \
+	imx6q-edm.dtb \
 	imx6q-wandboard-revd1.dtb \
 	imx6qp-sabreauto.dtb \
 	imx6qp-sabreauto-ecspi.dtb \
 	imx6qp-sabreauto-gpmi-weim.dtb \
 	imx6qp-sabresd.dtb \
+	imx6qp-edm.dtb \
 	imx6qp-wandboard-revd1.dtb \
 
 endif
