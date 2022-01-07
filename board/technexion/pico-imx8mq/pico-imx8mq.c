@@ -484,11 +484,25 @@ int detect_tevi_camera(void)
 	        }
 	        ret = dm_i2c_probe(bus, tevi_camera[i].eeprom_i2c_addr, 0, &i2c_dev);
 	        if (! ret) {
-	                add_dtoverlay("ov5640");
+	                add_dtoverlay("tevi-ov5640");
 	                return 0;
+	        } else {
+	                /* ov7251 chip address is 0x60 */
+	                ret = dm_i2c_probe(bus, 0x60, 0, &i2c_dev);
+	                if (! ret) {
+	                        add_dtoverlay("ov7251");
+	                        return 0;
+	                } else {
+
+                                /* ov5645 chip address is 0x3c */
+	                        ret = dm_i2c_probe(bus, 0x3c, 0, &i2c_dev);
+	                        if (! ret) {
+	                                add_dtoverlay("ov5645");
+	                                return 0;
+	                        }
+	                }
 	        }
 	}
-	add_dtoverlay("ov5645");
 	return 0;
 }
 
