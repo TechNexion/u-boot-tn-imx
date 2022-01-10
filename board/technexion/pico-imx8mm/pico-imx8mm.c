@@ -144,6 +144,29 @@ int board_phy_config(struct phy_device *phydev)
 }
 #endif
 
+#define CSI_PDN_PAD IMX_GPIO_NR(1, 6)
+#define CSI_RST_PAD IMX_GPIO_NR(1, 5)
+static iomux_v3_cfg_t const csi_pads[] = {
+	IMX8MM_PAD_GPIO1_IO05_GPIO1_IO5 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	IMX8MM_PAD_GPIO1_IO06_GPIO1_IO6 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	IMX8MM_PAD_GPIO1_IO14_CCM_CLKO1 | MUX_PAD_CTRL(NO_PAD_CTRL),
+};
+
+static void setup_csi(void)
+{
+	imx_iomux_v3_setup_multiple_pads(csi_pads,
+					 ARRAY_SIZE(csi_pads));
+
+	gpio_request(CSI_PDN_PAD, "csi_pwdn");
+	gpio_direction_output(CSI_PDN_PAD, 0);
+	udelay(500);
+	gpio_direction_output(CSI_PDN_PAD, 1);
+
+	gpio_request(CSI_RST_PAD, "csi_rst");
+	gpio_direction_output(CSI_RST_PAD, 0);
+	udelay(500);
+	gpio_direction_output(CSI_RST_PAD, 1);
+}
 
 int board_usb_init(int index, enum usb_init_type init)
 {
@@ -249,6 +272,8 @@ int board_init(void)
 	setup_wifi();
 	if (IS_ENABLED(CONFIG_FEC_MXC))
 		setup_fec();
+
+	setup_csi();
 
 	arm_smccc_smc(IMX_SIP_GPC, IMX_SIP_GPC_PM_DOMAIN,
 		DISPMIX, true, 0, 0, 0, 0, &res);
