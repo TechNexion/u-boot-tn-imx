@@ -92,28 +92,30 @@ enum overlay_type {
 	/* PICO-IMX8MM */
 	MIPI_5_8MM       = 1,
 	CAM_5640_8MM     = 2,
-	CAM_5645_8MM     = 3,
-	VOICEHAT_8MM     = 4,
-	CLIX1_NFC_8MM     = 5,
-	CLIX2_NFC_8MM    = 6,
-	MIPI_10_8MM	 = 7,
-	MIPI_HDMI_8MM    = 8,
-	MIPI_LVDS_10_8MM = 9,
-	MIPI_LVDS_15_8MM = 10,
-	MIPI_LVDS_21_8MM = 11,
+	CAM_7251_8MM     = 3,
+	CAM_5645_8MM     = 4,
+	VOICEHAT_8MM     = 5,
+	CLIX1_NFC_8MM    = 6,
+	CLIX2_NFC_8MM    = 7,
+	MIPI_10_8MM	 = 8,
+	MIPI_HDMI_8MM    = 9,
+	MIPI_LVDS_10_8MM = 10,
+	MIPI_LVDS_15_8MM = 11,
+	MIPI_LVDS_21_8MM = 12,
 #endif
 	/* PICO-IMX8MQ */
 	MIPI_5_8MQ       = 1,
 	CAM_OV5640_8MQ   = 2,
-	CAM_OV5645_8MQ   = 3,
-	VOICEHAT_8MQ     = 4,
-	CLIX1_NFC_8MQ    = 5,
-	CLIX2_NFC_8MQ    = 6,
-	MIPI_10_8MQ      = 7,
-	MIPI_HDMI_8MQ    = 8,
-	MIPI_LVDS_10_8MQ = 9,
-	MIPI_LVDS_15_8MQ = 10,
-	MIPI_LVDS_21_8MQ = 11,
+	CAM_OV7251_8MQ   = 3,
+	CAM_OV5645_8MQ   = 4,
+	VOICEHAT_8MQ     = 5,
+	CLIX1_NFC_8MQ    = 6,
+	CLIX2_NFC_8MQ    = 7,
+	MIPI_10_8MQ      = 8,
+	MIPI_HDMI_8MQ    = 9,
+	MIPI_LVDS_10_8MQ = 10,
+	MIPI_LVDS_15_8MQ = 11,
+	MIPI_LVDS_21_8MQ = 12,
 };
 #endif
 
@@ -960,6 +962,8 @@ int do_boota(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]) {
 				dtbo_idx = MIPI_5_8MM;
 			} else if (strcmp(dtbo_token, "cam_ov5640") == 0) {
 				dtbo_idx = CAM_5640_8MM;
+			} else if (strcmp(dtbo_token, "cam_ov7251") == 0) {
+				dtbo_idx = CAM_7251_8MM;
 			} else if (strcmp(dtbo_token, "cam_ov5645") == 0) {
 				dtbo_idx = CAM_5645_8MM;
 			} else if (strcmp(dtbo_token, "voicehat") == 0) {
@@ -987,6 +991,8 @@ int do_boota(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]) {
 				dtbo_idx = MIPI_5_8MQ;
 			} else if (strcmp(dtbo_token, "cam_ov5640") == 0) {
 				dtbo_idx = CAM_OV5640_8MQ;
+			} else if (strcmp(dtbo_token, "cam_ov7251") == 0) {
+				dtbo_idx = CAM_OV7251_8MQ;
 			} else if (strcmp(dtbo_token, "cam_ov5645") == 0) {
 				dtbo_idx = CAM_OV5645_8MQ;
 			} else if (strcmp(dtbo_token, "voicehat") == 0) {
