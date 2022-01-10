@@ -164,6 +164,29 @@ int board_phy_config(struct phy_device *phydev)
 }
 #endif
 
+#define CSI1_RST IMX_GPIO_NR(1, 12)
+#define CSI2_RST IMX_GPIO_NR(3, 16)
+
+static iomux_v3_cfg_t const csi_rst_pads[] = {
+	IMX8MQ_PAD_GPIO1_IO12__GPIO1_IO12 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	IMX8MQ_PAD_NAND_READY_B__GPIO3_IO16 | MUX_PAD_CTRL(NO_PAD_CTRL),
+};
+
+static void setup_csi(void)
+{
+	imx_iomux_v3_setup_multiple_pads(csi_rst_pads, ARRAY_SIZE(csi_rst_pads));
+
+	gpio_request(CSI1_RST, "csi1_rst");
+	gpio_direction_output(CSI1_RST, 0);
+	udelay(500);
+	gpio_direction_output(CSI1_RST, 1);
+
+	gpio_request(CSI1_RST, "csi2_rst");
+	gpio_direction_output(CSI2_RST, 0);
+	udelay(500);
+	gpio_direction_output(CSI2_RST, 1);
+}
+
 #ifdef CONFIG_USB_DWC3
 
 #define USB_PHY_CTRL0			0xF0040
@@ -313,6 +336,8 @@ int board_init(void)
 #ifdef CONFIG_FEC_MXC
 	setup_fec();
 #endif
+
+	setup_csi();
 
 #if defined(CONFIG_USB_DWC3) || defined(CONFIG_USB_XHCI_IMX8M)
 	init_usb_clk();
