@@ -28,4 +28,5 @@ extern struct tn_display const displays[];
 extern size_t tn_display_count;
 
 int detect_i2c(struct tn_display const *dev);
+int detect_display_panel(void);
 #endif
