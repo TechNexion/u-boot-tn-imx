@@ -33,6 +33,7 @@
 #include <mmc.h>
 #include <asm/armv8/mmu.h>
 #include "edm-g-imx8mp-ddr.h"
+#include "../common/periph_detect.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -431,9 +432,6 @@ void board_late_mmc_env_init(void)
 	run_command(cmd, 0);
 }
 
-#define FT5336_TOUCH_I2C_BUS 1
-#define FT5336_TOUCH_I2C_ADDR 0x38
-#define ADV7535_HDMI_I2C_ADDR 0x3d
 #define AT24C02D_55_I2C_ADDR 0x55
 #define GPIO_I2C_BUS 6	//imx8mp.dtsi has 6 i2c bus, i2c-gpio set as seq 7
 
@@ -467,73 +465,15 @@ int detect_baseboard(void)
 
 }
 
-int add_dtoverlay(char *ov_name)
-{
-	char *dtoverlay, arr_dtov[64];
+struct tn_display const displays[]= {
+/*      bus, addr, id_reg, id, detect */
+	{ 4, 0x2a, 0, 0, "lvds-vl10112880", detect_i2c },
+	{ 1, 0x38, 0xA3, 0x54, "ili9881c", detect_i2c },
+	{ 1, 0x38, 0xA3, 0x59, "g101uan02", detect_i2c },
+	{ 1, 0x3d, 0x98, 0x03, "mipi2hdmi-adv7535", detect_i2c },
+};
 
-	dtoverlay = env_get("dtoverlay");
-	if (dtoverlay) {
-		strcpy(arr_dtov, dtoverlay);
-		if (!strstr(arr_dtov, ov_name)) {
-			strcat(arr_dtov, " ");
-			strcat(arr_dtov, ov_name);
-			env_set("dtoverlay", arr_dtov);
-		}
-	} else
-		env_set("dtoverlay", ov_name);
-
-	return 0;
-}
-
-#define EETI_TOUCH_I2C_BUS 4
-#define EETI_TOUCH_I2C_ADDR 0x2a
-
-int detect_display_panel(void)
-{
-	struct udevice *bus = NULL;
-	struct udevice *i2c_dev = NULL;
-	int ret, touch_id;
-
-	ret = uclass_get_device_by_seq(UCLASS_I2C, EETI_TOUCH_I2C_BUS, &bus);
-	if (ret) {
-		printf("%s: Can't find bus\n", __func__);
-		return -EINVAL;
-	}
-	/* detect LVDS panel type by identifying touch controller */
-	ret = dm_i2c_probe(bus, EETI_TOUCH_I2C_ADDR, 0, &i2c_dev);
-	if (! ret) {
-		add_dtoverlay("lvds-vl10112880");
-	}
-
-	ret = uclass_get_device_by_seq(UCLASS_I2C, FT5336_TOUCH_I2C_BUS, &bus);
-	if (ret) {
-		printf("%s: Can't find bus\n", __func__);
-		return -EINVAL;
-	}
-	/* detect different MIPI panel by touch controller */
-	ret = dm_i2c_probe(bus, FT5336_TOUCH_I2C_ADDR, 0, &i2c_dev);
-	if (! ret) {
-		touch_id = dm_i2c_reg_read(i2c_dev, 0xA3);
-		switch (touch_id) {
-		case 0x54:
-			add_dtoverlay("ili9881c");
-			break;
-		case 0x59:
-			add_dtoverlay("g101uan02");
-			break;
-		default:
-			printf("Unknown panel ID!\r\n");
-		}
-	}
-
-	/* detect MIPI2HDMI controller */
-	ret = dm_i2c_probe(bus, ADV7535_HDMI_I2C_ADDR, 0, &i2c_dev);
-	if (! ret) {
-		add_dtoverlay("mipi2hdmi-adv7535");
-	}
-
-	return 0;
-}
+size_t tn_display_count = ARRAY_SIZE(displays);
 
 int board_late_init(void)
 {
