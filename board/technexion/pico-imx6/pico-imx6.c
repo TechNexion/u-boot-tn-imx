@@ -299,6 +299,7 @@ int board_early_init_f(void)
 
 #if defined(CONFIG_VIDEO_IPUV3)
 	setup_display();
+	enable_ft5x06_wvga(NULL);
 #endif
 
 	return 0;
