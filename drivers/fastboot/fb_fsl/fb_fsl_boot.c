@@ -81,6 +81,12 @@ enum overlay_type {
 	CAM_AR0521_8MP   = 4,
 	CAM_AR0144_8MP   = 5,
 	CAM_AR0234_8MP   = 6,
+	/* EDM-G-IMX8MN */
+	MIPI_LVDS_10_8MN = 1,
+	MIPI_LVDS_15_8MN = 2,
+	MIPI_LVDS_21_8MN = 3,
+	CAM_5640_8MN     = 4,
+	HDMI_INPUT_8MN   = 5,
 #if defined(CONFIG_TARGET_EDM_G_IMX8MM)
 	/* EDM-G-IMX8MM */
 	MIPI_LVDS_10_8MM = 1,
@@ -1011,6 +1017,20 @@ int do_boota(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]) {
 				dtbo_idx = MIPI_LVDS_15_8MQ;
 			} else if (strcmp(dtbo_token, "mipi_to_lvds_21") == 0) {
 				dtbo_idx = MIPI_LVDS_21_8MQ;
+			} else {
+				dtbo_idx = NO_OVERLAY;
+			}
+		} else if(is_imx8mn()) {
+			if (strcmp(dtbo_token, "lvds_10") == 0) {
+				dtbo_idx = MIPI_LVDS_10_8MN;
+			} else if (strcmp(dtbo_token, "lvds_15") == 0) {
+				dtbo_idx = MIPI_LVDS_15_8MN;
+			} else if (strcmp(dtbo_token, "lvds_21") == 0) {
+				dtbo_idx = MIPI_LVDS_21_8MN;
+			} else if (strcmp(dtbo_token, "cam_ov5640") == 0) {
+				dtbo_idx = CAM_5640_8MN;
+			} else if (strcmp(dtbo_token, "hdmi_input") == 0) {
+				dtbo_idx = HDMI_INPUT_8MN;
 			} else {
 				dtbo_idx = NO_OVERLAY;
 			}
