@@ -252,7 +252,7 @@
 #endif
 
 #ifdef CONFIG_ANDROID_SUPPORT
-#include "edm_g_imx8mn_android.h"
+#include "edm-g-imx8mn_android.h"
 #endif
 
 #endif
