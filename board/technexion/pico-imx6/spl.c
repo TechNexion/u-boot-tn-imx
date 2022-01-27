@@ -138,6 +138,34 @@ struct mx6sdl_iomux_grp_regs mx6sdl_grp_ioregs = {
 	.grp_b7ds = IMX6SDL_DRIVE_STRENGTH,
 };
 
+/* Kingston B5116ECMDXGJD-U for i.mx6Quad operating DDR at 528MHz */
+static struct mx6_ddr3_cfg b511ecmdxg = {
+	.mem_speed = 1066,
+	.density = 8,
+	.width = 16,
+	.banks = 8,
+	.rowaddr = 16,
+	.coladdr = 10,
+	.pagesz = 2,
+	.trcd = 1312,
+	.trcmin = 5062,
+	.trasmin = 3750,
+};
+
+/* Kingston D2516ECMDXGJD-U for i.mx6Quad operating DDR at 528MHz */
+static struct mx6_ddr3_cfg d2516ecmdxgjd = {
+	.mem_speed = 1066,
+	.density = 4,
+	.width = 16,
+	.banks = 8,
+	.rowaddr = 15,
+	.coladdr = 10,
+	.pagesz = 2,
+	.trcd = 1312,
+	.trcmin = 5062,
+	.trasmin = 3750,
+};
+
 /* H5T04G63AFR-PB for i.mx6Solo/DL operating DDR at 400MHz */
 static struct mx6_ddr3_cfg h5t04g63afr = {
 	.mem_speed = 800,
@@ -166,19 +194,26 @@ static struct mx6_ddr3_cfg h5tq2g63ffr = {
 	.trasmin = 3750,
 };
 
+/*
+ * calibration - these are the various CPU/DDR3 combinations we support
+ */
+
+static struct mx6_mmdc_calibration mx6q_2g_mmdc_calib = {
+	.p0_mpwldectrl0 = 0x001A001F,
+	.p0_mpwldectrl1 = 0x002A001B,
+	.p0_mpdgctrl0 = 0x03380344,
+	.p0_mpdgctrl1 = 0x032C032C,
+	.p0_mprddlctl = 0x44383838,
+	.p0_mpwrdlctl = 0x36383838,
+};
+
 static struct mx6_mmdc_calibration mx6q_1g_mmdc_calib = {
-	.p0_mpwldectrl0 = 0x00000000,
-	.p0_mpwldectrl1 = 0x00000000,
-	.p1_mpwldectrl0 = 0x00000000,
-	.p1_mpwldectrl1 = 0x00000000,
-	.p0_mpdgctrl0 = 0x032C0340,
-	.p0_mpdgctrl1 = 0x03300324,
-	.p1_mpdgctrl0 = 0x032C0338,
-	.p1_mpdgctrl1 = 0x03300274,
-	.p0_mprddlctl = 0x423A383E,
-	.p1_mprddlctl = 0x3638323E,
-	.p0_mpwrdlctl = 0x363C4640,
-	.p1_mpwrdlctl = 0x4034423C,
+	.p0_mpwldectrl0 = 0x000C0019,
+	.p0_mpwldectrl1 = 0x001C0014,
+	.p0_mpdgctrl0 = 0x0314031C,
+	.p0_mpdgctrl1 = 0x03080308,
+	.p0_mprddlctl =0x3E363438,
+	.p0_mpwrdlctl = 0x30363836,
 };
 
 /* DDR 32bit */
@@ -237,6 +272,8 @@ static void ccgr_init(void)
 
 static void spl_dram_init(void)
 {
+	unsigned long ram_size;
+
 	if (is_mx6solo()) {
 		mx6sdl_dram_iocfg(32, &mx6sdl_ddr_ioregs, &mx6sdl_grp_ioregs);
 		mx6_dram_cfg(&mem_s, &mx6s_512m_mmdc_calib, &h5tq2g63ffr);
@@ -245,7 +282,16 @@ static void spl_dram_init(void)
 		mx6_dram_cfg(&mem_s, &mx6dl_1g_mmdc_calib, &h5t04g63afr);
 	} else if (is_mx6dq()) {
 		mx6dq_dram_iocfg(32, &mx6dq_ddr_ioregs, &mx6dq_grp_ioregs);
-		mx6_dram_cfg(&mem_s, &mx6q_1g_mmdc_calib, &h5t04g63afr);
+		mx6_dram_cfg(&mem_s, &mx6q_2g_mmdc_calib, &b511ecmdxg);
+
+		/*
+		* Get actual RAM size, so we can adjust DDR row size for <SZ_2G
+		* memories
+		*/
+		ram_size = get_ram_size((void *)CONFIG_SYS_SDRAM_BASE, SZ_2G);
+		if (ram_size < SZ_2G) {
+			mx6_dram_cfg(&mem_s, &mx6q_1g_mmdc_calib, &d2516ecmdxgjd);
+		}
 	}
 
 	udelay(100);
