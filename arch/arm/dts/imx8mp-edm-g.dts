@@ -102,6 +102,11 @@
 };
 
 &eqos {
+	compatible = "fsl,imx-eqos";
+	/delete-property/ assigned-clocks;
+	/delete-property/ assigned-clock-parents;
+	/delete-property/ assigned-clock-rates;
+
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_eqos>;
 	phy-mode = "rgmii-id";
@@ -118,8 +123,6 @@
 		ethphy0: ethernet-phy@1 {
 			compatible = "ethernet-phy-ieee802.3-c22";
 			reg = <1>;
-			at803x,eee-disabled;
-			at803x,vddio-1p8v;
 		};
 	};
 };
