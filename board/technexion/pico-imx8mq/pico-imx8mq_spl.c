@@ -278,6 +278,10 @@ int power_init_board(void)
     pmic_reg_write(p, BD71837_BUCK8_VOLT, 0x28);
 #endif
 
+	/* disable GPU and VPU power in uboot */
+	pmic_reg_write(p, BD71837_BUCK3_CTRL, 0x46);
+	pmic_reg_write(p, BD71837_BUCK4_CTRL, 0x46);
+
     /* lock the PMIC regs */
     pmic_reg_write(p, BD71837_REGLOCK, 0x11);
 
