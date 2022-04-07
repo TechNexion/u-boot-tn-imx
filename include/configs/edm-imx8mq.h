@@ -1,6 +1,6 @@
 /*
  * Copyright 2019 TechNexion Ltd.
- * 
+ *
  * Author: Richard Hu <richard.hu@technexion.com>
  *
  * SPDX-License-Identifier:     GPL-2.0+
@@ -51,6 +51,7 @@
 
 #define CONFIG_POWER
 #define CONFIG_POWER_I2C
+#define CONFIG_POWER_BD71837
 #endif
 
 #define CONFIG_REMAKE_ELF

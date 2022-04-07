@@ -161,8 +161,6 @@
 				regulator-name = "buck3";
 				regulator-min-microvolt = <700000>;
 				regulator-max-microvolt = <1300000>;
-				regulator-boot-on;
-				regulator-always-on;
 				rohm,dvs-run-voltage = <1000000>;
 			};
 
@@ -170,8 +168,6 @@
 				regulator-name = "buck4";
 				regulator-min-microvolt = <700000>;
 				regulator-max-microvolt = <1300000>;
-				regulator-boot-on;
-				regulator-always-on;
 				rohm,dvs-run-voltage = <1000000>;
 			};
 

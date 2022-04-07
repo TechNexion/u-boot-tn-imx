@@ -71,7 +71,7 @@ void spl_dram_init(void)
 	information of DDR size into start address of TCM.
 	U-boot would extract this information in dram_init().
 	**************************************************/
-	
+
 	if (!gpio_get_value(DDR_DET_1) && !gpio_get_value(DDR_DET_2) && gpio_get_value(DDR_DET_3)) {
 		puts("dram_init: LPDDR4 4GB\n");
 		ddr_init(&dram_timing_4gb_b1);
@@ -86,7 +86,7 @@ void spl_dram_init(void)
 		puts("dram_init: LPDDR4 1GB\n");
 		ddr_init(&dram_timing_1gb_b1);
 		writel(0x1, MCU_BOOTROM_BASE_ADDR);
-	}	
+	}
 	else
 		puts("Unknown DDR type!!!\n");
 }
@@ -204,6 +204,46 @@ int board_mmc_init(bd_t *bis)
 	return 0;
 }
 
+#ifdef CONFIG_POWER
+#define I2C_PMIC	0
+int power_init_board(void)
+{
+	struct pmic *p;
+	int ret;
+
+	ret = power_bd71837_init(I2C_PMIC);
+	if (ret)
+		printf("power init failed");
+
+	p = pmic_get("BD71837");
+	pmic_probe(p);
+
+
+	/* decrease RESET key long push time from the default 10s to 10ms */
+	pmic_reg_write(p, BD71837_PWRONCONFIG1, 0x0);
+
+	/* unlock the PMIC regs */
+	pmic_reg_write(p, BD71837_REGLOCK, 0x1);
+
+	/* increase VDD_DRAM to 0.9v for 3Ghz DDR */
+	pmic_reg_write(p, BD71837_BUCK5_VOLT, 0x2);
+
+#ifndef CONFIG_IMX8M_LPDDR4
+	/* increase NVCC_DRAM_1V2 to 1.2v for DDR4 */
+	pmic_reg_write(p, BD71837_BUCK8_VOLT, 0x28);
+#endif
+
+	/* disable GPU and VPU power in uboot */
+	pmic_reg_write(p, BD71837_BUCK3_CTRL, 0x46);
+	pmic_reg_write(p, BD71837_BUCK4_CTRL, 0x46);
+
+	/* lock the PMIC regs */
+	pmic_reg_write(p, BD71837_REGLOCK, 0x11);
+
+	return 0;
+}
+#endif
+
 void spl_board_init(void)
 {
 #ifndef CONFIG_SPL_USB_SDP_SUPPORT
@@ -256,6 +296,11 @@ void board_init_f(ulong dummy)
 	}
 
 	enable_tzc380();
+
+	/* Adjust pmic voltage to 1.0V for 800M */
+	setup_i2c(I2C_PMIC, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1);
+
+	power_init_board();
 
 	/* DDR initialization */
 	spl_dram_init();
