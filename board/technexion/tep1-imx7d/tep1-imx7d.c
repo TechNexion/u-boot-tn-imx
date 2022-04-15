@@ -125,6 +125,34 @@ struct i2c_pads_info i2c_pad_info3 = {
 };
 #endif
 
+
+#define USB_HUB_REV_GPIO    IMX_GPIO_NR(4, 14)
+
+static iomux_v3_cfg_t const usb_hub_rev_pads[] = {
+	MX7D_PAD_I2C4_SCL__GPIO4_IO14 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	/* Revision Detect
+		USB2 HOST:R68 10K-R2 ON,R65 10K-R2 OFF.
+		USB2 OTG :R65 10K-R2 ON,R68 10K-R2 OFF.
+	*/
+};
+
+static u8 board_rev __section("data");
+static void detect_board_rev(void)
+{
+	// USB HUB Revision Detect
+	imx_iomux_v3_setup_multiple_pads(usb_hub_rev_pads, ARRAY_SIZE(usb_hub_rev_pads));
+
+	gpio_request(USB_HUB_REV_GPIO, "board_rev");
+	gpio_direction_input(USB_HUB_REV_GPIO);
+	if (gpio_get_value(USB_HUB_REV_GPIO) != 0) {
+		/* TEP1-IMX7D rev.A2 */
+		board_rev = 1;
+	} else {
+		/* TEP1-IMX7D rev.A1 */
+		board_rev = 0;
+	}
+}
+
 static iomux_v3_cfg_t const ddr_type_detection_pads[] = {
 	/* ddr type detection */
 	MX7D_PAD_ECSPI2_MOSI__GPIO4_IO21 | MUX_PAD_CTRL(NO_PAD_CTRL),
@@ -154,6 +182,12 @@ int dram_init(void)
 
 static iomux_v3_cfg_t const wdog_pads[] = {
 	MX7D_PAD_GPIO1_IO00__WDOG1_WDOG_B | MUX_PAD_CTRL(NO_PAD_CTRL),
+};
+
+/* Console pinout for rev A1 of TEP1-IMX7 hardware */
+static iomux_v3_cfg_t const uart2_pads[] = {
+	MX7D_PAD_UART2_TX_DATA__UART2_DCE_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
+	MX7D_PAD_UART2_RX_DATA__UART2_DCE_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
 };
 
 /* Console pinout for rev A2 of TEP1-IMX7 hardware */
@@ -500,6 +534,8 @@ int board_init(void)
 	/* address of boot parameters */
 	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
 
+	detect_board_rev();
+
 #ifdef CONFIG_DM_VIDEO
 	setup_lcd();
 #endif
@@ -593,8 +629,11 @@ int board_late_init(void)
 
 	env_set("som", get_som_type());
 
-	env_set("baseboard", "tep1-a2");
-	env_set("console", "ttymxc2");
+	if (board_rev == 1) {
+		/* TEP1-IMX7D rev.A2 */
+		env_set("baseboard", "tep1-a2");
+		env_set("console", "ttymxc2");
+	};
 
 	s = env_get ("bootdev_autodetect");
 	if (s != NULL) {
