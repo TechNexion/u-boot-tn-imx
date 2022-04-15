@@ -23,6 +23,21 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #if defined(CONFIG_SPL_BUILD)
 
+
+#define FEC_RST_GPIO	IMX_GPIO_NR(5, 11)
+#define FEC_PWR_GPIO    IMX_GPIO_NR(4, 15)
+
+static iomux_v3_cfg_t const enet_pwr_en_pads[] = {
+	MX7D_PAD_I2C4_SDA__GPIO4_IO15 | MUX_PAD_CTRL(NO_PAD_CTRL), // power pin
+};
+
+static void enable_eth_pwr(void)
+{
+	imx_iomux_v3_setup_multiple_pads(enet_pwr_en_pads, ARRAY_SIZE(enet_pwr_en_pads));
+	gpio_direction_output(FEC_PWR_GPIO, 0);
+	gpio_set_value(FEC_PWR_GPIO, 0);
+}
+
 #define DDR_TYPE_DET   IMX_GPIO_NR(4, 21)
 
 static iomux_v3_cfg_t const ddr_type_detection_pads[] = {
@@ -200,6 +215,9 @@ void board_init_f(ulong dummy)
 
 	/* DDR initialization */
 	spl_dram_init();
+
+	/* Turn on power for ETH PHY */
+	enable_eth_pwr();
 
 	/* Clear the BSS. */
 	memset(__bss_start, 0, __bss_end - __bss_start);
