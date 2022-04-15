@@ -319,8 +319,17 @@ size_t uart_base_reg_addr = UART2_IPS_BASE_ADDR;
 static void setup_iomux_uart(void)
 {
 	// USB HUB Revision Detect
-	uart_base_reg_addr = UART3_IPS_BASE_ADDR;
-	imx_iomux_v3_setup_multiple_pads(uart3_pads, ARRAY_SIZE(uart3_pads));
+	imx_iomux_v3_setup_multiple_pads(usb_hub_rev_pads, ARRAY_SIZE(usb_hub_rev_pads));
+
+	gpio_request(USB_HUB_REV_GPIO, "board_rev");
+	gpio_direction_input(USB_HUB_REV_GPIO);
+	if (gpio_get_value(USB_HUB_REV_GPIO) != 0) {
+		uart_base_reg_addr = UART3_IPS_BASE_ADDR;
+		imx_iomux_v3_setup_multiple_pads(uart3_pads, ARRAY_SIZE(uart3_pads));
+	} else {
+		uart_base_reg_addr = UART2_IPS_BASE_ADDR;
+		imx_iomux_v3_setup_multiple_pads(uart2_pads, ARRAY_SIZE(uart2_pads));
+	}
 }
 
 #define USDHC1_CD_GPIO	IMX_GPIO_NR(5, 0)
@@ -501,7 +510,9 @@ void board_late_mmc_env_init(void)
 
 int board_early_init_f(void)
 {
+#ifdef CONFIG_SPL_BUILD
 	setup_iomux_uart();
+#endif
 
 #ifdef CONFIG_SYS_I2C_MXC
 	setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1);
@@ -535,6 +546,14 @@ int board_init(void)
 	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
 
 	detect_board_rev();
+
+	if (board_rev == 1) {
+		uart_base_reg_addr = UART3_IPS_BASE_ADDR;
+		imx_iomux_v3_setup_multiple_pads(uart3_pads, ARRAY_SIZE(uart3_pads));
+	} else {
+		uart_base_reg_addr = UART2_IPS_BASE_ADDR;
+		imx_iomux_v3_setup_multiple_pads(uart2_pads, ARRAY_SIZE(uart2_pads));
+	}
 
 #ifdef CONFIG_DM_VIDEO
 	setup_lcd();
