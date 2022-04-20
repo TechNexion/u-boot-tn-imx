@@ -214,7 +214,7 @@ static void setup_iomux_eqos(void)
 
 	gpio_request(EQOS_RST_PAD, "eqos_rst");
 	gpio_direction_output(EQOS_RST_PAD, 0);
-	mdelay(15);
+	mdelay(40);
 	gpio_direction_output(EQOS_RST_PAD, 1);
 	mdelay(100);
 }
@@ -507,7 +507,6 @@ int board_late_init(void)
 	env_set("board_name", "EDM-G");
 	env_set("board_rev", "iMX8MP");
 #endif
-
 	return 0;
 }
 
