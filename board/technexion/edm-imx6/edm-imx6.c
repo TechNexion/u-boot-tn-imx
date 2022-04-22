@@ -628,6 +628,36 @@ int board_early_init_f(void)
 	return 0;
 }
 
+int get_phy_id(struct mii_dev *bus, int addr, int devad, u32 *phy_id)
+{
+	int phy_reg = 0xffff;
+	int timeout = 100;
+
+	/*
+	 * Grab the bits from PHYIR1, and put them
+	 * in the upper half
+	 */
+	while ((((short)phy_reg & 0xffff) == 0xffff) && timeout--) {
+		udelay(1000);
+		phy_reg = bus->read(bus, addr, devad, MII_PHYSID1);
+	}
+
+	if (phy_reg < 0)
+		return -EIO;
+
+	*phy_id = (phy_reg & 0xffff) << 16;
+
+	/* Grab the bits from PHYIR2, and put them in the lower half */
+	phy_reg = bus->read(bus, addr, devad, MII_PHYSID2);
+
+	if (phy_reg < 0)
+		return -EIO;
+
+	*phy_id |= (phy_reg & 0xffff);
+
+	return 0;
+}
+
 /*
  * Do not overwrite the console
  * Use always serial for U-Boot console
