@@ -217,7 +217,7 @@ int board_mmc_init(struct bd_info *bis)
 		default:
 			usdhc_cfg[0].esdhc_base = USDHC3_BASE_ADDR;
 			usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC3_CLK);
-			usdhc_cfg[0].max_bus_width = 4;
+			usdhc_cfg[0].max_bus_width = 1;
 			usdhc_cfg[1].esdhc_base = USDHC1_BASE_ADDR;
 			usdhc_cfg[1].sdhc_clk = mxc_get_clock(MXC_ESDHC_CLK);
 			usdhc_cfg[1].max_bus_width = 4;
