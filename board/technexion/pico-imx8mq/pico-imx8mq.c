@@ -181,7 +181,7 @@ static void setup_csi(void)
 	udelay(500);
 	gpio_direction_output(CSI1_RST, 1);
 
-	gpio_request(CSI1_RST, "csi2_rst");
+	gpio_request(CSI2_RST, "csi2_rst");
 	gpio_direction_output(CSI2_RST, 0);
 	udelay(500);
 	gpio_direction_output(CSI2_RST, 1);
