@@ -116,6 +116,8 @@
 	phy-handle = <&ethphy0>;
 	fsl,magic-packet;
 	phy-reset-gpios = <&gpio5 11 GPIO_ACTIVE_LOW>;
+	phy-reset-duration = <35>;
+	phy-reset-post-delay = <75>;
 	status = "okay";
 
 	mdio {
