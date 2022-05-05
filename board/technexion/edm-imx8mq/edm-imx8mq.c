@@ -145,7 +145,7 @@ static void setup_iomux_fec(void)
 
 	gpio_request(IMX_GPIO_NR(1, 9), "fec1_rst");
 	gpio_direction_output(IMX_GPIO_NR(1, 9), 0);
-	udelay(500);
+	udelay(35000);
 	gpio_direction_output(IMX_GPIO_NR(1, 9), 1);
 }
 
