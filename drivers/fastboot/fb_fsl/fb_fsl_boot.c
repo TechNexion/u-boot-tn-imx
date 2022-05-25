@@ -19,6 +19,8 @@
 #include <asm/setup.h>
 #include <env.h>
 #include <lz4.h>
+#include <fdt_support.h>
+#include <linux/libfdt.h>
 #include <linux/delay.h>
 #include "../lib/avb/fsl/utils.h"
 
@@ -64,6 +66,21 @@ boot_metric metrics = {
   .odt	 = 0,
   .sw	 = 0
 };
+
+#ifdef CONFIG_OF_LIBFDT_OVERLAY
+enum overlay_type {
+	NO_OVERLAY = 0,
+	LVDS_10_8MP = 1,
+	LVDS_15_8MP = 2,
+	LVDS_21_8MP = 3,
+	CAM_OV5640_8MP = 4,
+	CAM_AP1302_8MP = 5,
+	CAM_VIZIONLINK_OV5640_8MP = 6,
+	CAM_VIZIONLINK_AP1302_8MP = 7,
+};
+#endif
+
+
 
 int read_from_partition_multi(const char* partition,
 		int64_t offset, size_t num_bytes, void* buffer, size_t* out_num_read)
@@ -1033,6 +1050,55 @@ int do_boota(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[]) {
 		} else {
 			kernel_addr = (ulong)(hdr->kernel_addr - hdr->page_size);
 		}
+	}
+
+	ulong *dtbo_addr = NULL;
+	struct dt_table_entry *dt_entry_overlay = NULL;
+	enum overlay_type dtbo_idx = NO_OVERLAY;
+	u32 fdt_overlay_size = 0;
+	int ret;
+	char *overlay_name = NULL;
+
+	overlay_name = env_get("dtoverlay");
+
+	if (strcmp(overlay_name, "lvds-vl10112880") == 0) {
+		dtbo_idx = LVDS_10_8MP;
+	} else if (strcmp(overlay_name, "lvds-vl15613676") == 0) {
+		dtbo_idx = LVDS_15_8MP;
+	} else if (strcmp(overlay_name, "lvds-vl215192108") == 0) {
+		dtbo_idx = LVDS_21_8MP;
+	} else if (strcmp(overlay_name, "tevi-ov5640") == 0) {
+		dtbo_idx = CAM_OV5640_8MP;
+	} else if (strcmp(overlay_name, "tevi-ap1302") == 0) {
+		dtbo_idx = CAM_AP1302_8MP;
+	} else if (strcmp(overlay_name, "vizionlink-tevi-ov5640") == 0) {
+		dtbo_idx = CAM_VIZIONLINK_OV5640_8MP;
+	} else if (strcmp(overlay_name, "vizionlink-tevi-ap1302") == 0) {
+		dtbo_idx = CAM_VIZIONLINK_AP1302_8MP;
+	} else {
+		dtbo_idx = NO_OVERLAY;
+	}
+
+	if( dtbo_idx != NO_OVERLAY ) {
+		dt_entry_overlay = (struct dt_table_entry *)((ulong)dt_img +
+		be32_to_cpu(dt_img->dt_entries_offset) + (u32)dtbo_idx * be32_to_cpu(dt_img->dt_entry_size));
+
+		fdt_overlay_size = be32_to_cpu(dt_entry_overlay->dt_size);
+		dtbo_addr = fdt_addr + 0xF0000;
+		memcpy((void *)(ulong)dtbo_addr, (void *)((ulong)dt_img +
+		be32_to_cpu(dt_entry_overlay->dt_offset)), fdt_overlay_size);
+		fdt_increase_size((void *)(ulong)fdt_addr, fdt_totalsize((void *)dtbo_addr));
+
+		if(!ret)
+			printf("ANDROID: fdt increase OK\n");
+		else
+			printf("ANDROID: fdt increase failed, ret=%d\n", ret);
+
+		fdt_overlay_apply((void *)(ulong)fdt_addr, (void *)dtbo_addr);
+		if(!ret)
+			printf("ANDROID: fdt overlay OK\n");
+		else
+			printf("ANDROID: fdt overlay failed, ret=%d\n", ret);
 	}
 
 	/* Dump image info */
