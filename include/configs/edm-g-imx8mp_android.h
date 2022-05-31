@@ -35,7 +35,8 @@
 	"pci=nomsi "				\
 	"cma=800M@0x400M-0x1000M "		\
 	"bootconfig "				\
-	"buildvariant=userdebug\0"
+	"buildvariant=userdebug "		\
+	"loglevel=0\0"
 
 /* Enable mcu firmware flash */
 #ifdef CONFIG_FLASH_MCUFIRMWARE_SUPPORT
