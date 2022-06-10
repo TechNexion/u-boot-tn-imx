@@ -160,6 +160,20 @@ static struct mx6_ddr3_cfg h5t04g63afr = {
 	.trasmin = 3500,
 };
 
+/* H5T04G63AFR-PB for i.mx6Solo/DL operating DDR at 400MHz */
+static struct mx6_ddr3_cfg h5t04g63afr_800mhz = {
+	.mem_speed = 800,
+	.density = 4,
+	.width = 16,
+	.banks = 8,
+	.rowaddr = 15,
+	.coladdr = 10,
+	.pagesz = 2,
+	.trcd = 1500,
+	.trcmin = 5250,
+	.trasmin = 3750,
+};
+
 /* H5TQ2G63DFR-H9 */
 static struct mx6_ddr3_cfg h5tq2g63dfr = {
 	.mem_speed = 1333,
@@ -252,6 +266,21 @@ static struct mx6_mmdc_calibration mx6dl_1g_mmdc_calib = {
 	.p1_mprddlctl = 0x40444640,
 	.p0_mpwrdlctl = 0x3A302E30,
 	.p1_mpwrdlctl = 0x3630302C,
+};
+
+static struct mx6_mmdc_calibration mx6dl_2g_mmdc_calib = {
+	.p0_mpwldectrl0 = 0x00410046,
+	.p0_mpwldectrl1 = 0x00320039,
+	.p1_mpwldectrl0 = 0x00170016,
+	.p1_mpwldectrl1 = 0x000F002D,
+	.p0_mpdgctrl0 = 0x02380234,
+	.p0_mpdgctrl1 = 0x022C022C,
+	.p1_mpdgctrl0 = 0x021C021C,
+	.p1_mpdgctrl1 = 0x02100210,
+	.p0_mprddlctl = 0x46464648,
+	.p1_mprddlctl = 0x48464A42,
+	.p0_mpwrdlctl = 0x3A3A3636,
+	.p1_mpwrdlctl = 0x363A3834,
 };
 
 static struct mx6_mmdc_calibration mx6s_512m_mmdc_calib = {
@@ -513,7 +542,17 @@ static void spl_dram_init(void)
 			break;
 		case MXC_CPU_MX6DL:
 			mx6sdl_dram_iocfg(64, &mx6sdl_ddr_ioregs, &mx6sdl_grp_ioregs);
-			mx6_dram_cfg(&mem_dl, &mx6dl_1g_mmdc_calib, &h5tq2g63dfr);
+			mx6_dram_cfg(&mem_dl, &mx6dl_2g_mmdc_calib, &h5t04g63afr_800mhz);
+
+			/*
+			* Get actual RAM size, so we can adjust DDR row size for <SZ_2G
+			* memories
+			*/
+			unsigned long ram_size;
+			ram_size = get_ram_size((void *)CONFIG_SYS_SDRAM_BASE, SZ_2G);
+			if (ram_size < SZ_2G) {
+				mx6_dram_cfg(&mem_dl, &mx6dl_1g_mmdc_calib, &h5tq2g63dfr);
+			}
 			break;
 		case MXC_CPU_MX6D:
 			mx6sdl_dram_iocfg(64, &mx6sdl_ddr_ioregs, &mx6sdl_grp_ioregs);
