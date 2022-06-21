@@ -66,13 +66,13 @@ extern size_t uart_base_reg_addr;
 
 #if (CONFIG_FEC_ENET_DEV == 0)
 #define IMX_FEC_BASE			ENET_IPS_BASE_ADDR
-#define CONFIG_FEC_MXC_PHYADDR          0x0
+#define CONFIG_FEC_MXC_PHYADDR          0x1
 #elif (CONFIG_FEC_ENET_DEV == 1)
 #define IMX_FEC_BASE			ENET2_IPS_BASE_ADDR
-#define CONFIG_FEC_MXC_PHYADDR          0x1
+#define CONFIG_FEC_MXC_PHYADDR          0x2
 #endif
 
-#define CONFIG_FEC_MXC_MDIO_BASE	ENET_IPS_BASE_ADDR
+#define CONFIG_FEC_MXC_MDIO_BASE	IMX_FEC_BASE
 
 /* PMIC */
 #define CONFIG_POWER

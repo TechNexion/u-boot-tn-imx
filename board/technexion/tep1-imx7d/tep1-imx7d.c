@@ -349,8 +349,8 @@ int board_video_skip(void)
 
 #ifdef CONFIG_FEC_MXC
 static iomux_v3_cfg_t const fec1_pads[] = {
-	MX7D_PAD_SD2_CD_B__ENET2_MDIO | MUX_PAD_CTRL(ENET_PAD_CTRL_MII),
-	MX7D_PAD_SD2_WP__ENET2_MDC | MUX_PAD_CTRL(ENET_PAD_CTRL_MII),
+	MX7D_PAD_SD2_CD_B__ENET1_MDIO | MUX_PAD_CTRL(ENET_PAD_CTRL_MII),
+	MX7D_PAD_SD2_WP__ENET1_MDC | MUX_PAD_CTRL(ENET_PAD_CTRL_MII),
 	MX7D_PAD_ENET1_RGMII_TXC__ENET1_RGMII_TXC | MUX_PAD_CTRL(ENET_PAD_CTRL),
 	MX7D_PAD_ENET1_RGMII_TD0__ENET1_RGMII_TD0 | MUX_PAD_CTRL(ENET_PAD_CTRL),
 	MX7D_PAD_ENET1_RGMII_TD1__ENET1_RGMII_TD1 | MUX_PAD_CTRL(ENET_PAD_CTRL),
@@ -367,6 +367,8 @@ static iomux_v3_cfg_t const fec1_pads[] = {
 };
 
 static iomux_v3_cfg_t const fec2_pads[] = {
+	MX7D_PAD_SD2_CD_B__ENET2_MDIO | MUX_PAD_CTRL(ENET_PAD_CTRL_MII),
+	MX7D_PAD_SD2_WP__ENET2_MDC | MUX_PAD_CTRL(ENET_PAD_CTRL_MII),
 	MX7D_PAD_EPDC_SDCE0__ENET2_RGMII_RX_CTL | MUX_PAD_CTRL(ENET_RX_PAD_CTRL),
 	MX7D_PAD_EPDC_SDCLK__ENET2_RGMII_RD0 | MUX_PAD_CTRL(ENET_RX_PAD_CTRL),
 	MX7D_PAD_EPDC_SDLE__ENET2_RGMII_RD1  | MUX_PAD_CTRL(ENET_RX_PAD_CTRL),
@@ -412,11 +414,6 @@ static void setup_iomux_fec(void)
 	}
 }
 #endif
-
-static iomux_v3_cfg_t const bcm4339_pads[] = {
-        MX7D_PAD_SAI1_RX_BCLK__GPIO6_IO17  | MUX_PAD_CTRL(NO_PAD_CTRL), //wifi reset
-        MX7D_PAD_SAI1_RX_SYNC__GPIO6_IO16  | MUX_PAD_CTRL(NO_PAD_CTRL), //bt reset
-};
 
 static iomux_v3_cfg_t const ccm_clko_pads[] = {
 	MX7D_PAD_GPIO1_IO03__CCM_CLKO2 | MUX_PAD_CTRL(NO_PAD_CTRL),
@@ -557,25 +554,21 @@ void board_late_mmc_init(void)
 #ifdef CONFIG_FEC_MXC
 int board_eth_init(bd_t *bis)
 {
-	int ret;
-
 	setup_iomux_fec();
 
-	ret = fecmxc_initialize_multi(bis, CONFIG_FEC_ENET_DEV,
-		CONFIG_FEC_MXC_PHYADDR, IMX_FEC_BASE);
-	if (ret)
-		printf("FEC1 MXC: %s:failed\n", __func__);
-
+	imx_iomux_v3_setup_multiple_pads(enet_pwr_en_pads,
+						 ARRAY_SIZE(enet_pwr_en_pads));
 	imx_iomux_v3_setup_multiple_pads(phy_control_pads,
 						 ARRAY_SIZE(phy_control_pads));
 
 	gpio_direction_output(FEC_PWR_GPIO, 0);
 	udelay(500);
 	gpio_direction_output(FEC_RST_GPIO, 0);
-	udelay(500);
+	mdelay(35);
 	gpio_set_value(FEC_RST_GPIO, 1);
+	mdelay(75);
 
-	return ret;
+	return cpu_eth_init(bis);
 }
 
 static int setup_fec(int fec_id)
@@ -598,32 +591,10 @@ static int setup_fec(int fec_id)
         return set_clk_enet(ENET_125MHZ);
 }
 
-
 int board_phy_config(struct phy_device *phydev)
 {
-	/* enable rgmii rxc skew and phy mode select to RGMII copper */
-	/*phy_write(phydev, MDIO_DEVAD_NONE, 0x1e, 0x21);
-	phy_write(phydev, MDIO_DEVAD_NONE, 0x1f, 0x7ea8);
-	phy_write(phydev, MDIO_DEVAD_NONE, 0x1e, 0x2f);
-	phy_write(phydev, MDIO_DEVAD_NONE, 0x1f, 0x71b7);*/
-
-	unsigned short val;
-
-	/* To enable AR8035 ouput a 125MHz clk from CLK_25M */
-	phy_write(phydev, MDIO_DEVAD_NONE, 0xd, 0x7);
-	phy_write(phydev, MDIO_DEVAD_NONE, 0xe, 0x8016);
-	phy_write(phydev, MDIO_DEVAD_NONE, 0xd, 0x4007);
-
-	val = phy_read(phydev, MDIO_DEVAD_NONE, 0xe);
-	val &= 0xffe7;
-	val |= 0x18;
-	phy_write(phydev, MDIO_DEVAD_NONE, 0xe, val);
-
-	/* introduce tx clock delay */
-	phy_write(phydev, MDIO_DEVAD_NONE, 0x1d, 0x5);
-	val = phy_read(phydev, MDIO_DEVAD_NONE, 0x1e);
-	val |= 0x0100;
-	phy_write(phydev, MDIO_DEVAD_NONE, 0x1e, val);
+	/* introduce tx-rx clock delay */
+	phydev->interface = PHY_INTERFACE_MODE_RGMII_ID;
 
 	if (phydev->drv->config)
 		phydev->drv->config(phydev);
@@ -644,9 +615,6 @@ int board_early_init_f(void)
 	return 0;
 }
 
-#define BT_RST_GPIO	IMX_GPIO_NR(6, 16)
-#define WIFI_RST_GPIO	IMX_GPIO_NR(6, 17)
-
 int board_init(void)
 {
 	/* address of boot parameters */
@@ -657,13 +625,8 @@ int board_init(void)
 #endif
 
 	//edm1-imx7 custom initialize
-	imx_iomux_v3_setup_multiple_pads(bcm4339_pads, ARRAY_SIZE(bcm4339_pads));
 	imx_iomux_v3_setup_multiple_pads(ccm_clko_pads, ARRAY_SIZE(ccm_clko_pads));
 
-	gpio_direction_output(BT_RST_GPIO, 1);
-	udelay(500);
-	gpio_direction_output(WIFI_RST_GPIO, 1);
-	udelay(500);
 	clock_set_src(IPP_DO_CLKO2,OSC_32K_CLK);
 	udelay(500);
 	clock_set_src(IPP_DO_CLKO1,OSC_24M_CLK);
@@ -744,7 +707,7 @@ int board_late_init(void)
 	set_wdog_reset((struct wdog_regs *)WDOG1_BASE_ADDR);
 
 	env_set("som", get_som_type());
-	
+
 	// USB HUB Revision Detect
 	if (gpio_get_value(USB_HUB_REV_GPIO) != 0) {
 		env_set("baseboard", "tep1-a2");
