@@ -697,8 +697,10 @@ int board_late_init(void)
 				env_set("som", "imx6qp");
 			else if (is_mx6dq())
 				env_set("som", "imx6q");
+			else if (is_mx6sdl())
+				env_set("som", "imx6dl");
 			else
-				env_set("som", get_som_type());
+				printf("CPU type is not supported!!!\r\n");
 		}
 		env_set("form", form_type());
 	}
