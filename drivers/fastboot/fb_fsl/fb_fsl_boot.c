@@ -70,6 +70,7 @@ boot_metric metrics = {
 #ifdef CONFIG_OF_LIBFDT_OVERLAY
 enum overlay_type {
 	NO_OVERLAY = 0,
+#if defined(CONFIG_TARGET_EDM_G_IMX8MP)
 	LVDS_10_8MP = 1,
 	LVDS_15_8MP = 2,
 	LVDS_21_8MP = 3,
@@ -77,10 +78,14 @@ enum overlay_type {
 	CAM_AP1302_8MP = 5,
 	CAM_VIZIONLINK_OV5640_8MP = 6,
 	CAM_VIZIONLINK_AP1302_8MP = 7,
+#elif defined(CONFIG_TARGET_EDM_G_IMX8MM)
+	LVDS_10_8MM = 1,
+	LVDS_21_8MM = 2,
+	CAM_OV5640_8MM = 3,
+	CAM_AP1302_8MM = 4,
+#endif
 };
 #endif
-
-
 
 int read_from_partition_multi(const char* partition,
 		int64_t offset, size_t num_bytes, void* buffer, size_t* out_num_read)
@@ -1061,6 +1066,8 @@ int do_boota(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[]) {
 
 	overlay_name = env_get("dtoverlay");
 
+
+#if defined(CONFIG_TARGET_EDM_G_IMX8MP)
 	if (strcmp(overlay_name, "lvds-vl10112880") == 0) {
 		dtbo_idx = LVDS_10_8MP;
 	} else if (strcmp(overlay_name, "lvds-vl15613676") == 0) {
@@ -1075,6 +1082,16 @@ int do_boota(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[]) {
 		dtbo_idx = CAM_VIZIONLINK_OV5640_8MP;
 	} else if (strcmp(overlay_name, "vizionlink-tevi-ap1302") == 0) {
 		dtbo_idx = CAM_VIZIONLINK_AP1302_8MP;
+#elif defined(CONFIG_TARGET_EDM_G_IMX8MM)
+	if (strcmp(overlay_name, "sn65dsi84-vl10112880") == 0) {
+		dtbo_idx = LVDS_10_8MM;
+	} else if (strcmp(overlay_name, "sn65dsi84-vl215192108") == 0) {
+		dtbo_idx = LVDS_21_8MM;
+	} else if (strcmp(overlay_name, "tevi-ov5640") == 0) {
+		dtbo_idx = CAM_OV5640_8MM;
+	} else if (strcmp(overlay_name, "tevi-ap1302") == 0) {
+		dtbo_idx = CAM_AP1302_8MM;
+#endif
 	} else {
 		dtbo_idx = NO_OVERLAY;
 	}
