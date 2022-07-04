@@ -72,6 +72,9 @@
 	pinctrl-0 = <&pinctrl_fec1>;
 	phy-mode = "rgmii-id";
 	phy-handle = <&ethphy0>;
+	phy-reset-duration = <35>;
+	phy-reset-post-delay = <75>;
+	phy-reset-gpios = <&gpio2 10 GPIO_ACTIVE_LOW>;
 	fsl,magic-packet;
 	status = "okay";
 
@@ -359,7 +362,7 @@
 			MX8MM_IOMUXC_ENET_RXC_ENET1_RGMII_RXC		0x91
 			MX8MM_IOMUXC_ENET_RX_CTL_ENET1_RGMII_RX_CTL	0x91
 			MX8MM_IOMUXC_ENET_TX_CTL_ENET1_RGMII_TX_CTL	0x1f
-			MX8MM_IOMUXC_SD1_RESET_B_GPIO2_IO10	0x19	/* ENET_nRST */
+			MX8MM_IOMUXC_SD1_RESET_B_GPIO2_IO10	0x36	/* ENET_nRST */
 		>;
 	};
 
