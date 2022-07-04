@@ -121,47 +121,10 @@ ulong board_get_usable_ram_top(ulong total_size)
 }
 
 #ifdef CONFIG_FEC_MXC
-#define FEC_RST_PAD IMX_GPIO_NR(1, 9)
-static iomux_v3_cfg_t const fec1_rst_pads[] = {
-	IMX8MQ_PAD_GPIO1_IO09__GPIO1_IO9 | MUX_PAD_CTRL(NO_PAD_CTRL),
-};
-
-#define FEC_PWR_PAD IMX_GPIO_NR(1, 13)
-static iomux_v3_cfg_t const fec1_pwr_pads[] = {
-	IMX8MQ_PAD_GPIO1_IO13__GPIO1_IO13 | MUX_PAD_CTRL(NO_PAD_CTRL),
-};
-
-#define WL_REG_ON_PAD IMX_GPIO_NR(3, 24)
-static iomux_v3_cfg_t const wl_reg_on_pads[] = {
-	IMX8MQ_PAD_SAI5_RXD3__GPIO3_IO24 | MUX_PAD_CTRL(NO_PAD_CTRL),
-};
-
-#define BT_ON_PAD IMX_GPIO_NR(3, 21)
-static iomux_v3_cfg_t const bt_on_pads[] = {
-	IMX8MQ_PAD_SAI5_RXD0__GPIO3_IO21 | MUX_PAD_CTRL(NO_PAD_CTRL),
-};
-
-static void setup_iomux_fec(void)
-{
-	imx_iomux_v3_setup_multiple_pads(fec1_rst_pads, ARRAY_SIZE(fec1_rst_pads));
-	imx_iomux_v3_setup_multiple_pads(fec1_pwr_pads, ARRAY_SIZE(fec1_pwr_pads));
-
-	gpio_request(IMX_GPIO_NR(1, 13), "fec1_pwr");
-	gpio_direction_output(IMX_GPIO_NR(1, 13), 1);
-	udelay(500);
-
-	gpio_request(IMX_GPIO_NR(1, 9), "fec1_rst");
-	gpio_direction_output(IMX_GPIO_NR(1, 9), 0);
-	udelay(35000);
-	gpio_direction_output(IMX_GPIO_NR(1, 9), 1);
-}
-
 static int setup_fec(void)
 {
 	struct iomuxc_gpr_base_regs *const iomuxc_gpr_regs
 		= (struct iomuxc_gpr_base_regs *) IOMUXC_GPR_BASE_ADDR;
-
-	setup_iomux_fec();
 
 	/* Use 125M anatop REF_CLK1 for ENET1, not from external */
 	clrsetbits_le32(&iomuxc_gpr_regs->gpr[1],
@@ -172,16 +135,20 @@ static int setup_fec(void)
 
 int board_phy_config(struct phy_device *phydev)
 {
+#ifndef CONFIG_DM_ETH
 	/* enable rgmii rxc skew and phy mode select to RGMII copper */
 	phy_write(phydev, MDIO_DEVAD_NONE, 0x1d, 0x1f);
 	phy_write(phydev, MDIO_DEVAD_NONE, 0x1e, 0x8);
 
+	phy_write(phydev, MDIO_DEVAD_NONE, 0x1d, 0x00);
+	phy_write(phydev, MDIO_DEVAD_NONE, 0x1e, 0x82ee);
 	phy_write(phydev, MDIO_DEVAD_NONE, 0x1d, 0x05);
 	phy_write(phydev, MDIO_DEVAD_NONE, 0x1e, 0x100);
 
 	if (phydev->drv->config)
 		phydev->drv->config(phydev);
 	return 0;
+#endif
 }
 #endif
 
@@ -318,6 +285,16 @@ void reset_mipi_panel(void)
 	gpio_direction_output(MIPI_RESET_PAD, 1);
 
 }
+
+#define WL_REG_ON_PAD IMX_GPIO_NR(3, 24)
+static iomux_v3_cfg_t const wl_reg_on_pads[] = {
+	IMX8MQ_PAD_SAI5_RXD3__GPIO3_IO24 | MUX_PAD_CTRL(NO_PAD_CTRL),
+};
+
+#define BT_ON_PAD IMX_GPIO_NR(3, 21)
+static iomux_v3_cfg_t const bt_on_pads[] = {
+	IMX8MQ_PAD_SAI5_RXD0__GPIO3_IO21 | MUX_PAD_CTRL(NO_PAD_CTRL),
+};
 
 void setup_wifi(void)
 {
