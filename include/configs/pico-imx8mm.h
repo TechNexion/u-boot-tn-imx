@@ -1,6 +1,6 @@
 /*
  * Copyright 2018 TechNexion Ltd.
- * 
+ *
  * Author: Richard Hu <richard.hu@technexion.com>
  *
  * SPDX-License-Identifier:     GPL-2.0+
@@ -113,6 +113,7 @@
 
 #define CONFIG_PHYLIB
 #define CONFIG_PHY_ATHEROS
+#define CONFIG_PHY_REALTEK
 #endif
 
 /*

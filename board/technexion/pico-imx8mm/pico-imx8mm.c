@@ -38,6 +38,7 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #define UART_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_FSEL1)
 #define WDOG_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_ODE | PAD_CTL_PUE | PAD_CTL_PE)
+#define FEC_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_ODE)
 
 static iomux_v3_cfg_t const uart_pads[] = {
 	IMX8MM_PAD_UART2_RXD_UART2_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
@@ -130,7 +131,7 @@ int ft_board_setup(void *blob, bd_t *bd)
 #ifdef CONFIG_FEC_MXC
 #define FEC_RST_PAD IMX_GPIO_NR(2, 10)
 static iomux_v3_cfg_t const fec1_rst_pads[] = {
-	IMX8MM_PAD_SD1_RESET_B_GPIO2_IO10 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	IMX8MM_PAD_SD1_RESET_B_GPIO2_IO10 | MUX_PAD_CTRL(FEC_PAD_CTRL),
 };
 
 static void setup_iomux_fec(void)
@@ -140,8 +141,9 @@ static void setup_iomux_fec(void)
 
 	gpio_request(FEC_RST_PAD, "fec1_rst");
 	gpio_direction_output(FEC_RST_PAD, 0);
-	udelay(500);
+	mdelay(35);
 	gpio_direction_output(FEC_RST_PAD, 1);
+	mdelay(75);
 }
 
 static int setup_fec(void)
@@ -159,6 +161,7 @@ static int setup_fec(void)
 
 int board_phy_config(struct phy_device *phydev)
 {
+#ifndef CONFIG_DM_ETH
 	/* enable rgmii rxc skew and phy mode select to RGMII copper */
 	phy_write(phydev, MDIO_DEVAD_NONE, 0x1d, 0x1f);
 	phy_write(phydev, MDIO_DEVAD_NONE, 0x1e, 0x8);
@@ -167,7 +170,7 @@ int board_phy_config(struct phy_device *phydev)
 	phy_write(phydev, MDIO_DEVAD_NONE, 0x1e, 0x82ee);
 	phy_write(phydev, MDIO_DEVAD_NONE, 0x1d, 0x05);
 	phy_write(phydev, MDIO_DEVAD_NONE, 0x1e, 0x100);
-
+#endif
 	if (phydev->drv->config)
 		phydev->drv->config(phydev);
 	return 0;
@@ -177,7 +180,7 @@ int board_phy_config(struct phy_device *phydev)
 int board_usb_init(int index, enum usb_init_type init)
 {
 	int ret = 0;
-	
+
 	debug("board_usb_init %d, type %d\n", index, init);
 
 	imx8m_usb_power(index, true);
