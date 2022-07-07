@@ -248,7 +248,7 @@ int add_dtoverlay(char *ov_name)
 	return 0;
 }
 
-#define EETI_TOUCH_I2C_BUS 4
+#define EETI_TOUCH_I2C_BUS 2
 #define EETI_TOUCH_I2C_ADDR 0x2a
 
 int detect_display_panel(void)
@@ -265,7 +265,7 @@ int detect_display_panel(void)
 	/* detect LVDS panel type by identifying touch controller */
 	ret = dm_i2c_probe(bus, EETI_TOUCH_I2C_ADDR, 0, &i2c_dev);
 	if (! ret) {
-		add_dtoverlay("lvds-vl10112880");
+		add_dtoverlay("sn65dsi84-vl10112880");
 	}
 	return 0;
 }
@@ -274,6 +274,7 @@ int board_late_init(void)
 {
 #ifndef CONFIG_AVB_SUPPORT
 	detect_baseboard();
+	detect_display_panel();
 #endif
 
 #ifdef CONFIG_ENV_IS_IN_MMC
