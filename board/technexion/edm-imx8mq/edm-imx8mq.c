@@ -425,7 +425,7 @@ int detect_display_panel(void)
 }
 
 #ifdef CONFIG_OF_BOARD_SETUP
-int ft_board_setup(void *blob, bd_t *bd)
+int ft_board_setup(void *blob, struct bd_info *bd)
 {
 	const int *cell;
 	int offs;
@@ -437,8 +437,7 @@ int ft_board_setup(void *blob, bd_t *bd)
 	cma_size = fdt32_to_cpu(cell[1]);
 	cmasize = env_get("cma_size");
 	if(cmasize || ((u64)(gd->ram_size >> 1) < cma_size)) {
-		cma_size = env_get_ulong("cma_size", 10, 320 * 1024 * 1024);
-		cma_size = min((uint32_t)(mem_map[DRAM1_INDEX].size >> 1), cma_size);
+		cma_size = env_get_ulong("cma_size", 10, (18 * 32) * 1024 * 1024);
 		fdt_setprop_u64(blob, offs, "size", (uint64_t)cma_size);
 	}
 
