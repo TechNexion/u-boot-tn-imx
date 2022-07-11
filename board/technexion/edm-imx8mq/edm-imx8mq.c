@@ -456,11 +456,11 @@ int board_late_init(void)
 	detect_display_panel();
 #endif
 
-	fdt_file = env_get("fdt_file");
+	fdt_file = env_get("fdtfile");
 	if (fdt_file && !strcmp(fdt_file, "undefined")) {
 		strcpy(str_fdtfile, "imx8mq-edm-wizard");
 		strcat(str_fdtfile, ".dtb");
-		env_set("fdt_file", str_fdtfile);
+		env_set("fdtfile", str_fdtfile);
 	}
 
 #ifdef CONFIG_ENV_IS_IN_MMC
