@@ -1062,60 +1062,66 @@ int do_boota(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[]) {
 	enum overlay_type dtbo_idx = NO_OVERLAY;
 	u32 fdt_overlay_size = 0;
 	int ret;
-	char *overlay_name = NULL;
+	char overlay_name[] = {0};
+	char *overlay_name_ptr = NULL, *dtbo_token = NULL;
 
-	overlay_name = env_get("dtoverlay");
+	overlay_name_ptr = env_get("dtoverlay");
+	sprintf(overlay_name, "%s", overlay_name_ptr);
+	dtbo_token = strtok(overlay_name, " ");
 
-
+	while(dtbo_token != NULL) {
 #if defined(CONFIG_TARGET_EDM_G_IMX8MP)
-	if (strcmp(overlay_name, "lvds-vl10112880") == 0) {
-		dtbo_idx = LVDS_10_8MP;
-	} else if (strcmp(overlay_name, "lvds-vl15613676") == 0) {
-		dtbo_idx = LVDS_15_8MP;
-	} else if (strcmp(overlay_name, "lvds-vl215192108") == 0) {
-		dtbo_idx = LVDS_21_8MP;
-	} else if (strcmp(overlay_name, "tevi-ov5640") == 0) {
-		dtbo_idx = CAM_OV5640_8MP;
-	} else if (strcmp(overlay_name, "tevi-ap1302") == 0) {
-		dtbo_idx = CAM_AP1302_8MP;
-	} else if (strcmp(overlay_name, "vizionlink-tevi-ov5640") == 0) {
-		dtbo_idx = CAM_VIZIONLINK_OV5640_8MP;
-	} else if (strcmp(overlay_name, "vizionlink-tevi-ap1302") == 0) {
-		dtbo_idx = CAM_VIZIONLINK_AP1302_8MP;
+		if (strcmp(dtbo_token, "lvds-vl10112880") == 0) {
+			dtbo_idx = LVDS_10_8MP;
+		} else if (strcmp(dtbo_token, "lvds-vl15613676") == 0) {
+			dtbo_idx = LVDS_15_8MP;
+		} else if (strcmp(dtbo_token, "lvds-vl215192108") == 0) {
+			dtbo_idx = LVDS_21_8MP;
+		} else if (strcmp(dtbo_token, "tevi-ov5640") == 0) {
+			dtbo_idx = CAM_OV5640_8MP;
+		} else if (strcmp(dtbo_token, "tevi-ap1302") == 0) {
+			dtbo_idx = CAM_AP1302_8MP;
+		} else if (strcmp(dtbo_token, "vizionlink-tevi-ov5640") == 0) {
+			dtbo_idx = CAM_VIZIONLINK_OV5640_8MP;
+		} else if (strcmp(dtbo_token, "vizionlink-tevi-ap1302") == 0) {
+			dtbo_idx = CAM_VIZIONLINK_AP1302_8MP;
 #elif defined(CONFIG_TARGET_EDM_G_IMX8MM)
-	if (strcmp(overlay_name, "sn65dsi84-vl10112880") == 0) {
-		dtbo_idx = LVDS_10_8MM;
-	} else if (strcmp(overlay_name, "sn65dsi84-vl215192108") == 0) {
-		dtbo_idx = LVDS_21_8MM;
-	} else if (strcmp(overlay_name, "tevi-ov5640") == 0) {
-		dtbo_idx = CAM_OV5640_8MM;
-	} else if (strcmp(overlay_name, "tevi-ap1302") == 0) {
-		dtbo_idx = CAM_AP1302_8MM;
+		if (strcmp(dtbo_token, "sn65dsi84-vl10112880") == 0) {
+			dtbo_idx = LVDS_10_8MM;
+		} else if (strcmp(dtbo_token, "sn65dsi84-vl215192108") == 0) {
+			dtbo_idx = LVDS_21_8MM;
+		} else if (strcmp(dtbo_token, "tevi-ov5640") == 0) {
+			dtbo_idx = CAM_OV5640_8MM;
+		} else if (strcmp(dtbo_token, "tevi-ap1302") == 0) {
+			dtbo_idx = CAM_AP1302_8MM;
 #endif
-	} else {
-		dtbo_idx = NO_OVERLAY;
-	}
+		} else {
+			dtbo_idx = NO_OVERLAY;
+		}
 
-	if( dtbo_idx != NO_OVERLAY ) {
-		dt_entry_overlay = (struct dt_table_entry *)((ulong)dt_img +
-		be32_to_cpu(dt_img->dt_entries_offset) + (u32)dtbo_idx * be32_to_cpu(dt_img->dt_entry_size));
+		dtbo_token = strtok(NULL, " ");
 
-		fdt_overlay_size = be32_to_cpu(dt_entry_overlay->dt_size);
-		dtbo_addr = fdt_addr + 0xF0000;
-		memcpy((void *)(ulong)dtbo_addr, (void *)((ulong)dt_img +
-		be32_to_cpu(dt_entry_overlay->dt_offset)), fdt_overlay_size);
-		fdt_increase_size((void *)(ulong)fdt_addr, fdt_totalsize((void *)dtbo_addr));
+		if( dtbo_idx != NO_OVERLAY ) {
+			dt_entry_overlay = (struct dt_table_entry *)((ulong)dt_img +
+			be32_to_cpu(dt_img->dt_entries_offset) + (u32)dtbo_idx * be32_to_cpu(dt_img->dt_entry_size));
 
-		if(!ret)
-			printf("ANDROID: fdt increase OK\n");
-		else
-			printf("ANDROID: fdt increase failed, ret=%d\n", ret);
+			fdt_overlay_size = be32_to_cpu(dt_entry_overlay->dt_size);
+			dtbo_addr = fdt_addr + 0xF0000;
+			memcpy((void *)(ulong)dtbo_addr, (void *)((ulong)dt_img +
+			be32_to_cpu(dt_entry_overlay->dt_offset)), fdt_overlay_size);
+			fdt_increase_size((void *)(ulong)fdt_addr, fdt_overlay_size);
 
-		fdt_overlay_apply((void *)(ulong)fdt_addr, (void *)dtbo_addr);
-		if(!ret)
-			printf("ANDROID: fdt overlay OK\n");
-		else
-			printf("ANDROID: fdt overlay failed, ret=%d\n", ret);
+			if(!ret)
+				printf("ANDROID: fdt increase OK\n");
+			else
+				printf("ANDROID: fdt increase failed, ret=%d\n", ret);
+
+			fdt_overlay_apply((void *)(ulong)fdt_addr, (void *)dtbo_addr);
+			if(!ret)
+				printf("ANDROID: fdt overlay OK\n");
+			else
+				printf("ANDROID: fdt overlay failed, ret=%d\n", ret);
+		}
 	}
 
 	/* Dump image info */
