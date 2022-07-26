@@ -1,12 +1,13 @@
 /*
  * Copyright 2019 TechNexion Ltd.
- * 
+ *
  * Author: Richard Hu <richard.hu@technexion.com>
  *
  * SPDX-License-Identifier:     GPL-2.0+
  */
 
 #include <common.h>
+#include <command.h>
 #include <env.h>
 #include <init.h>
 #include <malloc.h>
@@ -14,6 +15,7 @@
 #include <asm/io.h>
 #include <miiphy.h>
 #include <netdev.h>
+#include <linux/delay.h>
 #include <asm/mach-imx/iomux-v3.h>
 #include <asm-generic/gpio.h>
 #include <fsl_esdhc_imx.h>
@@ -132,7 +134,6 @@ static int setup_fec(void)
 	return set_clk_enet(ENET_125MHZ);
 }
 
-
 int board_phy_config(struct phy_device *phydev)
 {
 #ifndef CONFIG_DM_ETH
@@ -144,11 +145,10 @@ int board_phy_config(struct phy_device *phydev)
 	phy_write(phydev, MDIO_DEVAD_NONE, 0x1e, 0x82ee);
 	phy_write(phydev, MDIO_DEVAD_NONE, 0x1d, 0x05);
 	phy_write(phydev, MDIO_DEVAD_NONE, 0x1e, 0x100);
-
+#endif
 	if (phydev->drv->config)
 		phydev->drv->config(phydev);
 	return 0;
-#endif
 }
 #endif
 
