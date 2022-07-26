@@ -51,7 +51,7 @@
 #define PHY_ANEG_TIMEOUT 20000
 
 #define CONFIG_FEC_XCV_TYPE             RGMII
-#define CONFIG_FEC_MXC_PHYADDR          0
+#define CONFIG_FEC_MXC_PHYADDR          1
 
 #define IMX_FEC_BASE			0x30BE0000
 #endif

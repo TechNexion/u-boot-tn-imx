@@ -91,6 +91,17 @@
 			startup-delay-us = <100>;
 			enable-active-high;
 		};
+
+		reg_fec_supply: regulator_fecpwr {
+			compatible = "regulator-fixed";
+			pinctrl-names = "default";
+			regulator-name = "ENET_PWR_EN";
+			regulator-min-microvolt = <3300000>;
+			regulator-max-microvolt = <3300000>;
+			gpio = <&gpio1 13 GPIO_ACTIVE_HIGH>;
+			regulator-always-on;
+			enable-active-high;
+		};
 	};
 };
 
@@ -102,6 +113,7 @@
 	phy-reset-duration = <35>;
 	phy-reset-post-delay = <75>;
 	phy-reset-gpios = <&gpio1 9 GPIO_ACTIVE_LOW>;
+	phy-supply = <&reg_fec_supply>;
 	fsl,magic-packet;
 	status = "okay";
 
@@ -404,7 +416,7 @@
 			MX8MQ_IOMUXC_ENET_RXC_ENET1_RGMII_RXC	0x91
 			MX8MQ_IOMUXC_ENET_RX_CTL_ENET1_RGMII_RX_CTL	0x91
 			MX8MQ_IOMUXC_ENET_TX_CTL_ENET1_RGMII_TX_CTL	0x1f
-			MX8MQ_IOMUXC_GPIO1_IO09_GPIO1_IO9	0x36	/* ENET_nRST */
+			MX8MQ_IOMUXC_GPIO1_IO09_GPIO1_IO9	0x51	/* ENET_nRST */
 			MX8MQ_IOMUXC_GPIO1_IO11_GPIO1_IO11	0x36	/* ENET_IRQ */
 			MX8MQ_IOMUXC_GPIO1_IO13_GPIO1_IO13	0x19	/* ENET_PWR */
 		>;
