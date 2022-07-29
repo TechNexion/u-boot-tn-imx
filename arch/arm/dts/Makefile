@@ -687,6 +687,8 @@ dtb-y += \
 	imx6dl-mamoj.dtb \
 	imx6dl-nitrogen6x.dtb \
 	imx6dl-pico.dtb \
+	imx6dl-tek3.dtb \
+	imx6dl-tep5.dtb \
 	imx6dl-sabreauto.dtb \
 	imx6dl-sabreauto-ecspi.dtb \
 	imx6dl-sabreauto-gpmi-weim.dtb \
@@ -724,6 +726,8 @@ dtb-y += \
 	imx6q-novena.dtb \
 	imx6q-pico.dtb \
 	imx6q-phytec-mira-rdk-nand.dtb \
+	imx6q-tek3.dtb \
+	imx6q-tep5.dtb \
 	imx6q-sabreauto.dtb \
 	imx6q-sabreauto-ecspi.dtb \
 	imx6q-sabreauto-gpmi-weim.dtb \
