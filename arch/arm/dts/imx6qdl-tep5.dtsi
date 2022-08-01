@@ -791,7 +791,7 @@ TEP_GPIO_DEFS();
 &usdhc3 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usdhc3>;
-	bus-width = <8>;
+	bus-width = <1>;
 	non-removable;
 	vmmc-supply = <&reg_3p3v>;
 	status = "okay";
