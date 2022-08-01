@@ -20,6 +20,7 @@
 #include <asm/sections.h>
 #include <fsl_esdhc_imx.h>
 #include <spl.h>
+#include <asm/mach-imx/boot_mode.h>
 
 #if defined(CONFIG_XPL_BUILD)
 
@@ -169,7 +170,20 @@ static const iomux_v3_cfg_t usdhc1_pads[] = {
 };
 
 #define USDHC3_CD_GPIO IMX_GPIO_NR(1, 14)
-static const iomux_v3_cfg_t usdhc3_emmc_pads[] = {
+#define USDHC1_CD_GPIO	IMX_GPIO_NR(5, 0)
+/* EMMC/SD */
+static iomux_v3_cfg_t const usdhc1_pads[] = {
+	MX7D_PAD_SD1_CLK__SD1_CLK | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX7D_PAD_SD1_CMD__SD1_CMD | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX7D_PAD_SD1_DATA0__SD1_DATA0 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX7D_PAD_SD1_DATA1__SD1_DATA1 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX7D_PAD_SD1_DATA2__SD1_DATA2 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX7D_PAD_SD1_DATA3__SD1_DATA3 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX7D_PAD_SD1_CD_B__GPIO5_IO0  | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+};
+
+#define USDHC3_CD_GPIO IMX_GPIO_NR(1, 14)
+static iomux_v3_cfg_t const usdhc3_emmc_pads[] = {
 	MX7D_PAD_SD3_CLK__SD3_CLK | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX7D_PAD_SD3_CMD__SD3_CMD | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX7D_PAD_SD3_DATA0__SD3_DATA0 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
@@ -192,16 +206,14 @@ int board_mmc_getcd(struct mmc *mmc)
 {
 	struct fsl_esdhc_cfg *cfg = (struct fsl_esdhc_cfg *)mmc->priv;
 	int ret = 0;
-
 	switch (cfg->esdhc_base) {
 	case USDHC1_BASE_ADDR:
-		ret = !gpio_get_value(USDHC1_CD_GPIO);
+		ret = !gpio_get_value(USDHC1_CD_GPIO); /* Assume uSDHC1 sd is always present */
 		break;
 	case USDHC3_BASE_ADDR:
-		ret = !gpio_get_value(USDHC3_CD_GPIO);
+		ret = !gpio_get_value(USDHC3_CD_GPIO); /* Assume uSDHC3 emmc is always present */
 		break;
 	}
-
 	return ret;
 }
 
@@ -262,4 +274,5 @@ int board_mmc_init(struct bd_info *bis)
 
 	return 0;
 }
+
 #endif
