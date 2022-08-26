@@ -7,6 +7,8 @@
  */
 
 #include <common.h>
+#include <command.h>
+#include <init.h>
 #include <env.h>
 #include <errno.h>
 #include <init.h>
@@ -166,7 +168,7 @@ static void setup_iomux_fec(void)
 
 	gpio_request(FEC_RST_PAD, "fec1_rst");
 	gpio_direction_output(FEC_RST_PAD, 0);
-	mdelay(500);
+	mdelay(40);
 	gpio_direction_output(FEC_RST_PAD, 1);
 }
 
@@ -196,7 +198,7 @@ static void setup_iomux_eqos(void)
 
 	gpio_request(EQOS_RST_PAD, "eqos_rst");
 	gpio_direction_output(EQOS_RST_PAD, 0);
-	mdelay(15);
+	mdelay(40);
 	gpio_direction_output(EQOS_RST_PAD, 1);
 	mdelay(100);
 }
