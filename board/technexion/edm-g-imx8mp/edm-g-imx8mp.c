@@ -527,7 +527,7 @@ bool is_power_key_pressed(void) {
 }
 #endif
 
-#ifdef CONFIG_SPL_MMC_SUPPORT
+#ifdef CONFIG_SPL_MMC
 
 #define UBOOT_RAW_SECTOR_OFFSET 0x40
 unsigned long spl_mmc_get_uboot_raw_sector(struct mmc *mmc)
