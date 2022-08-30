@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0+
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * Copyright 2020 TechNexion Ltd.
  *
@@ -7,22 +7,16 @@
  */
 
 #include <common.h>
-#include <command.h>
-#include <cpu_func.h>
 #include <hang.h>
-#include <image.h>
 #include <init.h>
 #include <log.h>
 #include <spl.h>
 #include <asm/global_data.h>
-#include <asm/io.h>
-#include <errno.h>
-#include <asm/io.h>
-#include <asm/mach-imx/iomux-v3.h>
 #include <asm/arch/imx8mp_pins.h>
 #include <asm/arch/sys_proto.h>
 #include <asm/mach-imx/boot_mode.h>
 #include <power/pmic.h>
+
 #include <power/pca9450.h>
 #include <asm/arch/clock.h>
 #include <dm/uclass.h>
@@ -30,6 +24,7 @@
 #include <dm/uclass-internal.h>
 #include <dm/device-internal.h>
 #include <asm/mach-imx/gpio.h>
+#include <asm/mach-imx/iomux-v3.h>
 #include <asm/mach-imx/mxc_i2c.h>
 #include <fsl_esdhc_imx.h>
 #include <mmc.h>
@@ -178,25 +173,27 @@ int power_init_board(void)
 
 void spl_board_init(void)
 {
-	struct udevice *dev;
-	uclass_find_first_device(UCLASS_MISC, &dev);
+	if (IS_ENABLED(CONFIG_FSL_CAAM)) {
+		struct udevice *dev;
+		int ret;
 
-	for (; dev; uclass_find_next_device(&dev)) {
-		if (device_probe(dev))
-			continue;
+		ret = uclass_get_device_by_driver(UCLASS_MISC, DM_DRIVER_GET(caam_jr), &dev);
+		if (ret)
+			printf("Failed to initialize caam_jr: %d\n", ret);
 	}
-
-	/* Set GIC clock to 500Mhz for OD VDD_SOC. Kernel driver does not allow to change it.
-	 * Should set the clock after PMIC setting done.
-	 * Default is 400Mhz (system_pll1_800m with div = 2) set by ROM for ND VDD_SOC
+	/*
+	 * Set GIC clock to 500Mhz for OD VDD_SOC. Kernel driver does
+	 * not allow to change it. Should set the clock after PMIC
+	 * setting done. Default is 400Mhz (system_pll1_800m with div = 2)
+	 * set by ROM for ND VDD_SOC
 	 */
 #if defined(CONFIG_IMX8M_LPDDR4) && !defined(CONFIG_IMX8M_VDD_SOC_850MV)
 	clock_enable(CCGR_GIC, 0);
 	clock_set_target_val(GIC_CLK_ROOT, CLK_ROOT_ON | CLK_ROOT_SOURCE_SEL(5));
 	clock_enable(CCGR_GIC, 1);
-#endif
 
 	puts("Normal Boot\n");
+#endif
 }
 
 #ifdef CONFIG_SPL_LOAD_FIT
