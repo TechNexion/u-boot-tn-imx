@@ -18,11 +18,11 @@ DRIVE=/dev/sdX
 #DTBS="fsl-imx8mq-evk"
 #DTBS="pico-imx8m"
 
-BRANCH_VER="lf-5.15.5_1.0.0" #branch used by imx-mkimage and imx-atf under meta-imx
-ATF_BRANCH_VER="lf_v2.4"
-MKIMAGE_SRC_GIT_ID='22346a32a88aa752d4bad8f2ed1eb641e18849dc' #refer to 'imx-mkimage_git.inc' in Yocto
-ATF_SRC_GIT_ID='05f788b9bbb13d002997e35008a4b945f7e2957b' #refer to 'imx-atf_2.0.bbappend' in Yocto
-DDR_FW_VER="8.15" #refer to the name of 'firmware-imx-8_8.x.bb'
+BRANCH_VER="lf-5.15.32_2.0.0" #branch used by imx-mkimage and imx-atf under meta-imx
+ATF_BRANCH_VER="lf_v2.6"
+MKIMAGE_SRC_GIT_ID='a8bb8edb45492ac70b33734122a57aa8e38a20bd' #refer to 'imx-mkimage_git.inc' in Yocto
+ATF_SRC_GIT_ID='c6a19b1a351308cc73443283f6aa56b2eff791b8' #refer to 'imx-atf_2.6.bb' in Yocto
+DDR_FW_VER="8.16" #refer to the name of 'firmware-imx-8m_8.x.bb'
 
 FSL_MIRROR="https://www.nxp.com/lgfiles/NMG/MAD/YOCTO"
 FIRMWARE_DIR="firmware_imx8"
@@ -31,7 +31,6 @@ MKIMAGE_TARGET="flash_hdmi_spl_uboot"
 
 SPL_ORI="spl/u-boot-spl.bin"
 UBOOT_ORI="u-boot-nodtb.bin"
-FW_DIR="firmware_imx8mq"
 IMX_BOOT="flash.bin"
 TWD=`pwd`
 
@@ -235,7 +234,7 @@ usage()
     * AXON-IMX8MP:
     ./install_uboot_imx8.sh -b imx8mp-axon.dtb -d /dev/sdX
 
-    * EDM-G-IMX8MP with WB:
+    * EDM-G-IMX8MP with WB/WIZARD:
     ./install_uboot_imx8.sh -b imx8mp-edm-g.dtb -d /dev/sdX
 
     * SC-IMX8MP:
