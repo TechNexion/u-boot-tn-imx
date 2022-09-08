@@ -78,6 +78,8 @@
 #define BOOTENV
 #endif
 
+/* M7 Specific */
+#define SYS_AUXCORE_BOOTDATA_TCM    0x007E0000
 
 #define JAILHOUSE_ENV \
 	"jh_clk= \0 " \
@@ -137,6 +139,13 @@
 	"boot_fit=no\0" \
 	"fdtfile=" CONFIG_DEFAULT_FDT_FILE "\0" \
 	"bootm_size=0x10000000\0" \
+	"initrd_addr=0x43800000\0"		\
+	"initrd_high=0xffffffffffffffff\0" \
+	"m7image=hello_world.bin\0" \
+	"m7loadaddr="__stringify(SYS_AUXCORE_BOOTDATA_TCM)"\0" \
+	"m7boot=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${m7image}; " \
+	"cp.b ${loadaddr} ${m7loadaddr} ${filesize}; " \
+	"dcache flush; bootaux ${m7loadaddr}\0" \
 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
 	"mmcpart=1\0" \
 	"mmcroot=" CONFIG_MMCROOT " rootwait rw\0" \
