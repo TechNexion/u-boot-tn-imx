@@ -7,6 +7,8 @@
  */
 
 #include <common.h>
+#include <init.h>
+#include <linux/delay.h>
 #include <cpu_func.h>
 #include <hang.h>
 #include <spl.h>
