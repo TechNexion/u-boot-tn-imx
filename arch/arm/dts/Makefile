@@ -1094,6 +1094,7 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mp-venice-gw74xx.dtb \
 	imx8mp-verdin-wifi-dev.dtb \
 	imx8mq-pico-pi.dtb \
+	imx8mq-pico-wizard.dtb \
 	imx8mq-kontron-pitx-imx8m.dtb \
 	imx8mq-librem5-r4.dtb
 
