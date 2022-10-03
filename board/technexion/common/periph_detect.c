@@ -49,8 +49,8 @@ int detect_i2c(struct tn_display const *dev)
 		}
 		return 1;
 	}
-	return 0;
 #endif
+	return 0;
 }
 
 
