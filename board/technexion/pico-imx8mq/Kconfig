@@ -9,7 +9,6 @@ config SYS_VENDOR
 config SYS_CONFIG_NAME
 	default "pico-imx8mq"
 
-config IMX_CONFIG
-	default "arch/arm/mach-imx/imx8m/imximage.cfg"
+source "board/technexion/common/Kconfig"
 
 endif
