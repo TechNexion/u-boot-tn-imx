@@ -28,6 +28,9 @@
 #include <splash.h>
 #include <imx_sip.h>
 #include <linux/arm-smccc.h>
+#include <linux/delay.h>
+#include <command.h>
+#include "../common/periph_detect.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -328,6 +331,16 @@ void board_late_mmc_env_init(void)
 #define PCA9555_26_I2C_ADDR 0x26
 #define EXPANSION_IC_I2C_BUS 2
 
+struct tn_display const displays[]= {
+/*      bus, addr, id_reg, id, detect */
+	{ 2, 0x38, 0xA3, 0x54, "ili9881c", detect_i2c },
+	{ 2, 0x38, 0xA3, 0x58, "g080uan01", detect_i2c },
+	{ 2, 0x38, 0xA3, 0x59, "g101uan02", detect_i2c },
+	{ 2, 0x3d, 0x98, 0x3d, "mipi2hdmi-adv7535", detect_i2c },
+};
+
+size_t tn_display_count = ARRAY_SIZE(displays);
+
 int detect_baseboard(void)
 {
 	struct udevice *bus = NULL;
@@ -360,110 +373,7 @@ int detect_baseboard(void)
 
 }
 
-int add_dtoverlay(char *ov_name)
-{
-	char *dtoverlay, arr_dtov[64];
-
-	dtoverlay = env_get("dtoverlay");
-	if (dtoverlay) {
-		strcpy(arr_dtov, dtoverlay);
-		if (!strstr(arr_dtov, ov_name)) {
-			strcat(arr_dtov, " ");
-			strcat(arr_dtov, ov_name);
-			env_set("dtoverlay", arr_dtov);
-		}
-	} else
-		env_set("dtoverlay", ov_name);
-
-	return 0;
-}
-
-int detect_display_panel(void)
-{
-	struct udevice *bus = NULL;
-	struct udevice *i2c_dev = NULL;
-	int ret, touch_id;
-
-	ret = uclass_get_device_by_seq(UCLASS_I2C, FT5336_TOUCH_I2C_BUS, &bus);
-	if (ret) {
-		printf("%s: Can't find bus\n", __func__);
-		return -EINVAL;
-	}
-	/* detect different MIPI panel by touch controller */
-	ret = dm_i2c_probe(bus, FT5336_TOUCH_I2C_ADDR, 0, &i2c_dev);
-	if (! ret) {
-		touch_id = dm_i2c_reg_read(i2c_dev, 0xA3);
-		switch (touch_id) {
-		case 0x54:
-			add_dtoverlay("ili9881c");
-			break;
-		case 0x58:
-			add_dtoverlay("g080uan01");
-			break;
-		case 0x59:
-			add_dtoverlay("g101uan02");
-			break;
-		default:
-			printf("Unknown panel ID!\r\n");
-		}
-	}
-
-	/* detect MIPI2HDMI controller */
-	ret = dm_i2c_probe(bus, ADV7535_HDMI_I2C_ADDR, 0, &i2c_dev);
-	if (! ret) {
-		add_dtoverlay("mipi2hdmi-adv7535");
-	}
-
-	return 0;
-}
-
-struct camera_cfg {
-       u8 camera_index;
-       u8 i2c_bus_index;
-       u8 eeprom_i2c_addr;
-};
-
-const struct camera_cfg tevi_camera[] = {
-       {1, 1, 0x54},
-};
-
 #define NUMS(x)        (sizeof(x) / sizeof(x[0]))
-
-int detect_tevi_camera(void)
-{
-	struct udevice *bus = NULL;
-	struct udevice *i2c_dev = NULL;
-	int i, ret;
-
-	for (i = 0; i < NUMS(tevi_camera); i++) {
-	        ret = uclass_get_device_by_seq(UCLASS_I2C, tevi_camera[i].i2c_bus_index, &bus);
-	        if (ret) {
-	                printf("%s: Can't find bus\n", __func__);
-	                continue;
-	        }
-	        ret = dm_i2c_probe(bus, tevi_camera[i].eeprom_i2c_addr, 0, &i2c_dev);
-	        if (! ret) {
-	                add_dtoverlay("tevi-ov5640");
-	                return 0;
-	        } else {
-	                /* ov7251 chip address is 0x60 */
-	                ret = dm_i2c_probe(bus, 0x60, 0, &i2c_dev);
-	                if (! ret) {
-	                        add_dtoverlay("ov7251");
-	                        return 0;
-	                } else {
-	                        /* ov5645 chip address is 0x3c */
-	                        ret = dm_i2c_probe(bus, 0x3c, 0, &i2c_dev);
-	                        if (! ret) {
-	                                add_dtoverlay("ov5645");
-	                                return 0;
-	                        }
-	                }
-	        }
-	}
-
-	return 0;
-}
 
 #ifdef CONFIG_OF_BOARD_SETUP
 int ft_board_setup(void *blob, struct bd_info *bd)
@@ -492,7 +402,6 @@ int board_late_init(void)
 #ifndef CONFIG_AVB_SUPPORT
 	detect_baseboard();
 	detect_display_panel();
-	detect_tevi_camera();
 #endif
 
 #ifdef CONFIG_ENV_IS_IN_MMC
