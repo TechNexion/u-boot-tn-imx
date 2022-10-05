@@ -9,4 +9,6 @@ config SYS_VENDOR
 config SYS_CONFIG_NAME
 	default "pico-imx8mm"
 
+source "board/technexion/common/Kconfig"
+
 endif
