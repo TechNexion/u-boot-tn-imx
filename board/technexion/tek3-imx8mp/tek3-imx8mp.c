@@ -35,6 +35,7 @@
 #include <fdt_support.h>
 #include <jffs2/load_kernel.h>
 #include <mtd_node.h>
+#include <command.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
