@@ -9,4 +9,6 @@ config SYS_VENDOR
 config SYS_CONFIG_NAME
 	default "tek3-imx8mp"
 
+source "board/technexion/common/Kconfig"
+
 endif

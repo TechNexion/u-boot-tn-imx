@@ -26,6 +26,8 @@
 #include <fsl_esdhc_imx.h>
 #include <mmc.h>
 #include <asm/arch/ddr.h>
+#include <linux/delay.h>
+#include <init.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -229,7 +231,7 @@ int power_init_board(void)
 	struct pmic *p;
 	int ret;
 
-	ret = power_pca9450_init(I2C_PMIC);
+	ret = power_pca9450_init(I2C_PMIC, 0x35);
 	if (ret)
 		printf("power init failed");
 	p = pmic_get("PCA9450");
