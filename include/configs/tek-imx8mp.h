@@ -133,6 +133,7 @@
 	"fdt_addr=0x43000000\0"			\
 	"boot_fdt=try\0" \
 	"fdt_high=0xffffffffffffffff\0"		\
+	"fdt_buffer=8192\0"	\
 	"boot_fit=no\0" \
 	"fdtfile=" CONFIG_DEFAULT_FDT_FILE "\0" \
 	"bootm_size=0x10000000\0" \
