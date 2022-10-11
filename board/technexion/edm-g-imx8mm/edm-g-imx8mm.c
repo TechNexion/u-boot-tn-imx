@@ -31,6 +31,7 @@
 #include <imx_sip.h>
 #include <linux/arm-smccc.h>
 #include <cli.h>
+#include "../common/periph_detect.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -308,56 +309,13 @@ int detect_baseboard(void)
 
 }
 
-int add_dtoverlay(char *ov_name)
-{
-	char *dtoverlay, arr_dtov[64];
-
-	dtoverlay = env_get("dtoverlay");
-	if (dtoverlay) {
-		strcpy(arr_dtov, dtoverlay);
-		if (!strstr(arr_dtov, ov_name)) {
-			strcat(arr_dtov, " ");
-			strcat(arr_dtov, ov_name);
-			env_set("dtoverlay", arr_dtov);
-		}
-	} else
-		env_set("dtoverlay", ov_name);
-
-	return 0;
-}
-
-struct camera_cfg {
-       u8 camera_index;
-       u8 i2c_bus_index;
-       u8 eeprom_i2c_addr;
+struct tn_display const displays[]= {
+/*      bus, addr, id_reg, id, detect */
+	{ 2, 0x2a, 0, 0, "sn65dsi84-vl10112880", detect_i2c },
 };
-
-const struct camera_cfg tevi_camera[] = {
-       {1, 1, 0x54},
-};
+size_t tn_display_count = ARRAY_SIZE(displays);
 
 #define NUMS(x)        (sizeof(x) / sizeof(x[0]))
-
-int detect_tevi_camera(void)
-{
-	struct udevice *bus = NULL;
-	struct udevice *i2c_dev = NULL;
-	int i, ret;
-
-	for (i = 0; i < NUMS(tevi_camera); i++) {
-	        ret = uclass_get_device_by_seq(UCLASS_I2C, tevi_camera[i].i2c_bus_index, &bus);
-	        if (ret) {
-	                printf("%s: Can't find bus\n", __func__);
-	                continue;
-	        }
-	        ret = dm_i2c_probe(bus, tevi_camera[i].eeprom_i2c_addr, 0, &i2c_dev);
-	        if (! ret) {
-	                add_dtoverlay("tevi-ov5640");
-	                return 0;
-	        }
-	}
-	return 0;
-}
 
 #ifdef CONFIG_OF_BOARD_SETUP
 int ft_board_setup(void *blob, struct bd_info *bd)
@@ -381,34 +339,11 @@ int ft_board_setup(void *blob, struct bd_info *bd)
 }
 #endif
 
-#define EETI_TOUCH_I2C_BUS 2
-#define EETI_TOUCH_I2C_ADDR 0x2a
-
-int detect_display_panel(void)
-{
-       struct udevice *bus = NULL;
-       struct udevice *i2c_dev = NULL;
-       int ret;
-
-       ret = uclass_get_device_by_seq(UCLASS_I2C, EETI_TOUCH_I2C_BUS, &bus);
-       if (ret) {
-               printf("%s: Can't find bus\n", __func__);
-               return -EINVAL;
-       }
-       /* detect LVDS panel type by identifying touch controller */
-       ret = dm_i2c_probe(bus, EETI_TOUCH_I2C_ADDR, 0, &i2c_dev);
-       if (! ret) {
-               add_dtoverlay("sn65dsi84-vl10112880");
-       }
-       return 0;
-}
-
 int board_late_init(void)
 {
 #ifndef CONFIG_AVB_SUPPORT
 	detect_baseboard();
 	detect_display_panel();
-	detect_tevi_camera();
 #endif
 
 #ifdef CONFIG_ENV_IS_IN_MMC
