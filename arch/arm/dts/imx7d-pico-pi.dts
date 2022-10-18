@@ -8,6 +8,11 @@
 	model = "TechNexion PICO-IMX7D Board and PI baseboard";
 	compatible = "technexion,imx7d-pico-pi", "fsl,imx7d";
 
+	aliases {
+		mmc0 = &usdhc1;
+		mmc2 = &usdhc3;
+	};
+
 	leds {
 		compatible = "gpio-leds";
 		pinctrl-names = "default";
