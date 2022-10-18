@@ -18,11 +18,11 @@ DRIVE=/dev/sdX
 #DTBS="fsl-imx8mq-evk"
 #DTBS="pico-imx8m"
 
-BRANCH_VER="lf-5.15.32_2.0.0" #branch used by imx-mkimage and imx-atf under meta-imx
+BRANCH_VER="lf-5.15.52_2.1.0" #branch used by imx-mkimage and imx-atf under meta-imx
 ATF_BRANCH_VER="lf_v2.6"
-MKIMAGE_SRC_GIT_ID='a8bb8edb45492ac70b33734122a57aa8e38a20bd' #refer to 'imx-mkimage_git.inc' in Yocto
-ATF_SRC_GIT_ID='c6a19b1a351308cc73443283f6aa56b2eff791b8' #refer to 'imx-atf_2.6.bb' in Yocto
-DDR_FW_VER="8.16" #refer to the name of 'firmware-imx-8m_8.x.bb'
+MKIMAGE_SRC_GIT_ID='37648c8ba5094420faa8206d8cb8e0c6f17d72fc' #refer to 'imx-mkimage_git.inc' in Yocto
+ATF_SRC_GIT_ID='9202efc9aaf65085def9a747ee32aed628449901' #refer to 'imx-atf_2.6.bb' in Yocto
+DDR_FW_VER="8.17" #refer to the name of 'firmware-imx-8m_8.x.bb'
 
 FSL_MIRROR="https://www.nxp.com/lgfiles/NMG/MAD/YOCTO"
 FIRMWARE_DIR="firmware_imx8"
@@ -68,7 +68,7 @@ install_firmware()
 	cd ${TWD}
 	#Get and Build NXP imx-mkimage tool
 	if [ ! -d ${MKIMAGE_DIR} ] ; then
-		git clone https://source.codeaurora.org/external/imx/imx-mkimage -b ${BRANCH_VER} || printf "Fails to fetch imx-mkimage source code \n"
+		git clone https://github.com/nxp-imx/imx-mkimage.git -b ${BRANCH_VER} || printf "Fails to fetch imx-mkimage source code \n"
 		cd imx-mkimage
 		git checkout -b ${BRANCH_VER}_local ${MKIMAGE_SRC_GIT_ID}
 	fi
@@ -82,7 +82,7 @@ install_firmware()
 	
 	#Get, build and copy the ARM Trusted Firmware
 	if [ ! -d imx-atf ] ; then
-		git clone https://source.codeaurora.org/external/imx/imx-atf -b ${ATF_BRANCH_VER} || printf "Fails to fetch ATF source code \n"
+		git clone https://github.com/nxp-imx/imx-atf.git -b ${ATF_BRANCH_VER} || printf "Fails to fetch ATF source code \n"
 		cd imx-atf
 		git checkout -b ${BRANCH_VER}_local ${ATF_SRC_GIT_ID}
 	fi
