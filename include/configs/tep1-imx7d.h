@@ -30,9 +30,6 @@
 #define CONFIG_INITRD_TAG
 #define CONFIG_REVISION_TAG
 
-/* Size of malloc() pool */
-#define CONFIG_SYS_MALLOC_LEN		(32 * SZ_1M)
-
 #define CONFIG_MXC_UART
 #undef CONFIG_MXC_UART_BASE
 #define CONFIG_MXC_UART_BASE            uart_base_reg_addr
@@ -65,8 +62,6 @@ extern size_t uart_base_reg_addr;
 #define CONFIG_FEC_MXC_MDIO_BASE	ENET_IPS_BASE_ADDR
 
 /* PMIC */
-#define CONFIG_POWER
-#define CONFIG_POWER_I2C
 #define CONFIG_POWER_PFUZE3000
 #define CONFIG_POWER_PFUZE3000_I2C_ADDR	0x08
 
@@ -74,16 +69,7 @@ extern size_t uart_base_reg_addr;
 #undef CONFIG_BOOTM_PLAN9
 #undef CONFIG_BOOTM_RTEMS
 
-/* I2C configs */
-#define CONFIG_SYS_I2C
-#define CONFIG_SYS_I2C_MXC_I2C1         /* enable I2C bus 1 */
-#define CONFIG_SYS_I2C_MXC_I2C2         /* enable I2C bus 2 */
-#define CONFIG_SYS_I2C_MXC_I2C3         /* enable I2C bus 3 */
-#define CONFIG_SYS_I2C_SPEED		100000
-
 /* Command definition */
-
-#define CONFIG_LOADADDR			0x80800000
 
 #define CONFIG_SYS_AUXCORE_BOOTDATA 0x60000000 /* Set to QSPI1 A flash at default */
 
@@ -112,7 +98,7 @@ extern size_t uart_base_reg_addr;
 #define UPDATE_M4_ENV ""
 #endif
 
-#define CONFIG_SYS_MMC_IMG_LOAD_PART	1
+#define SYS_MMC_IMG_LOAD_PART	1
 #ifdef CONFIG_SYS_BOOT_NAND
 #define MFG_NAND_PARTITION "mtdparts=gpmi-nand:64m(boot),16m(kernel),16m(dtb),-(rootfs) "
 #else
@@ -180,7 +166,7 @@ extern size_t uart_base_reg_addr;
 	"boot_fdt=try\0" \
 	"ip_dyn=yes\0" \
 	"mmcdev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
-	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
+	"mmcpart=" __stringify(SYS_MMC_IMG_LOAD_PART) "\0" \
 	"mmcautodetect=yes\0" \
 	"searchbootdev=" \
 		"if test ${bootdev} = SD0; then " \
@@ -300,7 +286,6 @@ extern size_t uart_base_reg_addr;
 #define CONFIG_SYS_MEMTEST_START	0x80000000
 #define CONFIG_SYS_MEMTEST_END		(CONFIG_SYS_MEMTEST_START + 0x20000000)
 
-#define CONFIG_SYS_LOAD_ADDR		CONFIG_LOADADDR
 #define CONFIG_SYS_HZ			1000
 
 /* Physical Memory Map */
@@ -374,13 +359,7 @@ extern size_t uart_base_reg_addr;
 #else
 #define CONFIG_SYS_FSL_USDHC_NUM	2
 #endif
-#define CONFIG_SYS_MMC_ENV_DEV		0   /* USDHC3 */
 #define CONFIG_SYS_FSL_ESDHC_HAS_DDR_MODE
-
-/*
- * FDT options
- */
-#define CONFIG_LMB
 
 /* USB Configs */
 #define CONFIG_EHCI_HCD_INIT_AFTER_RESET
