@@ -118,6 +118,15 @@ int __weak board_ehci_power(int port, int on)
 	return 0;
 }
 
+#if defined(CONFIG_MX6) || defined(CONFIG_MX7ULP) || defined(CONFIG_IMXRT) || defined(CONFIG_IMX8) || defined(CONFIG_IMX8ULP)
+static const ulong phy_bases[] = {
+	USB_PHY0_BASE_ADDR,
+#if defined(USB_PHY1_BASE_ADDR)
+	USB_PHY1_BASE_ADDR,
+#endif
+};
+#endif
+
 static const struct ehci_ops mx6_ehci_ops = {
 	.powerup_fixup		= ehci_mx6_powerup_fixup,
 };
