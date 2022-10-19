@@ -9,6 +9,13 @@
 #include <dt-bindings/gpio/gpio.h>
 
 / {
+	aliases {
+		mmc0 = &usdhc3;
+		mmc0 = &usdhc1;
+		mmc2 = &usdhc3;
+		usb0 = &usbotg;
+	};
+
 	chosen {
 		stdout-path = &uart1;
 	};
