@@ -2,8 +2,11 @@
 /*
  * Copyright (C) 2013 Freescale Semiconductor, Inc.
  * Copyright (C) 2014 O.S. Systems Software LTDA.
+ * Copyright (C) 2020 TechNexion Ltd.
  *
  * Author: Fabio Estevam <festevam@gmail.com>
+ *         Richard Hu <richard.hu@technexion.com>
+ *         Ray Chang <ray.chang@technexion.com>
  */
 
 #include <common.h>
@@ -27,6 +30,8 @@
 #include <miiphy.h>
 #include <netdev.h>
 #include <phy.h>
+#include <splash.h>
+#include <mmc.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -291,6 +296,41 @@ static void setup_display(void)
 
 	writel(reg, &iomux->gpr[3]);
 }
+
+#ifdef CONFIG_SPLASH_SCREEN
+static struct splash_location imx_splash_locations[] = {
+	{
+		.name = "sf",
+		.storage = SPLASH_STORAGE_SF,
+		.flags = SPLASH_STORAGE_RAW,
+		.offset = 0x100000,
+	},
+	{
+		.name = "mmc_fs",
+		.storage = SPLASH_STORAGE_MMC,
+		.flags = SPLASH_STORAGE_FS,
+		.devpart = "0:1",
+	},
+	{
+		.name = "usb_fs",
+		.storage = SPLASH_STORAGE_USB,
+		.flags = SPLASH_STORAGE_FS,
+		.devpart = "0:1",
+	},
+	{
+		.name = "sata_fs",
+		.storage = SPLASH_STORAGE_SATA,
+		.flags = SPLASH_STORAGE_FS,
+		.devpart = "0:1",
+	},
+};
+
+int splash_screen_prepare(void)
+{
+	imx_splash_locations[1].devpart[0] = mmc_get_env_dev() + '0';
+	return splash_source_load(imx_splash_locations, ARRAY_SIZE(imx_splash_locations));
+}
+#endif /* CONFIG_SPLASH_SCREEN */
 #endif /* CONFIG_VIDEO_IPUV3 */
 
 int board_early_init_f(void)
@@ -359,6 +399,29 @@ int board_init(void)
 
 	return 0;
 }
+
+#ifdef CONFIG_OF_BOARD_SETUP
+int ft_board_setup(void *blob, struct bd_info *bis)
+{
+	const int *cell;
+	int offs;
+	uint32_t cma_size;
+	unsigned int dram_size;
+
+	dram_size = imx_ddr_size() / 1024 / 1024;
+	offs = fdt_path_offset(blob, "/reserved-memory/linux,cma");
+	cell = fdt_getprop(blob, offs, "size", NULL);
+	cma_size = fdt32_to_cpu(cell[0]);
+	if (dram_size == 512) {
+		/* CMA is aligned by 32MB on i.mx8mq,
+		   so CMA size can only be multiple of 32MB */
+		cma_size = env_get_ulong("cma_size", 10, (6 * 32) * 1024 * 1024);
+		fdt_setprop_u32(blob, offs, "size", (uint64_t)cma_size);
+	}
+
+	return 0;
+}
+#endif
 
 int checkboard(void)
 {
