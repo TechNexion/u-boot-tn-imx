@@ -1,16 +1,18 @@
 // SPDX-License-Identifier: GPL-2.0
 //
-// Copyright 2018 Technexion Ltd.
+// Copyright (C) 2020 TechNexion Ltd.
 //
 // Author: Wig Cheng <wig.cheng@technexion.com>
-//	   Richard Hu <richard.hu@technexion.com>
-//	   Tapani Utriainen <tapani@technexion.com>
+//         Richard Hu <richard.hu@technexion.com>
+//         Tapani Utriainen <tapani@technexion.com>
+//         Ray Chang <ray.chang@technexion.com>
 
 #include <dt-bindings/gpio/gpio.h>
 
 / {
 	aliases {
-		mmc0 = &usdhc3;
+		mmc0 = &usdhc1;
+		mmc2 = &usdhc3;
 		usb0 = &usbotg;
 	};
 
