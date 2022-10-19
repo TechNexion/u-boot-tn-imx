@@ -22,6 +22,7 @@
 #include <asm/global_data.h>
 #include <asm/gpio.h>
 #include <asm/arch/mxc_hdmi.h>
+#include <asm/mach-imx/boot_mode.h>
 #include <asm/mach-imx/video.h>
 #include <asm/mach-imx/iomux-v3.h>
 #include <asm/io.h>
@@ -385,10 +386,46 @@ int overwrite_console(void)
 
 int board_late_init(void)
 {
+#ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
+	char *s;
+#endif
+
 	if (is_mx6dq())
 		env_set("board_rev", "MX6Q");
 	else
 		env_set("board_rev", "MX6DL");
+
+
+#ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
+	if ((s = env_get ("fdtfile_autodetect")) != NULL) {
+		if (strncmp (s, "off", 3) != 0) {
+			if (is_mx6dqp())
+				env_set("som", "imx6qp");
+			else if (is_mx6dq())
+				env_set("som", "imx6q");
+			else if (is_mx6sdl())
+				env_set("som", "imx6dl");
+			else
+				printf("CPU type is not supported!!!\r\n");
+		}
+	}
+
+	if ((s = env_get ("bootdev_autodetect")) != NULL) {
+		if (strncmp (s, "off", 3) != 0) {
+			switch (get_boot_device()) {
+			case MMC3_BOOT:
+			case SD3_BOOT:
+				env_set("bootdev", "SD0");
+				break;
+			case SD1_BOOT:
+				env_set("bootdev", "SD1");
+				break;
+			default:
+				printf("Wrong boot device!");
+			}
+		}
+	}
+#endif
 
 	return 0;
 }
