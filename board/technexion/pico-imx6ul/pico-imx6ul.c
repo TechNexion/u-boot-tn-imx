@@ -17,8 +17,10 @@
 #include <asm/gpio.h>
 #include <asm/mach-imx/iomux-v3.h>
 #include <asm/io.h>
+#include <command.h>
 #include <common.h>
 #include <miiphy.h>
+#include <mmc.h>
 #include <linux/delay.h>
 #include <linux/sizes.h>
 #include <usb.h>
@@ -41,6 +43,18 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #define LCD_PAD_CTRL    (PAD_CTL_HYS | PAD_CTL_PUS_100K_UP | PAD_CTL_PUE | \
 	PAD_CTL_PKE | PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm)
+
+#define DDR_TYPE_DET IMX_GPIO_NR(5, 1)
+
+static iomux_v3_cfg_t const ddr_type_detection_pads[] = {
+	/* ddr type detection */
+	MX6_PAD_SNVS_TAMPER1__GPIO5_IO01 | MUX_PAD_CTRL(NO_PAD_CTRL),
+};
+
+static void setup_iomux_ddr_type_detection(void)
+{
+	imx_iomux_v3_setup_multiple_pads(ddr_type_detection_pads, ARRAY_SIZE(ddr_type_detection_pads));
+}
 
 static int setup_fec(void)
 {
@@ -222,9 +236,101 @@ int board_init(void)
 	return 0;
 }
 
+int check_mmc_autodetect(void)
+{
+	char *autodetect_str = env_get("mmcautodetect");
+
+	if ((autodetect_str != NULL) &&
+		(strcmp(autodetect_str, "yes") == 0)) {
+		return 1;
+	}
+
+	return 0;
+}
+
+int mmc_map_to_kernel_blk(int dev_no)
+{
+	return dev_no;
+}
+
+void board_late_mmc_init(void)
+{
+	char cmd[32];
+	char mmcblk[32];
+	u32 dev_no = mmc_get_env_dev();
+
+	if (!check_mmc_autodetect())
+		return;
+
+	env_set_ulong("mmcdev", dev_no);
+
+	/* Set mmcblk env */
+	sprintf(mmcblk, "/dev/mmcblk%dp2 rootwait rw",
+			mmc_map_to_kernel_blk(dev_no));
+	env_set("mmcroot", mmcblk);
+
+	sprintf(cmd, "mmc dev %d", dev_no);
+	run_command(cmd, 0);
+}
+
+int board_late_init(void)
+{
+#ifdef CONFIG_ENV_IS_IN_MMC
+	board_late_mmc_init();
+#endif /* CONFIG_ENV_IS_IN_MMC */
+
+	set_wdog_reset((struct wdog_regs *)WDOG1_BASE_ADDR);
+
+#ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
+	if(is_mx6ul())
+		env_set("som", "imx6ul");
+	else if(is_mx6ull())
+		env_set("som", "imx6ull");
+	else
+		env_set("som", "imx6ull");
+
+	setup_iomux_ddr_type_detection();
+	gpio_request(DDR_TYPE_DET, "ddr_det");
+	gpio_direction_input(DDR_TYPE_DET);
+
+	if (!gpio_get_value(DDR_TYPE_DET))
+		env_set("memdet", "512MB");
+	else
+		env_set("memdet", "256MB");
+#endif
+
+	return 0;
+}
+
+#ifdef CONFIG_OF_BOARD_SETUP
+int ft_board_setup(void *blob, struct bd_info *bd)
+{
+	const int *cell;
+	int offs;
+	uint32_t cma_size;
+	unsigned int dram_size;
+
+	dram_size = imx_ddr_size() / 1024 / 1024;
+	offs = fdt_path_offset(blob, "/reserved-memory/linux,cma");
+	cell = fdt_getprop(blob, offs, "size", NULL);
+	cma_size = fdt32_to_cpu(cell[0]);
+	if (dram_size == 256) {
+		/* CMA is aligned by 32MB on i.mx8mq,
+		   so CMA size can only be multiple of 32MB */
+		cma_size = env_get_ulong("cma_size", 10, (2 * 32) * 1024 * 1024);
+		fdt_setprop_u32(blob, offs, "size", (uint64_t)cma_size);
+	}
+
+	return 0;
+}
+#endif
+
 int checkboard(void)
 {
-	puts("Board: PICO-IMX6UL-EMMC\n");
+	char board_output[32] = {0};
+	sprintf(board_output, "Board: pico-%s\n", get_som_type());
+
+	puts(board_output);
 
 	return 0;
 }
