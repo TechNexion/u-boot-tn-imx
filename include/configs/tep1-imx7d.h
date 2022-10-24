@@ -59,7 +59,7 @@ extern size_t uart_base_reg_addr;
 #define CONFIG_FEC_MXC_PHYADDR          0x2
 #endif
 
-#define CONFIG_FEC_MXC_MDIO_BASE	ENET_IPS_BASE_ADDR
+#define CONFIG_FEC_MXC_MDIO_BASE	IMX_FEC_BASE
 
 /* PMIC */
 #define CONFIG_POWER_PFUZE3000
