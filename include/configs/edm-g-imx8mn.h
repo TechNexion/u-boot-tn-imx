@@ -30,8 +30,6 @@
 /* For RAW image gives a error info not panic */
 #define CONFIG_SPL_ABORT_ON_RAW_IMAGE
 
-#define CONFIG_POWER
-#define CONFIG_POWER_I2C
 #define CONFIG_POWER_PCA9450
 #define CONFIG_SYS_I2C
 
@@ -107,7 +105,7 @@
 	"fdtfile=undefined\0" \
 	"bootm_size=0x10000000\0" \
 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
-	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
+	"mmcpart=1\0" \
 	"mmcroot=" CONFIG_MMCROOT " rootwait rw\0" \
 	"mmcautodetect=yes\0" \
 	"mmcargs=setenv bootargs ${jh_clk} console=${console} root=${mmcroot}\0 " \
@@ -170,11 +168,6 @@
 	   "fi;"
 
 
-/* Link Definitions */
-#define CONFIG_LOADADDR			0x40480000
-
-#define CONFIG_SYS_LOAD_ADDR           CONFIG_LOADADDR
-
 #define CONFIG_SYS_INIT_RAM_ADDR        0x40000000
 #define CONFIG_SYS_INIT_RAM_SIZE        0x80000
 #define CONFIG_SYS_INIT_SP_OFFSET \
@@ -189,9 +182,6 @@
 #define CONFIG_ENV_SPI_MAX_HZ		CONFIG_SF_DEFAULT_SPEED
 #endif
 #define CONFIG_MMCROOT			"/dev/mmcblk1p2"  /* USDHC2 */
-
-/* Size of malloc() pool */
-#define CONFIG_SYS_MALLOC_LEN		SZ_32M
 
 #define CONFIG_SYS_SDRAM_BASE           0x40000000
 #define PHYS_SDRAM                      0x40000000
@@ -213,13 +203,8 @@
 
 #define CONFIG_IMX_BOOTAUX
 
-/* USDHC */
-#define CONFIG_FSL_USDHC
-
 #define CONFIG_SYS_FSL_USDHC_NUM	2
 #define CONFIG_SYS_FSL_ESDHC_ADDR	0
-
-#define CONFIG_SYS_MMC_IMG_LOAD_PART	1
 
 #define CONFIG_SYS_I2C_SPEED		100000
 
@@ -228,7 +213,6 @@
 #define CONFIG_USBD_HS
 
 #define CONFIG_CMD_USB_MASS_STORAGE
-#define CONFIG_USB_GADGET_MASS_STORAGE
 #define CONFIG_USB_FUNCTION_MASS_STORAGE
 
 #endif

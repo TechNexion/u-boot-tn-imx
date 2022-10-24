@@ -13,6 +13,6 @@ config IMX8MN_LOW_DRIVE_MODE
 	bool "Enable the low drive mode of iMX8MN"
 	default n
 
-source "board/freescale/common/Kconfig"
+source "board/technexion/common/Kconfig"
 
 endif
