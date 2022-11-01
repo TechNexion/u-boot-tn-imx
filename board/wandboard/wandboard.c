@@ -62,6 +62,8 @@ DECLARE_GLOBAL_DATA_PTR;
 #define I2C2_SPEED_NON_DM	CONFIG_SYS_MXC_I2C2_SPEED
 #endif
 
+#define STRING(s) #s
+
 static bool with_pmic;
 
 int dram_init(void)
@@ -143,6 +145,11 @@ static int ar8031_phy_fixup(struct phy_device *phydev)
 	phy_write(phydev, MDIO_DEVAD_NONE, 0x1e, val);
 
 	return 0;
+}
+
+static const char *form_type(void)
+{
+	return STRING(wandboard);
 }
 
 int board_phy_config(struct phy_device *phydev)
@@ -361,8 +368,28 @@ int board_early_init_f(void)
 
 #define PMIC_I2C_BUS		2
 
+/* setup board specific PMIC */
 int power_init_board(void)
 {
+#if (defined(CONFIG_POWER_LEGACY))
+	struct pmic *p;
+	u32 reg;
+
+	/* configure PFUZE100 PMIC */
+	power_pfuze100_init(I2C_PMIC_BUS);
+	p = pmic_get("PFUZE100");
+	if (p && !pmic_probe(p)) {
+		pmic_reg_read(p, PFUZE100_DEVICEID, &reg);
+		printf("PMIC:  PFUZE100 ID=0x%02x\n", reg);
+		with_pmic = true;
+
+		/* Set VGEN2 to 1.5V and enable */
+		pmic_reg_read(p, PFUZE100_VGEN2VOL, &reg);
+		reg &= ~(LDO_VOL_MASK);
+		reg |= (LDOA_1_50V | (1 << (LDO_EN)));
+		pmic_reg_write(p, PFUZE100_VGEN2VOL, reg);
+	}
+#else
 	struct udevice *dev;
 	int reg, ret;
 
@@ -385,8 +412,50 @@ int power_init_board(void)
 	reg &= ~(LDO_VOL_MASK);
 	reg |= (LDOA_1_50V | (1 << (LDO_EN)));
 	pmic_reg_write(dev, PFUZE100_VGEN2VOL, reg);
+#endif
+
 	return 0;
 }
+
+#ifdef CONFIG_ENV_IS_IN_MMC
+static int check_mmc_autodetect(void)
+{
+	char *autodetect_str = env_get("mmcautodetect");
+
+	if ((autodetect_str != NULL) &&
+		(strcmp(autodetect_str, "yes") == 0)) {
+		return 1;
+	}
+
+	return 0;
+}
+
+/* This should be defined for each board */
+__weak int mmc_map_to_kernel_blk(int dev_no)
+{
+	return dev_no;
+}
+
+void board_late_mmc_env_init(void)
+{
+	char cmd[32];
+	char mmcblk[32];
+	u32 dev_no = mmc_get_env_dev();
+
+	if (!check_mmc_autodetect())
+		return;
+
+	env_set_ulong("mmcdev", dev_no);
+
+	/* Set mmcblk env */
+	sprintf(mmcblk, "/dev/mmcblk%dp2 rootwait rw",
+		mmc_map_to_kernel_blk(dev_no));
+	env_set("mmcroot", mmcblk);
+
+	sprintf(cmd, "mmc dev %d", dev_no);
+	run_command(cmd, 0);
+}
+#endif
 
 /*
  * Do not overwrite the console
@@ -428,8 +497,16 @@ static bool is_revd1(void)
 
 int board_late_init(void)
 {
+#ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
+	char *s = NULL;
+#endif
+
 #ifdef CONFIG_CMD_BMODE
 	add_board_boot_modes(board_boot_modes);
+#endif
+
+#ifdef CONFIG_ENV_IS_IN_MMC
+	board_late_mmc_env_init();
 #endif
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
@@ -446,8 +523,48 @@ int board_late_init(void)
 		env_set("board_name", "C1");
 	else
 		env_set("board_name", "B1");
+
+	s = env_get("fdtfile_autodetect");
+	if (s != NULL) {
+		if (strncmp (s, "off", 3) != 0) {
+			if (is_mx6dqp())
+				env_set("som", "imx6qp");
+			else if (is_mx6dq())
+				env_set("som", "imx6q");
+			else if (is_mx6sdl())
+				env_set("som", "imx6dl");
+			else
+				printf("CPU type is not supported!!!\r\n");
+		}
+		env_set("form", form_type());
+	}
+
+	s = env_get("bootdev_autodetect");
+	if (s != NULL) {
+		if (strncmp (s, "off", 3) != 0) {
+			switch (get_boot_device()) {
+			case MMC3_BOOT:
+			case SD3_BOOT:
+				env_set("bootdev", "MMC3");
+				env_set("bootmedia", "mmc");
+				break;
+			case SD1_BOOT:
+				env_set("bootdev", "SD1");
+				env_set("bootmedia", "mmc");
+				break;
+			case SATA_BOOT:
+				env_set("bootdev", "SATA");
+				env_set("bootmedia", "sata");
+				break;
+			default:
+				printf("Wrong boot device!\r\n");
+			}
+		}
+	}
 #endif
 	setup_iomux_enet();
+
+	gpio_request(REV_DETECTION, "REV_DETECT");
 
 	if (is_revd1())
 		puts("Board: Wandboard rev D1\n");
@@ -479,6 +596,74 @@ int board_init(void)
 
 	return 0;
 }
+
+#ifdef CONFIG_LDO_BYPASS_CHECK
+#if (defined(CONFIG_POWER) && defined(CONFIG_POWER_LEGACY))
+void ldo_mode_set(int ldo_bypass)
+{
+	unsigned int value;
+	struct pmic *p = pmic_get("PFUZE100");
+
+	if (!p) {
+		printf("No PMIC found!\n");
+		return;
+	}
+
+	/* increase VDDARM/VDDSOC to support 1.2G chip */
+	if (check_1_2G()) {
+		ldo_bypass = 0;	/* ldo_enable on 1.2G chip */
+		printf("1.2G chip, increase VDDARM_IN/VDDSOC_IN\n");
+
+		if (is_mx6dqp()) {
+			/* increase VDDARM to 1.425V */
+			pmic_reg_read(p, PFUZE100_SW2VOL, &value);
+			value &= ~0x3f;
+			value |= 0x29;
+			pmic_reg_write(p, PFUZE100_SW2VOL, value);
+		} else {
+			/* increase VDDARM to 1.425V */
+			pmic_reg_read(p, PFUZE100_SW1ABVOL, &value);
+			value &= ~0x3f;
+			value |= 0x2d;
+			pmic_reg_write(p, PFUZE100_SW1ABVOL, value);
+		}
+		/* increase VDDSOC to 1.425V */
+		pmic_reg_read(p, PFUZE100_SW1CVOL, &value);
+		value &= ~0x3f;
+		value |= 0x2d;
+		pmic_reg_write(p, PFUZE100_SW1CVOL, value);
+	}
+}
+#elif defined(CONFIG_DM_PMIC_PFUZE100)
+void ldo_mode_set(int ldo_bypass)
+{
+	struct udevice *dev;
+	int ret;
+
+	ret = pmic_get("pfuze100@8", &dev);
+	if (ret == -ENODEV) {
+		printf("No PMIC found!\n");
+		return;
+	}
+
+	/* increase VDDARM/VDDSOC to support 1.2G chip */
+	if (check_1_2G()) {
+		ldo_bypass = 0; /* ldo_enable on 1.2G chip */
+		printf("1.2G chip, increase VDDARM_IN/VDDSOC_IN\n");
+
+		if (is_mx6dqp()) {
+			/* increase VDDARM to 1.425V */
+			pmic_clrsetbits(dev, PFUZE100_SW2VOL, 0x3f, 0x29);
+		} else {
+			/* increase VDDARM to 1.425V */
+			pmic_clrsetbits(dev, PFUZE100_SW1ABVOL, 0x3f, 0x2d);
+		}
+		/* increase VDDSOC to 1.425V */
+		pmic_clrsetbits(dev, PFUZE100_SW1CVOL, 0x3f, 0x2d);
+	}
+}
+#endif
+#endif
 
 #ifdef CONFIG_SPL_LOAD_FIT
 int board_fit_config_name_match(const char *name)
