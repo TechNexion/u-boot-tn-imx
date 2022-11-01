@@ -133,6 +133,11 @@
 
 &fec {
 	phy-supply = <&reg_eth_phy>;
+	// FIXME: I clear phy-reset-gpios here to make Ethernet work
+	//        but I don't know why phy-reset-gpios will make Ethernet fail
+	phy-reset-gpios = <>;
+	//phy-reset-duration = <35>;
+	//phy-reset-post-delay = <75>;
 	status = "okay";
 };
 
