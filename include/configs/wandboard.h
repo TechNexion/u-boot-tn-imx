@@ -45,6 +45,12 @@
 #define CONFIG_IMX_HDMI
 #define CONFIG_IMX_VIDEO_SKIP
 
+/* Ethernet Configuration */
+#define CONFIG_FEC_XCV_TYPE		RGMII
+#define CONFIG_ETHPRIME			"FEC"
+//#define CONFIG_FEC_MXC_PHYADDR		1
+//#define IMX_FEC_BASE			ENET_BASE_ADDR
+
 #define CONFIG_DFU_ENV_SETTINGS \
 	"dfu_alt_info=" \
 		"spl raw 0x2 0x400;" \
