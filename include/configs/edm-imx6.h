@@ -62,7 +62,6 @@
 #define CONFIG_SYS_I2C_MXC_I2C2         /* enable I2C bus 2 */
 #define CONFIG_SYS_I2C_MXC_I2C3         /* enable I2C bus 3 */
 #define CONFIG_SYS_I2C_SPEED            100000
-#define CONFIG_I2C_EDID
 #define I2C_PMIC_BUS			2
 
 /* PMIC */
@@ -105,14 +104,16 @@
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	"script=boot.scr\0" \
 	"image=zImage\0" \
+	"silent=" __stringify(SILENT_ENABLE) "\0" \
 	"console=" __stringify(DEBUG_TTY)"\0" \
+	"splashimage=" __stringify(CONFIG_SYS_LOAD_ADDR) "\0" \
 	"splashpos=m,m\0" \
 	"splashsource=mmc_fs\0" \
 	"som=autodetect\0" \
 	"form=edm1\0" \
 	"baseboard=fairy\0" \
-	"wifi_module=qca\0" \
 	"default_baseboard=fairy\0" \
+	"wifi_module=qca\0" \
 	"fdtfile=undefined\0" \
 	"fdt_high=0xffffffff\0" \
 	"initrd_high=0xffffffff\0" \
@@ -122,7 +123,6 @@
 	CONFIG_DFU_ENV_SETTINGS \
 	"mmcpart=1\0" \
 	"mmcautodetect=yes\0" \
-	"silent=" __stringify(SILENT_ENABLE) "\0" \
 	"searchbootdev=" \
 		"if test ${bootdev} = MMC3; then " \
 			"setenv mmcrootdev /dev/mmcblk2; " \
@@ -293,9 +293,6 @@
 
 /* Framebuffer */
 #define CONFIG_VIDEO_BMP_RLE8
-#define CONFIG_SPLASH_SCREEN_ALIGN
-#define CONFIG_SPLASH_SOURCE
-#define CONFIG_BMP_16BPP
 #define CONFIG_VIDEO_LOGO
 #define CONFIG_VIDEO_BMP_LOGO
 #define CONFIG_CMD_HDMIDETECT
