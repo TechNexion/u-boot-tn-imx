@@ -25,7 +25,6 @@
 #define CONFIG_SYS_MMCSD_RAW_MODE_KERNEL_SECTOR        0x1000  /* 2MB */
 #endif
 
-
 #define CONFIG_MXC_UART_BASE		UART1_BASE
 
 /* allow to overwrite serial and ethaddr */
@@ -85,14 +84,16 @@
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	"script=boot.scr\0" \
 	"image=zImage\0" \
+	"silent=" __stringify(SILENT_ENABLE) "\0" \
 	"console=" __stringify(DEBUG_TTY)"\0" \
+	"splashimage=" __stringify(CONFIG_SYS_LOAD_ADDR) "\0" \
 	"splashpos=m,m\0" \
 	"splashsource=mmc_fs\0" \
 	"som=autodetect\0" \
 	"form=edm1\0" \
 	"baseboard=fairy\0" \
-	"wifi_module=qca\0" \
 	"default_baseboard=fairy\0" \
+	"wifi_module=qca\0" \
 	"fdtfile=undefined\0" \
 	"fdt_high=0xffffffff\0" \
 	"initrd_high=0xffffffff\0" \
@@ -102,7 +103,6 @@
 	CONFIG_DFU_ENV_SETTINGS \
 	"mmcpart=1\0" \
 	"mmcautodetect=yes\0" \
-	"silent=" __stringify(SILENT_ENABLE) "\0" \
 	"searchbootdev=" \
 		"if test ${bootdev} = MMC3; then " \
 			"setenv mmcrootdev /dev/mmcblk2; " \
