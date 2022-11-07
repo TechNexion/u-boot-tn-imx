@@ -22,12 +22,14 @@
 #include <asm/global_data.h>
 #include <asm/gpio.h>
 #include <asm/arch/mxc_hdmi.h>
+#include <asm/mach-imx/mxc_i2c.h>
 #include <asm/mach-imx/boot_mode.h>
 #include <asm/mach-imx/video.h>
 #include <asm/mach-imx/iomux-v3.h>
 #include <asm/io.h>
 #include <linux/delay.h>
 #include <linux/sizes.h>
+#include <i2c.h>
 #include <miiphy.h>
 #include <netdev.h>
 #include <phy.h>
@@ -42,6 +44,10 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #define ENET_PAD_CTRL  (PAD_CTL_PUS_100K_UP |			\
 	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm | PAD_CTL_HYS)
+
+#define I2C_PAD_CTRL	(PAD_CTL_PUS_100K_UP |			\
+	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm | PAD_CTL_HYS |	\
+	PAD_CTL_ODE | PAD_CTL_SRE_FAST)
 
 #define ETH_PHY_RESET		IMX_GPIO_NR(1, 26)
 #define LVDS0_EN		IMX_GPIO_NR(2, 8)
@@ -63,15 +69,6 @@ static void setup_iomux_uart(void)
 {
 	SETUP_IOMUX_PADS(uart1_pads);
 }
-
-static iomux_v3_cfg_t const lvds_pads[] = {
-	/* lvds */
-	IOMUX_PADS(PAD_SD4_DAT0__GPIO2_IO08 | MUX_PAD_CTRL(NO_PAD_CTRL)),
-	IOMUX_PADS(PAD_SD4_DAT1__GPIO2_IO09 | MUX_PAD_CTRL(NO_PAD_CTRL)),
-	IOMUX_PADS(PAD_DI0_DISP_CLK__IPU1_DI0_DISP_CLK | MUX_PAD_CTRL(NO_PAD_CTRL)),
-	IOMUX_PADS(PAD_DI0_PIN2__IPU1_DI0_PIN02 | MUX_PAD_CTRL(NO_PAD_CTRL)),
-	IOMUX_PADS(PAD_DI0_PIN3__IPU1_DI0_PIN03 | MUX_PAD_CTRL(NO_PAD_CTRL)),
-};
 
 static iomux_v3_cfg_t const enet_pads[] = {
 	IOMUX_PADS(PAD_ENET_MDIO__ENET_MDIO  | MUX_PAD_CTRL(ENET_PAD_CTRL)),
@@ -106,7 +103,88 @@ static void setup_iomux_enet(void)
 	gpio_set_value(ETH_PHY_RESET, 1);
 }
 
+static bool cpu_is_pop(void)
+{
+	u32 soc_sbmr = readl(SRC_BASE_ADDR + 0x4);
+	u32 ddr_map;
+
+	/* BOOT_CFG3[4] and BOOT_CFG3[5] */
+	ddr_map = (soc_sbmr >> 20) & 0x3;
+
+	return((ddr_map == 0x2)?(true):(false));
+}
+
+struct i2c_pads_info mx6q_i2c2_pad_info = {
+	.scl = {
+		.i2c_mode = MX6Q_PAD_KEY_COL3__I2C2_SCL
+			| MUX_PAD_CTRL(I2C_PAD_CTRL),
+		.gpio_mode = MX6Q_PAD_KEY_COL3__GPIO4_IO12
+			| MUX_PAD_CTRL(I2C_PAD_CTRL),
+		.gp = IMX_GPIO_NR(4, 12)
+	},
+	.sda = {
+		.i2c_mode = MX6Q_PAD_KEY_ROW3__I2C2_SDA
+			| MUX_PAD_CTRL(I2C_PAD_CTRL),
+		.gpio_mode = MX6Q_PAD_KEY_ROW3__GPIO4_IO13
+			| MUX_PAD_CTRL(I2C_PAD_CTRL),
+		.gp = IMX_GPIO_NR(4, 13)
+	}
+};
+
+struct i2c_pads_info mx6dl_i2c2_pad_info = {
+	.scl = {
+		.i2c_mode = MX6DL_PAD_KEY_COL3__I2C2_SCL
+			| MUX_PAD_CTRL(I2C_PAD_CTRL),
+		.gpio_mode = MX6DL_PAD_KEY_COL3__GPIO4_IO12
+			| MUX_PAD_CTRL(I2C_PAD_CTRL),
+		.gp = IMX_GPIO_NR(4, 12)
+	},
+	.sda = {
+		.i2c_mode = MX6DL_PAD_KEY_ROW3__I2C2_SDA
+			| MUX_PAD_CTRL(I2C_PAD_CTRL),
+		.gpio_mode = MX6DL_PAD_KEY_ROW3__GPIO4_IO13
+			| MUX_PAD_CTRL(I2C_PAD_CTRL),
+		.gp = IMX_GPIO_NR(4, 13)
+	}
+};
+
+struct i2c_pads_info mx6q_i2c3_pad_info = {
+	.scl = {
+		.i2c_mode = MX6Q_PAD_EIM_D17__I2C3_SCL | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		.gpio_mode = MX6Q_PAD_EIM_D17__GPIO3_IO17 | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		.gp = IMX_GPIO_NR(3, 17)
+	},
+	.sda = {
+		.i2c_mode = MX6Q_PAD_EIM_D18__I2C3_SDA | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		.gpio_mode = MX6Q_PAD_EIM_D18__GPIO3_IO18 | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		.gp = IMX_GPIO_NR(3, 18)
+	}
+};
+
+struct i2c_pads_info mx6dl_i2c3_pad_info = {
+	.scl = {
+		.i2c_mode = MX6DL_PAD_EIM_D17__I2C3_SCL | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		.gpio_mode = MX6DL_PAD_EIM_D17__GPIO3_IO17 | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		.gp = IMX_GPIO_NR(3, 17)
+	},
+	.sda = {
+		.i2c_mode = MX6DL_PAD_EIM_D18__I2C3_SDA | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		.gpio_mode = MX6DL_PAD_EIM_D18__GPIO3_IO18 | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		.gp = IMX_GPIO_NR(3, 18)
+	}
+};
+
+#ifndef CONFIG_SPL_BUILD
 #if defined(CONFIG_VIDEO_IPUV3)
+static iomux_v3_cfg_t const lvds_pads[] = {
+	/* lvds */
+	IOMUX_PADS(PAD_SD4_DAT0__GPIO2_IO08 | MUX_PAD_CTRL(NO_PAD_CTRL)),
+	IOMUX_PADS(PAD_SD4_DAT1__GPIO2_IO09 | MUX_PAD_CTRL(NO_PAD_CTRL)),
+	IOMUX_PADS(PAD_DI0_DISP_CLK__IPU1_DI0_DISP_CLK | MUX_PAD_CTRL(NO_PAD_CTRL)),
+	IOMUX_PADS(PAD_DI0_PIN2__IPU1_DI0_PIN02 | MUX_PAD_CTRL(NO_PAD_CTRL)),
+	IOMUX_PADS(PAD_DI0_PIN3__IPU1_DI0_PIN03 | MUX_PAD_CTRL(NO_PAD_CTRL)),
+};
+
 static iomux_v3_cfg_t const ft5x06_wvga_pads[] = {
 	IOMUX_PADS(PAD_DI0_DISP_CLK__IPU1_DI0_DISP_CLK),
 	IOMUX_PADS(PAD_DI0_PIN2__IPU1_DI0_PIN02), /* HSync */
@@ -146,6 +224,12 @@ static void do_enable_hdmi(struct display_info_t const *dev)
 	imx_enable_hdmi_phy();
 }
 
+static int detect_i2c(struct display_info_t const *dev)
+{
+	return (0 == i2c_set_bus_num(dev->bus)) &&
+			(0 == i2c_probe(dev->addr));
+}
+
 static void enable_lvds(struct display_info_t const *dev)
 {
 	struct iomuxc *iomux = (struct iomuxc *)
@@ -177,26 +261,6 @@ static void enable_ft5x06_wvga(struct display_info_t const *dev)
 }
 
 struct display_info_t const displays[] = {{
-	.bus	= 1,
-	.addr	= 0x38,
-	.pixfmt	= IPU_PIX_FMT_RGB24,
-	.detect	= NULL,
-	.enable	= enable_ft5x06_wvga,
-	.mode	= {
-		.name           = "FT5x06-WVGA",
-		.refresh        = 60,
-		.xres           = 800,
-		.yres           = 480,
-		.pixclock       = 30303,
-		.left_margin    = 45,
-		.right_margin   = 210,
-		.upper_margin   = 22,
-		.lower_margin   = 22,
-		.hsync_len      = 1,
-		.vsync_len      = 1,
-		.sync           = 0,
-		.vmode          = FB_VMODE_NONINTERLACED
-} }, {
 	.bus	= -1,
 	.addr	= 0,
 	.pixfmt = IPU_PIX_FMT_RGB24,
@@ -216,7 +280,7 @@ struct display_info_t const displays[] = {{
 		.vsync_len	= 10,
 		.sync		= FB_SYNC_EXT,
 		.vmode		= FB_VMODE_NONINTERLACED
-} }, {
+	} }, {
 	.bus	= -1,
 	.addr	= 0,
 	.pixfmt	= IPU_PIX_FMT_RGB24,
@@ -236,7 +300,28 @@ struct display_info_t const displays[] = {{
 		.vsync_len      = 10,
 		.sync           = FB_SYNC_EXT,
 		.vmode          = FB_VMODE_NONINTERLACED
-} } };
+	} }, {
+	.bus	= 1,
+	.addr	= 0x38,
+	.pixfmt	= IPU_PIX_FMT_RGB24,
+	.detect	= detect_i2c,
+	.enable	= enable_ft5x06_wvga,
+	.mode	= {
+		.name           = "FT5x06-WVGA",
+		.refresh        = 60,
+		.xres           = 800,
+		.yres           = 480,
+		.pixclock       = 30303,
+		.left_margin    = 45,
+		.right_margin   = 210,
+		.upper_margin   = 22,
+		.lower_margin   = 22,
+		.hsync_len      = 1,
+		.vsync_len      = 1,
+		.sync           = 0,
+		.vmode          = FB_VMODE_NONINTERLACED
+	} }
+};
 size_t display_count = ARRAY_SIZE(displays);
 
 static void setup_display(void)
@@ -333,16 +418,17 @@ int splash_screen_prepare(void)
 }
 #endif /* CONFIG_SPLASH_SCREEN */
 #endif /* CONFIG_VIDEO_IPUV3 */
+#endif /* CONFIG_SPL_BUILD */
 
 int board_early_init_f(void)
 {
 	setup_iomux_uart();
-
+#ifndef CONFIG_SPL_BUILD
 #if defined(CONFIG_VIDEO_IPUV3)
 	setup_display();
-	enable_ft5x06_wvga(NULL);
+	//enable_ft5x06_wvga(NULL);
 #endif
-
+#endif
 	return 0;
 }
 
@@ -434,6 +520,17 @@ int board_init(void)
 {
 	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
 
+	if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D) ||
+		is_cpu_type(MXC_CPU_MX6QP) || is_cpu_type(MXC_CPU_MX6DP)) {
+		//setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &mx6q_i2c1_pad_info);
+		setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, &mx6q_i2c2_pad_info);
+		setup_i2c(2, CONFIG_SYS_I2C_SPEED, 0x7f, &mx6q_i2c3_pad_info);
+	} else {
+		//setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &mx6dl_i2c1_pad_info);
+		setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, &mx6dl_i2c2_pad_info);
+		setup_i2c(2, CONFIG_SYS_I2C_SPEED, 0x7f, &mx6dl_i2c3_pad_info);
+	}
+
 	return 0;
 }
 
@@ -462,7 +559,12 @@ int ft_board_setup(void *blob, struct bd_info *bis)
 
 int checkboard(void)
 {
-	puts("Board: PICO-IMX6\n");
+	if (cpu_is_pop())
+		printf("Board: pico-imx6-pop\n");
+	else
+		printf("Board: pico-imx6\n");
+
+	printf("Available baseboard: dwarf, hobbit, nymph, pi\n");
 
 	return 0;
 }
