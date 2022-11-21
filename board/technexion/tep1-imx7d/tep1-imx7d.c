@@ -509,7 +509,7 @@ void board_late_mmc_env_init(void)
 
 int board_early_init_f(void)
 {
-#ifdef CONFIG_SPL_BUILD
+#ifdef CONFIG_SUPPORT_SPL
 	setup_iomux_uart();
 #endif
 
