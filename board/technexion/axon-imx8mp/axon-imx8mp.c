@@ -452,6 +452,7 @@ int detect_baseboard(void)
 
 struct tn_display const displays[]= {
 /*  bus, addr, id_reg, id, detect */
+	{ 3, 0x2a, 0, 0, "lvds-vl10112880", detect_i2c },
 	{ 4, 0x38, 0xA3, 0x54, "ili9881c", detect_i2c },
 	{ 4, 0x38, 0xA3, 0x58, "g080uan01", detect_i2c },
 	{ 4, 0x38, 0xA3, 0x59, "g101uan02", detect_i2c },
