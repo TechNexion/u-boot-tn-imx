@@ -327,13 +327,17 @@ int detect_baseboard(void)
 
 }
 
+const struct camera_cfg tevi_camera[] = {
+	{ 1, 1, 0x54 },
+};
+size_t tevi_camera_cnt = ARRAY_SIZE(tevi_camera);
+
 struct tn_display const displays[]= {
 /*      bus, addr, id_reg, id, detect */
 	{ 2, 0x2a, 0, 0, "sn65dsi84-vl10112880", detect_i2c },
 };
 size_t tn_display_count = ARRAY_SIZE(displays);
 
-#define NUMS(x)        (sizeof(x) / sizeof(x[0]))
 
 #ifdef CONFIG_OF_BOARD_SETUP
 int ft_board_setup(void *blob, struct bd_info *bd)
@@ -362,6 +366,7 @@ int board_late_init(void)
 #ifndef CONFIG_AVB_SUPPORT
 	detect_baseboard();
 	detect_display_panel();
+	detect_tevi_camera();
 #endif
 
 #ifdef CONFIG_ENV_IS_IN_MMC
