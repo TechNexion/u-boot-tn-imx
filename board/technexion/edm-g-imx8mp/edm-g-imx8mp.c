@@ -485,6 +485,12 @@ int detect_baseboard(void)
 
 }
 
+const struct camera_cfg tevi_camera[] = {
+	{ 1, 1, 0x54 },
+	{ 2, 4, 0x54 },
+};
+size_t tevi_camera_cnt = ARRAY_SIZE(tevi_camera);
+
 struct tn_display const displays[]= {
 /*      bus, addr, id_reg, id, detect */
 	{ 4, 0x2a, 0, 0, "lvds-vl10112880", detect_i2c },
@@ -500,6 +506,7 @@ int board_late_init(void)
 #ifndef CONFIG_AVB_SUPPORT
 	detect_baseboard();
 	detect_display_panel();
+	detect_tevi_camera();
 #endif
 
 #ifdef CONFIG_ENV_IS_IN_MMC
