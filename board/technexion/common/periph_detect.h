@@ -26,7 +26,10 @@ struct camera_cfg {
 
 extern struct tn_display const displays[];
 extern size_t tn_display_count;
+extern const struct camera_cfg tevi_camera[];
+extern size_t tevi_camera_cnt;
 
 int detect_i2c(struct tn_display const *dev);
 int detect_display_panel(void);
+int detect_tevi_camera(void);
 #endif
