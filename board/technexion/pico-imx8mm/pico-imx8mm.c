@@ -349,6 +349,12 @@ void board_late_mmc_env_init(void)
 #define PCA9555_26_I2C_ADDR 0x26
 #define EXPANSION_IC_I2C_BUS 2
 
+const struct camera_cfg tevi_camera[] = {
+	{ 1, 1, 0x54 },
+	{ 2, 2, 0x54 },
+};
+size_t tevi_camera_cnt = ARRAY_SIZE(tevi_camera);
+
 struct tn_display const displays[]= {
 /*      bus, addr, id_reg, id, detect */
 	{ 2, 0x38, 0xA3, 0x54, "ili9881c", detect_i2c },
@@ -356,7 +362,6 @@ struct tn_display const displays[]= {
 	{ 2, 0x38, 0xA3, 0x59, "g101uan02", detect_i2c },
 	{ 2, 0x3d, 0x98, 0x3d, "mipi2hdmi-adv7535", detect_i2c },
 };
-
 size_t tn_display_count = ARRAY_SIZE(displays);
 
 int detect_baseboard(void)
@@ -391,8 +396,6 @@ int detect_baseboard(void)
 
 }
 
-#define NUMS(x)        (sizeof(x) / sizeof(x[0]))
-
 #ifdef CONFIG_OF_BOARD_SETUP
 int ft_board_setup(void *blob, struct bd_info *bd)
 {
@@ -420,6 +423,7 @@ int board_late_init(void)
 #ifndef CONFIG_AVB_SUPPORT
 	detect_baseboard();
 	detect_display_panel();
+	detect_tevi_camera();
 #endif
 
 #ifdef CONFIG_ENV_IS_IN_MMC
