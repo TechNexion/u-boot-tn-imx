@@ -48,6 +48,12 @@ static iomux_v3_cfg_t const uart_pads[] = {
 	IMX8MQ_PAD_UART1_TXD__UART1_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
 };
 
+const struct camera_cfg tevi_camera[] = {
+	{ 1, 1, 0x54 },
+	{ 2, 2, 0x54 },
+};
+size_t tevi_camera_cnt = ARRAY_SIZE(tevi_camera);
+
 int board_early_init_f(void)
 {
 	struct wdog_regs *wdog = (struct wdog_regs *)WDOG1_BASE_ADDR;
@@ -468,6 +474,7 @@ int board_late_init(void)
 #ifndef CONFIG_AVB_SUPPORT
 	detect_baseboard();
 	detect_display_panel();
+	detect_tevi_camera();
 #endif
 
 #ifdef CONFIG_ENV_IS_IN_MMC
