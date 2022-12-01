@@ -99,8 +99,9 @@ static void setup_iomux_enet(void)
 	/* Reset AR8031 PHY */
 	gpio_request(ETH_PHY_RESET, "enet_phy_reset");
 	gpio_direction_output(ETH_PHY_RESET, 0);
-	udelay(500);
+	mdelay(35);
 	gpio_set_value(ETH_PHY_RESET, 1);
+	mdelay(75);
 }
 
 static bool cpu_is_pop(void)
