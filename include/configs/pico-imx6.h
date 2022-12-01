@@ -286,6 +286,7 @@
 #define CONFIG_FEC_MXC_PHYADDR		1
 #define CONFIG_PHYLIB
 #define CONFIG_PHY_ATHEROS
+#define CONFIG_PHY_REALTEK
 
 /* Framebuffer */
 #define CONFIG_VIDEO_BMP_RLE8
