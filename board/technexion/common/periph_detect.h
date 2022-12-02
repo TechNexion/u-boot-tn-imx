@@ -18,18 +18,33 @@ struct tn_display {
     int	(*detect)(struct tn_display const *dev);
 };
 
-struct camera_cfg {
-       u8 camera_index;
-       u8 i2c_bus_index;
-       u8 eeprom_i2c_addr;
-};
+typedef struct tn_camera_chk {
+	u8 camera_index;
+	u8 i2c_bus_index;
+	u8 i2c_addr;
+	const char *ov_name;
+}tn_camera_chk_t;
 
 extern struct tn_display const displays[];
 extern size_t tn_display_count;
-extern const struct camera_cfg tevi_camera[];
-extern size_t tevi_camera_cnt;
+extern const tn_camera_chk_t tn_camera_chk[];
+extern size_t tn_camera_chk_cnt;
 
 int detect_i2c(struct tn_display const *dev);
 int detect_display_panel(void);
+int detect_camera(void);
+
+
+// FIXME: Obsolete
+//   For compatible old codes, I keep these
+//   Please remove these after update all old codes
+struct camera_cfg {
+	u8 camera_index;
+	u8 i2c_bus_index;
+	u8 eeprom_i2c_addr;
+};
+extern const struct camera_cfg tevi_camera[];
+extern size_t tevi_camera_cnt;
 int detect_tevi_camera(void);
-#endif
+
+#endif	//#ifndef __PERIPH_DETECT_H__
