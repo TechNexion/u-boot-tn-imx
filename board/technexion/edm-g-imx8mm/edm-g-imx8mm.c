@@ -65,6 +65,19 @@ struct efi_capsule_update_info update_info = {
 u8 num_image_type_guids = ARRAY_SIZE(fw_images);
 #endif /* EFI_HAVE_CAPSULE_SUPPORT */
 
+const tn_camera_chk_t tn_camera_chk[] = {
+	{ 1, 1, 0x54, "tevi-ov5640" },		// Check EEPROM
+	{ 1, 1, 0x0f, "hdmi2mipi-tc358743" },
+};
+size_t tn_camera_chk_cnt = ARRAY_SIZE(tn_camera_chk);
+
+struct tn_display const displays[]= {
+/*      bus, addr, id_reg, id, detect */
+	{ 2, 0x2a, 0, 0, "sn65dsi84-vl10112880", detect_i2c },
+};
+size_t tn_display_count = ARRAY_SIZE(displays);
+
+
 int board_early_init_f(void)
 {
 	struct wdog_regs *wdog = (struct wdog_regs *)WDOG1_BASE_ADDR;
@@ -327,18 +340,6 @@ int detect_baseboard(void)
 
 }
 
-const struct camera_cfg tevi_camera[] = {
-	{ 1, 1, 0x54 },
-};
-size_t tevi_camera_cnt = ARRAY_SIZE(tevi_camera);
-
-struct tn_display const displays[]= {
-/*      bus, addr, id_reg, id, detect */
-	{ 2, 0x2a, 0, 0, "sn65dsi84-vl10112880", detect_i2c },
-};
-size_t tn_display_count = ARRAY_SIZE(displays);
-
-
 #ifdef CONFIG_OF_BOARD_SETUP
 int ft_board_setup(void *blob, struct bd_info *bd)
 {
@@ -366,7 +367,7 @@ int board_late_init(void)
 #ifndef CONFIG_AVB_SUPPORT
 	detect_baseboard();
 	detect_display_panel();
-	detect_tevi_camera();
+	detect_camera();
 #endif
 
 #ifdef CONFIG_ENV_IS_IN_MMC
