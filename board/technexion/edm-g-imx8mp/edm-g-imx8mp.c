@@ -61,6 +61,23 @@ static iomux_v3_cfg_t const ver_det_pads[] = {
 #define BOARD_ID1		IMX_GPIO_NR(3, 7)
 #define BOARD_ID2		IMX_GPIO_NR(3, 8)
 
+const tn_camera_chk_t tn_camera_chk[] = {
+	{ 1, 1, 0x54, "tevi-ov5640" },		// Check EEPROM
+	{ 2, 4, 0x54, "tevi-ov5640" },		// Check EEPROM
+	{ 1, 1, 0x0f, "hdmi2mipi-tc358743-csi0" },
+	{ 2, 4, 0x0f, "hdmi2mipi-tc358743-csi1" },
+};
+size_t tn_camera_chk_cnt = ARRAY_SIZE(tn_camera_chk);
+
+struct tn_display const displays[]= {
+/*      bus, addr, id_reg, id, detect */
+	{ 4, 0x2a, 0, 0, "lvds-vl10112880", detect_i2c },
+	{ 1, 0x38, 0xA3, 0x54, "ili9881c", detect_i2c },
+	{ 1, 0x38, 0xA3, 0x59, "g101uan02", detect_i2c },
+	{ 1, 0x3d, 0x98, 0x03, "mipi2hdmi-adv7535", detect_i2c },
+};
+size_t tn_display_count = ARRAY_SIZE(displays);
+
 static u8 ddr_code __section("data");
 
 static void board_get_ddr_code(void)
@@ -485,28 +502,12 @@ int detect_baseboard(void)
 
 }
 
-const struct camera_cfg tevi_camera[] = {
-	{ 1, 1, 0x54 },
-	{ 2, 4, 0x54 },
-};
-size_t tevi_camera_cnt = ARRAY_SIZE(tevi_camera);
-
-struct tn_display const displays[]= {
-/*      bus, addr, id_reg, id, detect */
-	{ 4, 0x2a, 0, 0, "lvds-vl10112880", detect_i2c },
-	{ 1, 0x38, 0xA3, 0x54, "ili9881c", detect_i2c },
-	{ 1, 0x38, 0xA3, 0x59, "g101uan02", detect_i2c },
-	{ 1, 0x3d, 0x98, 0x03, "mipi2hdmi-adv7535", detect_i2c },
-};
-
-size_t tn_display_count = ARRAY_SIZE(displays);
-
 int board_late_init(void)
 {
 #ifndef CONFIG_AVB_SUPPORT
 	detect_baseboard();
 	detect_display_panel();
-	detect_tevi_camera();
+	detect_camera();
 #endif
 
 #ifdef CONFIG_ENV_IS_IN_MMC
