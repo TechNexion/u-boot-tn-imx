@@ -165,6 +165,7 @@
 		"done\0" \
 	"mmcboot=echo Booting from mmc ...; " \
 		"run mmcargs; " \
+		"saveenv;" \
 		"if test ${boot_fit} = yes || test ${boot_fit} = try; then " \
 			"bootm ${loadaddr}; " \
 		"else " \
