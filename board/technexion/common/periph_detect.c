@@ -94,7 +94,7 @@ static int _detect_camera(const tn_camera_chk_t *list, size_t count) {
 	char *cam_autodetect = env_get("cam_autodetect");
 
 	// Default: auto detection
-	if ((cam_autodetect != NULL) && (strcmp(cam_autodetect, "no") == 0) ) {
+	if ((cam_autodetect == NULL) && (strcmp(cam_autodetect, "yes") != 0) ) {
 		return(0);
 	}
 
