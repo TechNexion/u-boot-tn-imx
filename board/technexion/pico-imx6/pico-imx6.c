@@ -154,8 +154,9 @@ static void setup_iomux_enet(void)
 
 	/* Reset AR8031 PHY */
 	gpio_direction_output(ETH_PHY_RESET, 0);
-	udelay(500);
+	mdelay(35);
 	gpio_set_value(ETH_PHY_RESET, 1);
+	mdelay(75);
 }
 
 static bool cpu_is_pop(void)
@@ -270,6 +271,9 @@ static int mx6_rgmii_rework(struct phy_device *phydev)
 int board_phy_config(struct phy_device *phydev)
 {
 	mx6_rgmii_rework(phydev);
+
+	/* introduce tx-rx clock delay */
+	phydev->interface = PHY_INTERFACE_MODE_RGMII_ID;
 
 	if (phydev->drv->config)
 		phydev->drv->config(phydev);
