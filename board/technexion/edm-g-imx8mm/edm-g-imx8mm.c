@@ -257,8 +257,9 @@ int board_init(void)
 
 	setup_wifi();
 	setup_touch();
-	if (IS_ENABLED(CONFIG_FEC_MXC))
-		setup_fec();
+	if (!IS_ENABLED(CONFIG_DM_ETH))
+		if (IS_ENABLED(CONFIG_FEC_MXC))
+			setup_fec();
 
 	arm_smccc_smc(IMX_SIP_GPC, IMX_SIP_GPC_PM_DOMAIN,
 		DISPMIX, true, 0, 0, 0, 0, &res);
