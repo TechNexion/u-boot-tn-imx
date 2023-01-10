@@ -88,7 +88,7 @@
 				MX8MM_IOMUXC_ENET_RXC_ENET1_RGMII_RXC		0x91
 				MX8MM_IOMUXC_ENET_RX_CTL_ENET1_RGMII_RX_CTL	0x91
 				MX8MM_IOMUXC_ENET_TX_CTL_ENET1_RGMII_TX_CTL	0x1f
-				MX8MM_IOMUXC_SD1_DATA5_GPIO2_IO7	0x19	/* ENET_nRST */
+				MX8MM_IOMUXC_SD1_DATA5_GPIO2_IO7	0x36	/* ENET_nRST */
 			>;
 		};
 
@@ -167,7 +167,7 @@
 				MX8MM_IOMUXC_SD1_DATA3_USDHC1_DATA3	0x1d6
 				MX8MM_IOMUXC_SD1_STROBE_USDHC1_STROBE 0x196
 			>;
-		};		
+		};
 
 		pinctrl_usdhc2_gpio: usdhc2grpgpio {
 			fsl,pins = <
@@ -302,6 +302,8 @@
 	phy-mode = "rgmii-id";
 	phy-handle = <&ethphy0>;
 	phy-reset-gpios = <&gpio2 7 GPIO_ACTIVE_LOW>;
+	phy-reset-duration = <35>;
+	phy-reset-post-delay = <75>;
 	phy-supply = <&reg_fec_supply>;
 	fsl,magic-packet;
 	status = "okay";
