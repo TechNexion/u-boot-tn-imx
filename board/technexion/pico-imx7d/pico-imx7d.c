@@ -388,8 +388,9 @@ static void setup_iomux_fec(void)
 	imx_iomux_v3_setup_multiple_pads(fec1_pads, ARRAY_SIZE(fec1_pads));
 
 	gpio_direction_output(FEC1_RST_GPIO, 0);
-	udelay(500);
+	mdelay(35);
 	gpio_set_value(FEC1_RST_GPIO, 1);
+	mdelay(75);
 }
 #endif
 
@@ -583,6 +584,9 @@ int board_phy_config(struct phy_device *phydev)
 	val = phy_read(phydev, MDIO_DEVAD_NONE, 0x1e);
 	val |= 0x0100;
 	phy_write(phydev, MDIO_DEVAD_NONE, 0x1e, val);
+
+	/* introduce tx-rx clock delay */
+	phydev->interface = PHY_INTERFACE_MODE_RGMII_ID;
 
 	if (phydev->drv->config)
 		phydev->drv->config(phydev);
