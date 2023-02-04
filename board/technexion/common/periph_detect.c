@@ -93,7 +93,7 @@ static int _detect_camera(const tn_camera_chk_t *list, size_t count) {
 	int i = 0, ret = -1;
 	char *cam_autodetect = env_get("cameraautodetect");
 
-	// Default: auto detection
+	// Default: Do not auto detection
 	if ((cam_autodetect == NULL) || (strcmp(cam_autodetect, "yes") != 0)) {
 		printf("Camera auto detection is disabled\n");
 		return(0);
@@ -105,11 +105,21 @@ static int _detect_camera(const tn_camera_chk_t *list, size_t count) {
 	}
 
 	for (i = 0; i < count; ++i) {
-		if ((_check_i2c_dev(list[i].i2c_bus_index, list[i].i2c_addr) != NULL) &&
-			!_ov_in_dtoverlay(list[i].ov_name)) {
-			_add_dtoverlay(list[i].ov_name);
-			ret = 0;
+		printf("Check %s - i2c#%d 0x%02x\n", list[i].ov_name, list[i].i2c_bus_index, list[i].i2c_addr);
+		if (_ov_in_dtoverlay(list[i].ov_name) ||
+			(_check_i2c_dev(list[i].i2c_bus_index, list[i].i2c_addr) == NULL)) {
+			continue;
 		}
+
+		// Check VizionLink
+		if((tn_vizionlink_i2c_addr > 0) &&
+			(_check_i2c_dev(list[i].i2c_bus_index, tn_vizionlink_i2c_addr)) != NULL) {
+			printf("VizionLink detected, skip %s\n", list[i].ov_name);
+			continue;
+		}
+
+		_add_dtoverlay(list[i].ov_name);
+		ret = 0;
 	}
 
 	return(ret);
@@ -117,6 +127,7 @@ static int _detect_camera(const tn_camera_chk_t *list, size_t count) {
 
 __weak const tn_camera_chk_t tn_camera_chk[] = {};
 __weak size_t tn_camera_chk_cnt = 0;
+__weak int tn_vizionlink_i2c_addr = -1;
 
 __weak int detect_camera(void) {
 	return(_detect_camera(tn_camera_chk, tn_camera_chk_cnt));
