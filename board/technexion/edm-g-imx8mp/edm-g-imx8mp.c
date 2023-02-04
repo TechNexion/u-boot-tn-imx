@@ -62,10 +62,10 @@ static iomux_v3_cfg_t const ver_det_pads[] = {
 #define BOARD_ID2		IMX_GPIO_NR(3, 8)
 
 const tn_camera_chk_t tn_camera_chk[] = {
-	{ 1, 1, 0x54, "tevi-ov5640" },		// Check EEPROM
-	{ 2, 4, 0x54, "tevi-ov5640" },		// Check EEPROM
-	{ 1, 1, 0x0f, "hdmi2mipi-tc358743-csi0" },
-	{ 2, 4, 0x0f, "hdmi2mipi-tc358743-csi1" },
+	{ 1, 1, 0x3c, "tevi-ov5640" },
+	{ 2, 4, 0x3c, "tevi-ov5640" },
+	{ 1, 1, 0x3d, "tevi-ap1302" },
+	{ 2, 4, 0x3d, "tevi-ap1302" },
 };
 size_t tn_camera_chk_cnt = ARRAY_SIZE(tn_camera_chk);
 
