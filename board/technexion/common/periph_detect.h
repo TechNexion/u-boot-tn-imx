@@ -29,6 +29,7 @@ extern struct tn_display const displays[];
 extern size_t tn_display_count;
 extern const tn_camera_chk_t tn_camera_chk[];
 extern size_t tn_camera_chk_cnt;
+extern int tn_vizionlink_i2c_addr;
 
 int detect_i2c(struct tn_display const *dev);
 int detect_display_panel(void);
