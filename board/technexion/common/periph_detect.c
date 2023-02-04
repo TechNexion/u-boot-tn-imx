@@ -91,10 +91,11 @@ __weak int detect_display_panel(void)
 
 static int _detect_camera(const tn_camera_chk_t *list, size_t count) {
 	int i = 0, ret = -1;
-	char *cam_autodetect = env_get("cam_autodetect");
+	char *cam_autodetect = env_get("cameraautodetect");
 
 	// Default: auto detection
-	if ((cam_autodetect == NULL) && (strcmp(cam_autodetect, "yes") != 0) ) {
+	if ((cam_autodetect == NULL) || (strcmp(cam_autodetect, "yes") != 0)) {
+		printf("Camera auto detection is disabled\n");
 		return(0);
 	}
 
