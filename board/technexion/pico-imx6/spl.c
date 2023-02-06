@@ -16,6 +16,7 @@
 #include <linux/delay.h>
 #include <linux/errno.h>
 #include <asm/gpio.h>
+#include <asm/mach-imx/boot_mode.h>
 #include <asm/mach-imx/iomux-v3.h>
 #include <asm/mach-imx/video.h>
 #include <mmc.h>
@@ -323,8 +324,27 @@ void board_init_f(ulong dummy)
 	PAD_CTL_SPEED_LOW | PAD_CTL_DSE_80ohm |			\
 	PAD_CTL_SRE_FAST  | PAD_CTL_HYS)
 
-static struct fsl_esdhc_cfg usdhc_cfg[1] = {
+#define BASEBOARD_USDHC_PAD_CTRL (PAD_CTL_PUS_47K_UP |		\
+	PAD_CTL_SPEED_LOW | PAD_CTL_DSE_40ohm |			\
+	PAD_CTL_SRE_FAST  | PAD_CTL_HYS)
+
+#define USDHC1_CD_GPIO		IMX_GPIO_NR(3, 9)
+#define USDHC3_CD_GPIO		IMX_GPIO_NR(1, 2)
+
+static struct fsl_esdhc_cfg usdhc_cfg[2] = {
 	{USDHC3_BASE_ADDR},
+	{USDHC1_BASE_ADDR},
+};
+
+static iomux_v3_cfg_t const usdhc1_pads[] = {
+	IOMUX_PADS(PAD_SD1_CLK__SD1_CLK    | MUX_PAD_CTRL(BASEBOARD_USDHC_PAD_CTRL)),
+	IOMUX_PADS(PAD_SD1_CMD__SD1_CMD    | MUX_PAD_CTRL(BASEBOARD_USDHC_PAD_CTRL)),
+	IOMUX_PADS(PAD_SD1_DAT0__SD1_DATA0 | MUX_PAD_CTRL(BASEBOARD_USDHC_PAD_CTRL)),
+	IOMUX_PADS(PAD_SD1_DAT1__SD1_DATA1 | MUX_PAD_CTRL(BASEBOARD_USDHC_PAD_CTRL)),
+	IOMUX_PADS(PAD_SD1_DAT2__SD1_DATA2 | MUX_PAD_CTRL(BASEBOARD_USDHC_PAD_CTRL)),
+	IOMUX_PADS(PAD_SD1_DAT3__SD1_DATA3 | MUX_PAD_CTRL(BASEBOARD_USDHC_PAD_CTRL)),
+	/* Carrier MicroSD Card Detect */
+	IOMUX_PADS(PAD_GPIO_2__GPIO1_IO02  | MUX_PAD_CTRL(NO_PAD_CTRL)),
 };
 
 static iomux_v3_cfg_t const usdhc3_pads[] = {
@@ -340,14 +360,67 @@ static iomux_v3_cfg_t const usdhc3_pads[] = {
 
 int board_mmc_getcd(struct mmc *mmc)
 {
-	return 1;
+	struct fsl_esdhc_cfg *cfg = (struct fsl_esdhc_cfg *)mmc->priv;
+	int ret = 0;
+
+	switch (cfg->esdhc_base) {
+	case USDHC1_BASE_ADDR:
+		ret = !gpio_get_value(USDHC1_CD_GPIO);
+		break;
+	case USDHC3_BASE_ADDR:
+		ret = !gpio_get_value(USDHC3_CD_GPIO);
+		break;
+	}
+
+	return ret;
 }
 
 int board_mmc_init(struct bd_info *bis)
 {
+	int ret;
+	u32 index = 0;
+
+	/*
+	* Following map is done:
+	* (USDHC)      (Physical Port)
+	* usdhc3       SOM MicroSD/MMC
+	* usdhc1       Carrier board MicroSD
+	* Always set boot USDHC as mmc0
+	*/
+
 	SETUP_IOMUX_PADS(usdhc3_pads);
-	usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC3_CLK);
-	return fsl_esdhc_initialize(bis, &usdhc_cfg[0]);
+	gpio_direction_input(USDHC3_CD_GPIO);
+
+	SETUP_IOMUX_PADS(usdhc1_pads);
+	gpio_direction_input(USDHC1_CD_GPIO);
+
+	switch (get_boot_device()) {
+		case SD1_BOOT:
+			usdhc_cfg[0].esdhc_base = USDHC1_BASE_ADDR;
+			usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC_CLK);
+			usdhc_cfg[0].max_bus_width = 4;
+			usdhc_cfg[1].esdhc_base = USDHC3_BASE_ADDR;
+			usdhc_cfg[1].sdhc_clk = mxc_get_clock(MXC_ESDHC3_CLK);
+			usdhc_cfg[1].max_bus_width = 4;
+			break;
+		case SD3_BOOT:
+		default:
+			usdhc_cfg[0].esdhc_base = USDHC3_BASE_ADDR;
+			usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC3_CLK);
+			usdhc_cfg[0].max_bus_width = 1;
+			usdhc_cfg[1].esdhc_base = USDHC1_BASE_ADDR;
+			usdhc_cfg[1].sdhc_clk = mxc_get_clock(MXC_ESDHC_CLK);
+			usdhc_cfg[1].max_bus_width = 4;
+			break;
+	}
+
+	for (index = 0; index < CONFIG_SYS_FSL_USDHC_NUM; ++index) {
+		ret = fsl_esdhc_initialize(bis, &usdhc_cfg[index]);
+		if (ret)
+			return ret;
+	}
+
+	return 0;
 }
 #endif
 
