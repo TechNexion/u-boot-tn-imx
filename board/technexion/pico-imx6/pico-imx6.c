@@ -51,6 +51,8 @@ DECLARE_GLOBAL_DATA_PTR;
 	PAD_CTL_ODE | PAD_CTL_SRE_FAST)
 
 #define ETH_PHY_RESET		IMX_GPIO_NR(1, 26)
+#define WL_REG_ON		IMX_GPIO_NR(1, 7)
+#define BT_NRST			IMX_GPIO_NR(7, 12)
 #define LVDS0_EN		IMX_GPIO_NR(2, 8)
 #define LVDS0_BL_EN		IMX_GPIO_NR(2, 9)
 
@@ -91,6 +93,16 @@ static iomux_v3_cfg_t const enet_pads[] = {
 	IOMUX_PADS(PAD_RGMII_RX_CTL__RGMII_RX_CTL | MUX_PAD_CTRL(ENET_PAD_CTRL)),
 	/* AR8035 PHY Reset */
         IOMUX_PADS(PAD_ENET_RXD1__GPIO1_IO26 | MUX_PAD_CTRL(NO_PAD_CTRL)),
+};
+
+static iomux_v3_cfg_t const wifi_pads[] = {
+	/* wifi wl-reg-on */
+	IOMUX_PADS(PAD_GPIO_7__GPIO1_IO07 | MUX_PAD_CTRL(NO_PAD_CTRL)),
+};
+
+static iomux_v3_cfg_t const bt_pads[] = {
+	/* bluetooth BT_nRST */
+	IOMUX_PADS(PAD_GPIO_17__GPIO7_IO12 | MUX_PAD_CTRL(NO_PAD_CTRL)),
 };
 
 static void setup_iomux_enet(void)
@@ -526,6 +538,19 @@ int board_late_init(void)
 #ifdef CONFIG_ENV_IS_IN_MMC
 	board_late_mmc_env_init();
 #endif
+	/* reset wifi chip */
+	SETUP_IOMUX_PADS(wifi_pads);
+	gpio_request(WL_REG_ON, "wl_reg_on");
+	gpio_direction_output(WL_REG_ON, 0);
+	mdelay(10);
+	gpio_set_value(WL_REG_ON, 1);
+
+	/* reset bluetooth chip */
+	SETUP_IOMUX_PADS(bt_pads);
+	gpio_request(BT_NRST, "bt_nrst");
+	gpio_direction_output(BT_NRST, 0);
+	mdelay(10);
+	gpio_set_value(BT_NRST, 1);
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	if ((s = env_get ("fdtfile_autodetect")) != NULL) {
