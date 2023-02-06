@@ -35,6 +35,7 @@
 #include <phy.h>
 #include <splash.h>
 #include <mmc.h>
+#include <command.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -466,6 +467,46 @@ int board_phy_config(struct phy_device *phydev)
 	return 0;
 }
 
+#ifdef CONFIG_ENV_IS_IN_MMC
+static int check_mmc_autodetect(void)
+{
+	char *autodetect_str = env_get("mmcautodetect");
+
+	if ((autodetect_str != NULL) &&
+		(strcmp(autodetect_str, "yes") == 0)) {
+		return 1;
+	}
+
+	return 0;
+}
+
+/* This should be defined for each board */
+__weak int mmc_map_to_kernel_blk(int dev_no)
+{
+	return dev_no;
+}
+
+void board_late_mmc_env_init(void)
+{
+	char cmd[32];
+	char mmcblk[32];
+	u32 dev_no = mmc_get_env_dev();
+
+	if (!check_mmc_autodetect())
+		return;
+
+	env_set_ulong("mmcdev", dev_no);
+
+	/* Set mmcblk env */
+	sprintf(mmcblk, "/dev/mmcblk%dp2 rootwait rw",
+		mmc_map_to_kernel_blk(dev_no));
+	env_set("mmcroot", mmcblk);
+
+	sprintf(cmd, "mmc dev %d", dev_no);
+	run_command(cmd, 0);
+}
+#endif
+
 int overwrite_console(void)
 {
 	return 1;
@@ -482,6 +523,9 @@ int board_late_init(void)
 	else
 		env_set("board_rev", "MX6DL");
 
+#ifdef CONFIG_ENV_IS_IN_MMC
+	board_late_mmc_env_init();
+#endif
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	if ((s = env_get ("fdtfile_autodetect")) != NULL) {
