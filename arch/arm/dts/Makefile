@@ -1085,6 +1085,7 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mp-edm-g.dtb \
 	imx8mp-sc.dtb \
 	imx8mp-tek3.dtb \
+	imx8mp-hmi.dtb \
 	imx8mp-ddr4-evk.dtb \
 	imx8mp-evk.dtb \
 	imx8mp-icore-mx8mp-edimm2.2.dtb \

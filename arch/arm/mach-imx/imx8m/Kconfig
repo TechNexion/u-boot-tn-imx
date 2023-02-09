@@ -109,6 +109,16 @@ config TARGET_TEK3_IMX8MP
 	select MISC
 	select SPL_CRYPTO_SUPPORT if SPL
 
+config TARGET_HMI_IMX8MP
+	bool "TechNexion HMI IMX8MP"
+	select IMX8MP
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+	select FSL_CAAM
+	select FSL_BLOB
+	select MISC
+	select SPL_CRYPTO_SUPPORT if SPL
+
 config TARGET_IMX8MQ_CM
 	bool "Ronetix iMX8MQ-CM SoM"
 		select BINMAN
@@ -543,6 +553,7 @@ source "board/freescale/imx8mp_evk/Kconfig"
 source "board/technexion/edm-g-imx8mp/Kconfig"
 source "board/technexion/sc-imx8mp/Kconfig"
 source "board/technexion/tek3-imx8mp/Kconfig"
+source "board/technexion/hmi-imx8mp/Kconfig"
 source "board/gateworks/venice/Kconfig"
 source "board/google/imx8mq_phanbell/Kconfig"
 source "board/technexion/edm-g-imx8mm/Kconfig"
