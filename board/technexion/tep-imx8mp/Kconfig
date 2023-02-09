@@ -1,0 +1,14 @@
+if TARGET_TEP_IMX8MP
+
+config SYS_BOARD
+	default "tep-imx8mp"
+
+config SYS_VENDOR
+	default "technexion"
+
+config SYS_CONFIG_NAME
+	default "tep-imx8mp"
+
+source "board/technexion/common/Kconfig"
+
+endif
