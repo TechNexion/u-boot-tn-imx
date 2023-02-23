@@ -482,24 +482,22 @@ int detect_baseboard(void)
 	char *fdtfile, *baseboard, str_fdtfile[64];
 
 	fdtfile = env_get("fdtfile");
-	if (fdtfile && !strcmp(fdtfile, "undefined")) {
-		ret = uclass_get_device_by_seq(UCLASS_I2C, GPIO_I2C_BUS, &bus);
-		if (ret) {
-			printf("%s: Can't find bus\n", __func__);
-			return -EINVAL;
-		}
-
-		if (!dm_i2c_probe(bus, AT24C02D_55_I2C_ADDR, 0, &i2c_dev))
-			env_set("baseboard", "wizard");
-		else
-			env_set("baseboard", "wb");
-		baseboard = env_get("baseboard");
-
-		strcpy(str_fdtfile, "imx8mp-edm-g-");
-		strcat(str_fdtfile, baseboard);
-		strcat(str_fdtfile, ".dtb");
-		env_set("fdtfile", str_fdtfile);
+	ret = uclass_get_device_by_seq(UCLASS_I2C, GPIO_I2C_BUS, &bus);
+	if (ret) {
+		printf("%s: Can't find bus\n", __func__);
+		return -EINVAL;
 	}
+
+	if (!dm_i2c_probe(bus, AT24C02D_55_I2C_ADDR, 0, &i2c_dev))
+		env_set("baseboard", "wizard");
+	else
+		env_set("baseboard", "wb");
+
+	baseboard = env_get("baseboard");
+	strcpy(str_fdtfile, "imx8mp-edm-g-");
+	strcat(str_fdtfile, baseboard);
+	strcat(str_fdtfile, ".dtb");
+	env_set("fdtfile", str_fdtfile);
 	return 0;
 
 }
