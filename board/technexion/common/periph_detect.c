@@ -127,7 +127,7 @@ static int _detect_camera(const tn_camera_chk_t *list, size_t count) {
 
 __weak const tn_camera_chk_t tn_camera_chk[] = {};
 __weak size_t tn_camera_chk_cnt = 0;
-__weak int tn_vizionlink_i2c_addr = -1;
+__weak int tn_vizionlink_i2c_addr = 0x30;
 
 __weak int detect_camera(void) {
 	return(_detect_camera(tn_camera_chk, tn_camera_chk_cnt));
