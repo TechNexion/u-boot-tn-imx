@@ -18,11 +18,11 @@ DRIVE=/dev/sdX
 #DTBS="fsl-imx8mq-evk"
 #DTBS="pico-imx8m"
 
-BRANCH_VER="lf-5.15.52_2.1.0" #branch used by imx-mkimage and imx-atf under meta-imx
+BRANCH_VER="lf-5.15.71_2.2.0" #branch used by imx-mkimage and imx-atf under meta-imx
 ATF_BRANCH_VER="lf_v2.6"
-MKIMAGE_SRC_GIT_ID='37648c8ba5094420faa8206d8cb8e0c6f17d72fc' #refer to 'imx-mkimage_git.inc' in Yocto
-ATF_SRC_GIT_ID='9202efc9aaf65085def9a747ee32aed628449901' #refer to 'imx-atf_2.6.bb' in Yocto
-DDR_FW_VER="8.17" #refer to the name of 'firmware-imx-8m_8.x.bb'
+MKIMAGE_SRC_GIT_ID='3bfcfccb71ddf894be9c402732ccb229fe72099e' #refer to 'imx-mkimage_git.inc' in Yocto
+ATF_SRC_GIT_ID='3c1583ba0a5d11e5116332e91065cb3740153a46' #refer to 'imx-atf_2.6.bb' in Yocto
+DDR_FW_VER="8.18" #refer to the name of 'firmware-imx-8m_8.x.bb'
 
 FSL_MIRROR="https://www.nxp.com/lgfiles/NMG/MAD/YOCTO"
 FIRMWARE_DIR="firmware_imx8"
@@ -79,7 +79,7 @@ install_firmware()
 	fi
 
 	cd ${FIRMWARE_DIR} && FWD=`pwd`
-	
+
 	#Get, build and copy the ARM Trusted Firmware
 	if [ ! -d imx-atf ] ; then
 		git clone https://github.com/nxp-imx/imx-atf.git -b ${ATF_BRANCH_VER} || printf "Fails to fetch ATF source code \n"
@@ -107,14 +107,14 @@ install_firmware()
 	if [ ! -f build/${PLATFORM}/release/bl31.bin ] ; then
 		rm -rf build
 		make PLAT=${PLATFORM} bl31 || printf "Fails to build ATF firmware \n"
-	fi	
+	fi
 	if [ -f build/${PLATFORM}/release/bl31.bin ] ; then
 		printf "Copy build/${PLATFORM}/release/bl31.bin to $MKIMAGE_DIR \n"
 		cp build/${PLATFORM}/release/bl31.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
 	else
 		printf "Cannot find release/bl31.bin \n"
 	fi
-	
+
 	#Get and copy the DDR and HDMI firmware
 	cd ${FWD}
 	if [ ! -d firmware-imx-${DDR_FW_VER} ] ; then
@@ -219,7 +219,7 @@ usage()
     i.mx8MM:
     * PICO-IMX8MM with PICO-PI-IMX8 baseDTBS:
     ./install_uboot_imx8.sh -b imx8mm-pico-pi.dtb -b imx8mm-pico-wizard.dtb -d /dev/sdX
-	
+
     * EDM-G-IMX8MM with WB:
     ./install_uboot_imx8.sh -b imx8mm-edm-g-wb.dtb -d /dev/sdX
 
@@ -263,7 +263,7 @@ print_settings()
 	echo "Make target: ${MKIMAGE_TARGET}"
 	echo "SOC platform: ${SOC}"
 	echo "*************************************************************
-		
+
 	"
 }
 
@@ -275,19 +275,19 @@ fi
 while getopts "tcfhd:b:" OPTION
 do
     case $OPTION in
-        d) 
+        d)
            DRIVE="$OPTARG"
            ;;
-        b) 
+        b)
            DTBS="$DTBS $OPTARG"
            ;;
-        t) 
+        t)
            MKIMAGE_TARGET='flash_spl_uboot';
            ;;
-        f) 
+        f)
            MKIMAGE_TARGET='flash_evk_flexspi';
            ;;
-		c) 
+		c)
 		   rm -rf ${FIRMWARE_DIR} ${MKIMAGE_DIR}
 		   echo "Clean ${FIRMWARE_DIR} ${MKIMAGE_DIR}..."
 		   exit
