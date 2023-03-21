@@ -66,8 +66,8 @@ u8 num_image_type_guids = ARRAY_SIZE(fw_images);
 #endif /* EFI_HAVE_CAPSULE_SUPPORT */
 
 const tn_camera_chk_t tn_camera_chk[] = {
-	{ 1, 1, 0x54, "tevi-ov5640" },		// Check EEPROM
-	{ 1, 1, 0x0f, "hdmi2mipi-tc358743" },
+	{ 1, 2, 0x3c, "tevi-ov5640" },
+	{ 1, 2, 0x3d, "tevi-ap1302" },
 };
 size_t tn_camera_chk_cnt = ARRAY_SIZE(tn_camera_chk);
 
