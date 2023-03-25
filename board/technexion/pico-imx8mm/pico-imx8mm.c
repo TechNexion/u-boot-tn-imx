@@ -47,11 +47,11 @@ static iomux_v3_cfg_t const wdog_pads[] = {
 	IMX8MM_PAD_GPIO1_IO02_WDOG1_WDOG_B  | MUX_PAD_CTRL(WDOG_PAD_CTRL),
 };
 
-const struct camera_cfg tevi_camera[] = {
-	{ 1, 1, 0x54 },
-	{ 2, 2, 0x54 },
+const tn_camera_chk_t tn_camera_chk[] = {
+	{ 1, 1, 0x3c, "tevi-ov5640" },
+	{ 1, 1, 0x3d, "tevi-ap1302" },
 };
-size_t tevi_camera_cnt = ARRAY_SIZE(tevi_camera);
+size_t tn_camera_chk_cnt = ARRAY_SIZE(tn_camera_chk);
 
 struct tn_display const displays[]= {
 /*      bus, addr, id_reg, id, detect */
@@ -425,7 +425,7 @@ int board_late_init(void)
 #ifndef CONFIG_AVB_SUPPORT
 	detect_baseboard();
 	detect_display_panel();
-	detect_tevi_camera();
+	detect_camera();
 #endif
 
 #ifdef CONFIG_ENV_IS_IN_MMC
