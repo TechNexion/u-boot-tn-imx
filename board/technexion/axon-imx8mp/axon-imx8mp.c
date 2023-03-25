@@ -63,6 +63,14 @@ static iomux_v3_cfg_t const ver_det_pads[] = {
 
 static u8 ddr_code __section("data");
 
+const tn_camera_chk_t tn_camera_chk[] = {
+	{ 1, 1, 0x3c, "tevi-ov5640" },
+	{ 2, 4, 0x3c, "tevi-ov5640" },
+	{ 1, 1, 0x3d, "tevi-ap1302" },
+	{ 2, 4, 0x3d, "tevi-ap1302" },
+};
+size_t tn_camera_chk_cnt = ARRAY_SIZE(tn_camera_chk);
+
 static void board_get_ddr_code(void)
 {
 	imx_iomux_v3_setup_multiple_pads(ver_det_pads, ARRAY_SIZE(ver_det_pads));
@@ -466,6 +474,7 @@ int board_late_init(void)
 #ifndef CONFIG_AVB_SUPPORT
 	detect_baseboard();
 	detect_display_panel();
+	detect_camera();
 #endif
 
 #ifdef CONFIG_ENV_IS_IN_MMC
