@@ -105,16 +105,26 @@ static int _detect_camera(const tn_camera_chk_t *list, size_t count) {
 	}
 
 	for (i = 0; i < count; ++i) {
+		int j = 0, skip = 0;
+
 		printf("Check %s - i2c#%d 0x%02x\n", list[i].ov_name, list[i].i2c_bus_index, list[i].i2c_addr);
 		if (_ov_in_dtoverlay(list[i].ov_name) ||
 			(_check_i2c_dev(list[i].i2c_bus_index, list[i].i2c_addr) == NULL)) {
 			continue;
 		}
 
-		// Check VizionLink
-		if((tn_vizionlink_i2c_addr > 0) &&
-			(_check_i2c_dev(list[i].i2c_bus_index, tn_vizionlink_i2c_addr)) != NULL) {
-			printf("VizionLink detected, skip %s\n", list[i].ov_name);
+		// Check exclsive address
+
+		for(j = 0; j < tn_cam_exclusive_i2c_addr_cnt; ++j) {
+			if((tn_cam_exclusive_i2c_addr[j] > 0) &&
+				(_check_i2c_dev(list[i].i2c_bus_index, tn_cam_exclusive_i2c_addr[j])) != NULL) {
+				printf("Exclsived address detected, skip %s\n", list[i].ov_name);
+				skip = 1;
+				break;
+			}
+		}
+
+		if(skip) {
 			continue;
 		}
 
@@ -127,7 +137,11 @@ static int _detect_camera(const tn_camera_chk_t *list, size_t count) {
 
 __weak const tn_camera_chk_t tn_camera_chk[] = {};
 __weak size_t tn_camera_chk_cnt = 0;
-__weak int tn_vizionlink_i2c_addr = 0x30;
+// Camera sensor exclusive I2C address
+// 0x30: VizionLink
+// 0x3f: ADV7533/ADV7535
+__weak uint8_t tn_cam_exclusive_i2c_addr[] = { 0x30, 0x3f };
+__weak size_t tn_cam_exclusive_i2c_addr_cnt = ARRAY_SIZE(tn_cam_exclusive_i2c_addr);
 
 __weak int detect_camera(void) {
 	return(_detect_camera(tn_camera_chk, tn_camera_chk_cnt));
