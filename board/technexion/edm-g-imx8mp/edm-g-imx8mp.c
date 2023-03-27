@@ -69,8 +69,6 @@ const tn_camera_chk_t tn_camera_chk[] = {
 };
 size_t tn_camera_chk_cnt = ARRAY_SIZE(tn_camera_chk);
 
-int tn_vizionlink_i2c_addr = 0x30;
-
 struct tn_display const displays[]= {
 /*      bus, addr, id_reg, id, detect */
 //	{ 4, 0x2a, 0, 0, "lvds-vl10112880", detect_i2c },
