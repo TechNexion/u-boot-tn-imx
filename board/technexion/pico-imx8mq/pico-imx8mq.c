@@ -408,6 +408,7 @@ struct tn_display const displays[]= {
 	{ 2, 0x38, 0xA3, 0x58, "g080uan01", detect_i2c },
 	{ 2, 0x38, 0xA3, 0x59, "g101uan02", detect_i2c },
 	{ 2, 0x3d, 0x98, 0x3d, "mipi2hdmi-adv7535", detect_i2c },
+	{ 2, 0x3d, 0x98, 0x03, "mipi2hdmi-adv7535", detect_i2c },
 };
 
 size_t tn_display_count = ARRAY_SIZE(displays);
