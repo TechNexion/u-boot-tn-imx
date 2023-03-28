@@ -137,9 +137,13 @@ static int _detect_camera(const tn_camera_chk_t *list, size_t count) {
 
 __weak const tn_camera_chk_t tn_camera_chk[] = {};
 __weak size_t tn_camera_chk_cnt = 0;
+
 // Camera sensor exclusive I2C address
-// 0x30: VizionLink
-// 0x3f: ADV7533/ADV7535
+// Since some media devices will be recognized as other media devices,
+// adding the i2c address of these special devices to tn_cam_exclusive_i2c_addr
+// can avoid this.
+//   0x30: VizionLink
+//   0x3f: ADV7533/ADV7535
 __weak uint8_t tn_cam_exclusive_i2c_addr[] = { 0x30, 0x3f };
 __weak size_t tn_cam_exclusive_i2c_addr_cnt = ARRAY_SIZE(tn_cam_exclusive_i2c_addr);
 
