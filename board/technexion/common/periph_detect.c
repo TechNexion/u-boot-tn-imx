@@ -60,10 +60,6 @@ __weak int detect_i2c(struct tn_display const *dev)
 
 	udev = _check_i2c_dev(dev->bus, dev->addr);
 	if (udev != NULL) {
-		if (dev->id_reg == 0) {
-			return(1);
-		}
-
 		read_id = dm_i2c_reg_read(udev, dev->id_reg);
 		if (read_id == dev->id) {
 			return(1);
