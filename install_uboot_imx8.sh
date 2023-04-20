@@ -56,7 +56,7 @@ install_firmware()
 	cd ${TWD}
 	#Get and Build NXP imx-mkimage tool
 	if [ ! -d ${MKIMAGE_DIR} ] ; then
-		git clone https://source.codeaurora.org/external/imx/imx-mkimage -b ${BRANCH_VER} || printf "Fails to fetch imx-mkimage source code \n"
+		git clone https://github.com/nxp-imx/imx-mkimage.git -b ${BRANCH_VER} || printf "Fails to fetch imx-mkimage source code \n"
 		cd imx-mkimage
 		git checkout ${MKIMAGE_SRC_GIT_ID}
 	fi
@@ -67,10 +67,10 @@ install_firmware()
 	fi
 
 	cd ${FIRMWARE_DIR} && FWD=`pwd`
-	
+
 	#Get, build and copy the ARM Trusted Firmware
 	if [ ! -d imx-atf ] ; then
-		git clone https://source.codeaurora.org/external/imx/imx-atf -b ${BRANCH_VER} || printf "Fails to fetch ATF source code \n"
+		git clone https://github.com/nxp-imx/imx-atf.git -b ${BRANCH_VER} || printf "Fails to fetch ATF source code \n"
 		cd imx-atf
 		git checkout ${ATF_SRC_GIT_ID}
 	fi
@@ -92,14 +92,14 @@ install_firmware()
 	if [ ! -f build/${PLATFORM}/release/bl31.bin ] ; then
 		rm -rf build
 		make PLAT=${PLATFORM} bl31 || printf "Fails to build ATF firmware \n"
-	fi	
+	fi
 	if [ -f build/${PLATFORM}/release/bl31.bin ] ; then
 		printf "Copy build/${PLATFORM}/release/bl31.bin to $MKIMAGE_DIR \n"
 		cp build/${PLATFORM}/release/bl31.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
 	else
 		printf "Cannot find release/bl31.bin \n"
 	fi
-	
+
 	#Get and copy the DDR and HDMI firmware
 	cd ${FWD}
 	if [ ! -d firmware-imx-${DDR_FW_VER} ] ; then
@@ -215,7 +215,7 @@ print_settings()
 	echo "Make target: ${MKIMAGE_TARGET}"
 	echo "SOC platform: ${SOC}"
 	echo "*************************************************************
-		
+
 	"
 }
 
@@ -227,16 +227,16 @@ fi
 while getopts "tchd:b:" OPTION
 do
     case $OPTION in
-        d) 
+        d)
            DRIVE="$OPTARG"
            ;;
-        b) 
+        b)
            BOARD="$OPTARG"
            ;;
-        t) 
+        t)
            MKIMAGE_TARGET='flash_spl_uboot';
            ;;
-		c) 
+		c)
 		   rm -rf ${FIRMWARE_DIR} ${MKIMAGE_DIR}
 		   echo "Clean ${FIRMWARE_DIR} ${MKIMAGE_DIR}..."
 		   exit
