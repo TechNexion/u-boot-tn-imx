@@ -69,7 +69,7 @@ install_firmware()
 	cd ${TWD}
 	#Get and Build NXP imx-mkimage tool
 	if [ ! -d ${MKIMAGE_DIR} ] ; then
-		git clone https://source.codeaurora.org/external/imx/imx-mkimage -b ${BRANCH_VER} || printf "Fails to fetch imx-mkimage source code \n"
+		git clone https://github.com/nxp-imx/imx-mkimage.git -b ${BRANCH_VER} || printf "Fails to fetch imx-mkimage source code \n"
 		cd imx-mkimage
 		git checkout -b ${BRANCH_VER}_local ${MKIMAGE_SRC_GIT_ID}
 	fi
@@ -83,7 +83,7 @@ install_firmware()
 	
 	#Get, build and copy the ARM Trusted Firmware
 	if [ ! -d imx-atf ] ; then
-		git clone https://source.codeaurora.org/external/imx/imx-atf -b ${ATF_BRANCH_VER} || printf "Fails to fetch ATF source code \n"
+		git clone https://github.com/nxp-imx/imx-atf.git -b ${ATF_BRANCH_VER} || printf "Fails to fetch ATF source code \n"
 		cd imx-atf
 		git checkout -b ${BRANCH_VER}_local ${ATF_SRC_GIT_ID}
 	fi
