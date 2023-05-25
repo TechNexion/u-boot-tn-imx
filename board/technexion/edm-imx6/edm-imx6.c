@@ -421,6 +421,35 @@ static int detect_i2c(struct display_info_t const *dev)
 			(0 == i2c_probe(dev->addr));
 }
 
+static int detect_lvds_env(struct display_info_t const *dev)
+{
+	char cmd[64];
+	char *baseboard;
+	u32 dev_no = mmc_get_env_dev();
+	char detect_target[32];
+
+
+	env_set("baseboard", "");
+	env_set("displayinfo", "");
+
+	if (!strcmp(dev->mode.name, "hj100na"))
+		strcpy(detect_target, "tc1000");
+	else if (!strcmp(dev->mode.name, "hj070na"))
+		strcpy(detect_target, "tc0700");
+
+	sprintf(cmd, "fatload mmc %d:1 $loadaddr uEnv.txt", dev_no);
+	run_command(cmd, 0);
+
+	sprintf(cmd, "env import -t -r $loadaddr $filesize");
+	run_command(cmd, 0);
+
+	baseboard = env_get("baseboard");
+	if (!strcmp(baseboard, detect_target))
+		return 1;
+
+	return 0;
+}
+
 static void enable_lvds(struct display_info_t const *dev)
 {
 	struct iomuxc *iomux = (struct iomuxc *)
@@ -459,7 +488,7 @@ struct display_info_t const displays[] = {{
 	.bus	= -1,
 	.addr	= 0,
 	.pixfmt = IPU_PIX_FMT_RGB24,
-	.detect = NULL,
+	.detect = detect_lvds_env,
 	.enable = enable_lvds,
 	.mode	= {
 		.name		= "hj070na",
@@ -472,6 +501,26 @@ struct display_info_t const displays[] = {{
 		.upper_margin	= 21,
 		.lower_margin	= 7,
 		.hsync_len	= 60,
+		.vsync_len	= 10,
+		.sync		= FB_SYNC_EXT,
+		.vmode		= FB_VMODE_NONINTERLACED
+} }, {
+	.bus	= -1,
+	.addr	= 0,
+	.pixfmt = IPU_PIX_FMT_RGB24,
+	.detect = detect_lvds_env,
+	.enable = enable_lvds,
+	.mode	= {
+		.name		= "hj100na",
+		.refresh	= 60,
+		.xres		= 1280,
+		.yres		= 800,
+		.pixclock	= 21332,
+		.left_margin	= 40,
+		.right_margin	= 40,
+		.upper_margin	= 10,
+		.lower_margin	= 3,
+		.hsync_len	= 80,
 		.vsync_len	= 10,
 		.sync		= FB_SYNC_EXT,
 		.vmode		= FB_VMODE_NONINTERLACED
