@@ -3,8 +3,8 @@
  * Copyright 2019 NXP
  */
 
-#ifndef __HMI_IMX8MP_H
-#define __HMI_IMX8MP_H
+#ifndef __TEK3_IMX8MP_H
+#define __TEK3_IMX8MP_H
 
 #include <linux/sizes.h>
 #include <linux/stringify.h>
@@ -162,7 +162,7 @@
 		"setexpr fdtovaddr ${fdt_addr} + 0xF0000; " \
 		"for ov in ${dtoverlay}; do " \
 			"echo Overlaying ${ov}...; " \
-			"fatload mmc ${mmcdev}:${mmcpart} ${fdtovaddr} imx8mp-hmi-${ov}.dtbo && fdt apply ${fdtovaddr}; " \
+			"fatload mmc ${mmcdev}:${mmcpart} ${fdtovaddr} imx8mp-tek3-${ov}.dtbo && fdt apply ${fdtovaddr}; " \
 		"done\0" \
 	"mmcboot=echo Booting from mmc ...; " \
 		"run mmcargs; " \
