@@ -26,16 +26,14 @@ static int _add_dtoverlay(const char *ov_name)
 
 	dtoverlay = env_get(ENV_DTOVERLAY);
 	if (dtoverlay == NULL) {
-		sprintf(arr_dtov, "%s", ov_name);
+		snprintf(arr_dtov, SIZE_DTOVERLAY, "%s", ov_name);
+	} else if(strstr(dtoverlay, ov_name)) {
+		snprintf(arr_dtov, SIZE_DTOVERLAY, "%s", dtoverlay);
 	} else {
-		sprintf(arr_dtov, "%s %s", dtoverlay, ov_name);
+		snprintf(arr_dtov, SIZE_DTOVERLAY, "%s %s", dtoverlay, ov_name);
 	}
 
 	return(env_set(ENV_DTOVERLAY, arr_dtov));
-}
-
-static int _ov_in_dtoverlay(const char *ov) {
-	return((ov != NULL) && (strstr(env_get(ENV_DTOVERLAY), ov) != NULL));
 }
 
 static struct udevice * _check_i2c_dev(int bus_idx, uint addr) {
@@ -104,8 +102,7 @@ static int _detect_camera(const tn_camera_chk_t *list, size_t count) {
 		int j = 0, skip = 0;
 
 		printf("Check %s - i2c#%d 0x%02x\n", list[i].ov_name, list[i].i2c_bus_index, list[i].i2c_addr);
-		if (_ov_in_dtoverlay(list[i].ov_name) ||
-			(_check_i2c_dev(list[i].i2c_bus_index, list[i].i2c_addr) == NULL)) {
+		if (_check_i2c_dev(list[i].i2c_bus_index, list[i].i2c_addr) == NULL) {
 			continue;
 		}
 
