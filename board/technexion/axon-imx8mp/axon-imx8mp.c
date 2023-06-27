@@ -372,6 +372,22 @@ void setup_touch(void)
 	imx_iomux_v3_setup_multiple_pads(touch_rst_pads, ARRAY_SIZE(touch_rst_pads));
 }
 
+#define CSI1_GPIO_RST IMX_GPIO_NR(1, 8)
+#define CSI2_GPIO_RST IMX_GPIO_NR(4, 4)
+
+void setup_camera(void)
+{
+	gpio_request(CSI1_GPIO_RST, "csi1_rst");
+	gpio_direction_output(CSI1_GPIO_RST, 0);
+	mdelay(100);
+	gpio_direction_output(CSI1_GPIO_RST, 1);
+
+	gpio_request(CSI2_GPIO_RST, "csi2_rst");
+	gpio_direction_output(CSI2_GPIO_RST, 0);
+	mdelay(100);
+	gpio_direction_output(CSI2_GPIO_RST, 1);
+}
+
 #define FSL_SIP_GPC			0xC2000000
 #define FSL_SIP_CONFIG_GPC_PM_DOMAIN	0x3
 #define DISPMIX				13
@@ -383,6 +399,7 @@ int board_init(void)
 
 	setup_wifi();
 	setup_touch();
+	setup_camera();
 
 #ifdef CONFIG_DWC_ETH_QOS
 	/* clock, pin, gpr */
