@@ -11,6 +11,7 @@
 #include <dm/uclass.h>
 #include <linux/compat.h>
 #include "periph_detect.h"
+#include <linux/delay.h>
 
 #define ENV_DTOVERLAY		"dtoverlay"
 #define SIZE_DTOVERLAY		(256)
@@ -62,6 +63,60 @@ __weak int detect_i2c(struct tn_display const *dev)
 		if (read_id == dev->id) {
 			return(1);
 		}
+	}
+#endif
+	return 0;
+}
+__weak int detect_exc3000_i2c(struct tn_display const *dev)
+{
+#if CONFIG_IS_ENABLED(DM_I2C)
+	struct udevice *udev = NULL;
+	struct i2c_msg msg_read_frame, msg_vendor_req;
+	int vendor_resolution = 0;
+	u8 read_vendor_buf[20];
+
+	u8 i2c_buf_read_frame[2] = { 0x27, 0x00 };
+	msg_read_frame.addr = 0x2a;
+	msg_read_frame.flags = 0;
+	msg_read_frame.len = 2;
+	msg_read_frame.buf = i2c_buf_read_frame;
+
+	u8 i2c_buf_vendor_req[68] = { 0x67, 0x00, 0x42, 0x00, 0x03, 0x01, 0x45, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+	msg_vendor_req.addr = 0x2a;
+	msg_vendor_req.flags = 0;
+	msg_vendor_req.len = 68;
+	msg_vendor_req.buf = i2c_buf_vendor_req;
+
+	udev = _check_i2c_dev(dev->bus, dev->addr);
+	if (udev != NULL) {
+		// clear read_frame
+		dm_i2c_xfer(udev, &msg_read_frame, 1);
+		mdelay(20);
+		dm_i2c_read(udev, 0, read_vendor_buf, 20);
+
+		// send vendor request
+		dm_i2c_xfer(udev, &msg_vendor_req, 1);
+
+		dm_i2c_xfer(udev, &msg_read_frame, 1);
+		mdelay(20);
+		dm_i2c_read(udev, 0, read_vendor_buf, 20);
+
+		// change ascii char to int
+		for (int i=16; i< 19; i++) {
+			debug("detect_exc3000_i2c: read_buf[%d] = %c\n",i , read_vendor_buf[i]);
+			vendor_resolution += (read_vendor_buf[i] - 0x30);
+			if (i!=18)
+				vendor_resolution *= 10;
+			debug("detect_exc3000_i2c: vendor_resolution=%u\n", vendor_resolution);
+		}
+		if (vendor_resolution == dev->id)
+			return(1);
 	}
 #endif
 	return 0;
