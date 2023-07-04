@@ -236,7 +236,7 @@ int detect_baseboard(void)
 
 struct tn_display const displays[]= {
 /*      bus, addr, id_reg, id, detect */
-	{ 4, 0x2a, 0, 0, "lvds-vl10112880", detect_i2c },
+	{ 4, 0x2a, 0, 101, "lvds-vl10112880", detect_exc3000_i2c },
 };
 
 size_t tn_display_count = ARRAY_SIZE(displays);
