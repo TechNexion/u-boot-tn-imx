@@ -73,7 +73,7 @@ size_t tn_camera_chk_cnt = ARRAY_SIZE(tn_camera_chk);
 
 struct tn_display const displays[]= {
 /*      bus, addr, id_reg, id, detect */
-	{ 2, 0x2a, 0, 0, "sn65dsi84-vl10112880", detect_i2c },
+	{ 2, 0x2a, 0, 101, "sn65dsi84-vl10112880", detect_exc3000_i2c },
 };
 size_t tn_display_count = ARRAY_SIZE(displays);
 
