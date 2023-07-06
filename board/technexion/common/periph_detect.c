@@ -9,9 +9,12 @@
 #include <i2c.h>
 #include <env.h>
 #include <dm/uclass.h>
+#include <usb.h>
 #include <linux/compat.h>
 #include "periph_detect.h"
 #include <linux/delay.h>
+#include <dm/device.h>
+#include <dm/uclass-internal.h>
 
 #define ENV_DTOVERLAY		"dtoverlay"
 #define SIZE_DTOVERLAY		(256)
@@ -119,6 +122,66 @@ __weak int detect_exc3000_i2c(struct tn_display const *dev)
 			return(1);
 	}
 #endif
+	return 0;
+}
+
+#ifdef CONFIG_DM_USB
+int usb_inited_dm = -1;
+#endif
+
+/* { UNUSED, UNUSED, idVendor, resolution, ov_name, detect_usb } */
+__weak int detect_exc3000_usb(struct tn_display const *dev)
+{
+#ifdef CONFIG_DM_USB
+	struct udevice *bus, *child;
+	struct usb_bus_priv *priv;
+	struct usb_device *udev;
+	int device_num, id_num;
+	char resolution[4]= "000";
+
+	if (usb_inited_dm != 1) {
+		usb_init();
+		usb_inited_dm = 1;
+	}
+
+	id_num = dev->id;
+	for (int i = 2 ; i >= 0 ; i-- ) {
+		resolution[i] = 0x30 + (id_num % 10);
+		id_num /= 10;
+	}
+	debug("resolution=%s\n", resolution);
+
+	uclass_find_first_device(UCLASS_USB, &bus);
+	while (bus) {
+		priv = dev_get_uclass_priv(bus);
+		device_num = priv->next_addr;
+
+		// prevent find usb root
+		if ((priv->desc_before_addr) && (device_num <= 40)) {
+			for (int i = 0 ; i < device_num; i++) {
+				if (i == 0)
+					device_find_first_child(bus, &child);
+				else
+					device_find_first_child(child, &child);
+
+				if (child) {
+					udev = dev_get_parent_priv(child);	//Get usb_device pointer
+					debug("udev->descriptor.idVendor=%x\n", udev->descriptor.idVendor);
+					if (udev->descriptor.idVendor != dev->id_reg)
+						continue;
+
+					if (udev->descriptor.bDescriptorType == USB_DT_DEVICE) {
+						debug("udev->prod=%s\n", udev->prod);
+						if (strstr(udev->prod, resolution) != NULL)
+							return 1;
+					}
+				}
+			}
+		}
+		//Find next bus
+		uclass_find_next_device(&bus);
+	}
+#endif /* !define(CONFIG_DM_USB) */
 	return 0;
 }
 
