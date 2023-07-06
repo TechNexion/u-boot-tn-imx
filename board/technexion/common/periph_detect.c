@@ -54,6 +54,7 @@ static struct udevice * _check_i2c_dev(int bus_idx, uint addr) {
 	return(i2c_dev);
 }
 
+/* { bus, addr, id_reg, id, ov_name, detect_i2c } */
 __weak int detect_i2c(struct tn_display const *dev)
 {
 #if CONFIG_IS_ENABLED(DM_I2C)
@@ -70,6 +71,8 @@ __weak int detect_i2c(struct tn_display const *dev)
 #endif
 	return 0;
 }
+
+/* { bus, addr, UNUSED, resolution, ov_name, detect_exc3000_i2c } */
 __weak int detect_exc3000_i2c(struct tn_display const *dev)
 {
 #if CONFIG_IS_ENABLED(DM_I2C)
