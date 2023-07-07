@@ -153,10 +153,10 @@ int usb_inited_dm = -1;
 __weak int detect_exc3000_usb(struct tn_display const *dev)
 {
 #ifdef CONFIG_DM_USB
-	struct udevice *bus, *child;
-	struct usb_bus_priv *priv;
+	struct udevice *hub, *child;
+	struct uclass *uc_hub;
 	struct usb_device *udev;
-	int device_num, id_num;
+	int ret, id_num;
 	char resolution[4]= "000";
 
 	tn_debug("Detect func: %s, for overlay: %s\n", __func__, dev->ov_name);
@@ -172,35 +172,29 @@ __weak int detect_exc3000_usb(struct tn_display const *dev)
 	}
 	tn_debug("resolution=%s\n", resolution);
 
-	uclass_find_first_device(UCLASS_USB, &bus);
-	while (bus) {
-		priv = dev_get_uclass_priv(bus);
-		device_num = priv->next_addr;
+	ret = uclass_get(UCLASS_USB_HUB, &uc_hub);
+	if (ret) {
+		tn_debug("%s: no available hub !!\n", __func__);
+		return 0;
+	}
 
-		// prevent find usb root
-		if ((priv->desc_before_addr) && (device_num <= 40)) {
-			for (int i = 0 ; i < device_num; i++) {
-				if (i == 0)
-					device_find_first_child(bus, &child);
-				else
-					device_find_first_child(child, &child);
+	uclass_foreach_dev(hub, uc_hub) {
+		if (!device_active(hub))
+			continue;
+		udev = dev_get_parent_priv(hub);
 
-				if (child) {
-					udev = dev_get_parent_priv(child);	//Get usb_device pointer
-					tn_debug("udev->descriptor.idVendor=%x\n", udev->descriptor.idVendor);
-					if (udev->descriptor.idVendor != dev->id_reg)
-						continue;
+		for (device_find_first_child(hub, &child);
+				child;
+				device_find_next_child(&child))
+		{
+			if (!device_active(hub))
+				continue;
 
-					if (udev->descriptor.bDescriptorType == USB_DT_DEVICE) {
-						tn_debug("udev->prod=%s\n", udev->prod);
-						if (strstr(udev->prod, resolution) != NULL)
-							return 1;
-					}
-				}
-			}
+			udev = dev_get_parent_priv(child);
+			tn_debug("udev->prod=%s\n", udev->prod);
+			if (strstr(udev->prod, resolution) != NULL)
+				return 1;
 		}
-		//Find next bus
-		uclass_find_next_device(&bus);
 	}
 #endif /* !define(CONFIG_DM_USB) */
 	return 0;
