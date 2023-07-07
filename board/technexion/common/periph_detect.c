@@ -19,6 +19,21 @@
 #define ENV_DTOVERLAY		"dtoverlay"
 #define SIZE_DTOVERLAY		(256)
 
+int tn_debug(const char *fmt, ...)
+{
+#ifdef TN_DEBUG
+	va_list args;
+	uint i;
+
+	va_start(args, fmt);
+	i = vprintf(fmt, args);
+	va_end(args);
+
+	return i;
+#endif
+	return 0;
+}
+
 static int _add_dtoverlay(const char *ov_name)
 {
 	char *dtoverlay = NULL;
@@ -45,7 +60,7 @@ static struct udevice * _check_i2c_dev(int bus_idx, uint addr) {
 	struct udevice *i2c_dev = NULL;
 
 	if (uclass_get_device_by_seq(UCLASS_I2C, bus_idx, &bus)) {
-		printf("%s: Can't find bus\n", __func__);
+		tn_debug("%s: Can't find bus\n", __func__);
 		return(NULL);
 	}
 
@@ -61,6 +76,7 @@ __weak int detect_i2c(struct tn_display const *dev)
 	struct udevice *udev = NULL;
 	int read_id = -1;
 
+	tn_debug("Detect func: %s, for overlay: %s\n", __func__, dev->ov_name);
 	udev = _check_i2c_dev(dev->bus, dev->addr);
 	if (udev != NULL) {
 		read_id = dm_i2c_reg_read(udev, dev->id_reg);
@@ -99,6 +115,7 @@ __weak int detect_exc3000_i2c(struct tn_display const *dev)
 	msg_vendor_req.len = 68;
 	msg_vendor_req.buf = i2c_buf_vendor_req;
 
+	tn_debug("Detect func: %s, for overlay: %s\n", __func__, dev->ov_name);
 	udev = _check_i2c_dev(dev->bus, dev->addr);
 	if (udev != NULL) {
 		// clear read_frame
@@ -115,11 +132,11 @@ __weak int detect_exc3000_i2c(struct tn_display const *dev)
 
 		// change ascii char to int
 		for (int i=16; i< 19; i++) {
-			debug("detect_exc3000_i2c: read_buf[%d] = %c\n",i , read_vendor_buf[i]);
+			tn_debug("detect_exc3000_i2c: read_buf[%d] = %c\n",i , read_vendor_buf[i]);
 			vendor_resolution += (read_vendor_buf[i] - 0x30);
 			if (i!=18)
 				vendor_resolution *= 10;
-			debug("detect_exc3000_i2c: vendor_resolution=%u\n", vendor_resolution);
+			tn_debug("detect_exc3000_i2c: vendor_resolution=%u\n", vendor_resolution);
 		}
 		if (vendor_resolution == dev->id)
 			return(1);
@@ -142,6 +159,7 @@ __weak int detect_exc3000_usb(struct tn_display const *dev)
 	int device_num, id_num;
 	char resolution[4]= "000";
 
+	tn_debug("Detect func: %s, for overlay: %s\n", __func__, dev->ov_name);
 	if (usb_inited_dm != 1) {
 		usb_init();
 		usb_inited_dm = 1;
@@ -152,7 +170,7 @@ __weak int detect_exc3000_usb(struct tn_display const *dev)
 		resolution[i] = 0x30 + (id_num % 10);
 		id_num /= 10;
 	}
-	debug("resolution=%s\n", resolution);
+	tn_debug("resolution=%s\n", resolution);
 
 	uclass_find_first_device(UCLASS_USB, &bus);
 	while (bus) {
@@ -169,12 +187,12 @@ __weak int detect_exc3000_usb(struct tn_display const *dev)
 
 				if (child) {
 					udev = dev_get_parent_priv(child);	//Get usb_device pointer
-					debug("udev->descriptor.idVendor=%x\n", udev->descriptor.idVendor);
+					tn_debug("udev->descriptor.idVendor=%x\n", udev->descriptor.idVendor);
 					if (udev->descriptor.idVendor != dev->id_reg)
 						continue;
 
 					if (udev->descriptor.bDescriptorType == USB_DT_DEVICE) {
-						debug("udev->prod=%s\n", udev->prod);
+						tn_debug("udev->prod=%s\n", udev->prod);
 						if (strstr(udev->prod, resolution) != NULL)
 							return 1;
 					}
@@ -192,11 +210,12 @@ __weak int detect_display_panel(void)
 {
 	int i=0;
 
+	tn_debug("%s: Running %s\n", __FILE__, __func__);
 	for (i = 0; i < tn_display_count; i++) {
 		struct tn_display const *dev = &displays[i];
 		if (dev->detect && dev->detect(dev)) {
 			_add_dtoverlay(dev->ov_name);
-			debug("Detect panel - %s !!!\r\n", dev->ov_name);
+			tn_debug("Detect panel - %s !!!\r\n", dev->ov_name);
 			break;
 		}
 	}
@@ -208,21 +227,22 @@ static int _detect_camera(const tn_camera_chk_t *list, size_t count) {
 	int i = 0, ret = -1;
 	char *cam_autodetect = env_get("cameraautodetect");
 
+	tn_debug("%s: Running %s\n", __FILE__, __func__);
 	// Default: Do not auto detection
 	if ((cam_autodetect == NULL) || (strcmp(cam_autodetect, "yes") != 0)) {
-		printf("Camera auto detection is disabled\n");
+		tn_debug("Camera auto detection is disabled\n");
 		return(0);
 	}
 
 	if ((list == NULL) || (count <= 0)) {
-		//printf("%s - Invalid camera list\n", __func__);
+		tn_debug("%s - Invalid camera list\n", __func__);
 		return(-1);
 	}
 
 	for (i = 0; i < count; ++i) {
 		int j = 0, skip = 0;
 
-		printf("Check %s - i2c#%d 0x%02x\n", list[i].ov_name, list[i].i2c_bus_index, list[i].i2c_addr);
+		tn_debug("Check %s - i2c#%d 0x%02x\n", list[i].ov_name, list[i].i2c_bus_index, list[i].i2c_addr);
 		if (_check_i2c_dev(list[i].i2c_bus_index, list[i].i2c_addr) == NULL) {
 			continue;
 		}
@@ -232,7 +252,7 @@ static int _detect_camera(const tn_camera_chk_t *list, size_t count) {
 		for(j = 0; j < tn_cam_exclusive_i2c_addr_cnt; ++j) {
 			if((tn_cam_exclusive_i2c_addr[j] > 0) &&
 				(_check_i2c_dev(list[i].i2c_bus_index, tn_cam_exclusive_i2c_addr[j])) != NULL) {
-				printf("Exclsived address detected, skip %s\n", list[i].ov_name);
+				tn_debug("Exclsived address detected, skip %s\n", list[i].ov_name);
 				skip = 1;
 				break;
 			}
