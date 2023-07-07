@@ -36,12 +36,21 @@
 #include <jffs2/load_kernel.h>
 #include <mtd_node.h>
 #include <command.h>
+#include "../common/periph_detect.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 
 #define UART_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_FSEL1)
 #define WDOG_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_ODE | PAD_CTL_PUE | PAD_CTL_PE)
 #define OTG_PWR_EN_PAD IMX_GPIO_NR(4, 0)
+
+struct tn_display const displays[]= {
+/*      bus, addr, id_reg, id, detect */
+	{  0,  0, 0x0eef, 101, "lvds-vl10112880",  detect_exc3000_usb },
+	{  0,  0, 0x0eef, 156, "lvds-vl156192108", detect_exc3000_usb },
+	{  0,  0, 0x0eef, 215, "lvds-vl215192108", detect_exc3000_usb },
+};
+size_t tn_display_count = ARRAY_SIZE(displays);
 
 static iomux_v3_cfg_t const uart_pads[] = {
 	MX8MP_PAD_UART2_RXD__UART2_DCE_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
@@ -434,8 +443,13 @@ void board_late_mmc_env_init(void)
 
 int board_late_init(void)
 {
+#ifndef CONFIG_AVB_SUPPORT
+	detect_display_panel();
+#endif
+
 #ifdef CONFIG_ENV_IS_IN_MMC
 	board_late_mmc_env_init();
+	detect_display_panel();
 #endif
 
 	setup_fec();
