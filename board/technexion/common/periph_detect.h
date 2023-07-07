@@ -32,6 +32,7 @@ extern size_t tn_camera_chk_cnt;
 extern uint8_t tn_cam_exclusive_i2c_addr[];
 extern size_t tn_cam_exclusive_i2c_addr_cnt;
 
+int tn_debug(const char *fmt, ...);
 int detect_i2c(struct tn_display const *dev);
 int detect_exc3000_i2c(struct tn_display const *dev);
 int detect_exc3000_usb(struct tn_display const *dev);
