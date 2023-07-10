@@ -365,6 +365,22 @@ int board_usb_cleanup(int index, enum usb_init_type init)
 
 	return 0;
 }
+
+#define USB_HUB_RST_PAD IMX_GPIO_NR(4, 22)
+static iomux_v3_cfg_t const usb_hub_rst_pads[] = {
+	MX8MP_PAD_SAI2_RXC__GPIO4_IO22 | MUX_PAD_CTRL(NO_PAD_CTRL),
+};
+
+void setup_usb_rst(void)
+{
+	imx_iomux_v3_setup_multiple_pads(usb_hub_rst_pads, ARRAY_SIZE(usb_hub_rst_pads));
+
+	gpio_request(USB_HUB_RST_PAD, "usb_hub_rst");
+	gpio_direction_output(USB_HUB_RST_PAD, 0);
+	gpio_set_value(USB_HUB_RST_PAD, 0);
+	mdelay(20);
+	gpio_set_value(USB_HUB_RST_PAD, 1);
+}
 #endif
 
 #define WL_REG_ON_PAD IMX_GPIO_NR(1, 0)
@@ -419,6 +435,7 @@ int board_init(void)
 #endif
 
 #if defined(CONFIG_USB_DWC3) || defined(CONFIG_USB_XHCI_IMX8M)
+	setup_usb_rst();
 	init_usb_clk();
 #endif
 
