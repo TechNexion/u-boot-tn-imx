@@ -167,6 +167,7 @@
 	"mmcboot=echo Booting from mmc ...; " \
 		"run mmcargs; " \
 		"if test ${auto_saveenv} = yes ; then " \
+			"setenv auto_saveenv no;" \
 			"saveenv;" \
 		"fi; " \
 		"if test ${boot_fit} = yes || test ${boot_fit} = try; then " \
