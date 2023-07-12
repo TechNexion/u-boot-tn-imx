@@ -65,6 +65,250 @@ boot_metric metrics = {
   .sw	 = 0
 };
 
+#if(defined(CONFIG_ANDROID_EXT_DTBO) && defined(CONFIG_OF_LIBFDT_OVERLAY))
+#define EXT_DTBO_SIZE(t)		(sizeof(t)/sizeof(t[0]))
+#define NO_OVERLAY				(-1)
+
+#define BOOTARGS_APPEND_DTBO	(0)
+
+enum {
+	DEV_SETUP_UNKNOWN = 0,
+	DEV_SETUP_VIN,
+	DEV_SETUP_VOUT,
+	DEV_SETUP_AIN,
+	DEV_SETUP_AOUT,
+	DEV_SETUP_NFC,
+
+	DEV_SETUP_TOTAL,
+};
+
+typedef struct DEV_SETUP_T {
+	u8 type;
+	const char *dtoverlay;
+	const char *dev_conf;
+} dev_setup_t;
+
+//
+// Sync the order of _ext_dtbo with BoardConfig.mk
+//
+static dev_setup_t _dev_setup_edm_g_8mp[] = {
+	{ DEV_SETUP_VOUT, "lvds-vl10112880", NULL },
+	{ DEV_SETUP_VOUT, "lvds-vl15613676", NULL },
+	{ DEV_SETUP_VOUT, "lvds-vl215192108", NULL },
+	{ DEV_SETUP_VIN, "tevi-ov5640", NULL },
+	{ DEV_SETUP_VIN, "tevi-ap1302", "ap1302" },
+	{ DEV_SETUP_VIN, "vizionlink-tevi-ov5640", NULL },
+	{ DEV_SETUP_VIN, "vizionlink-tevi-ap1302", "ap1302" },
+};
+
+static dev_setup_t _dev_setup_edm_g_8mn[] = {
+	{ DEV_SETUP_VOUT, "lvds-vl10112880", NULL },
+	{ DEV_SETUP_VOUT, "lvds-vl15613676", NULL },
+	{ DEV_SETUP_VOUT, "lvds-vl215192108", NULL },
+	{ DEV_SETUP_VOUT, "mipi2hdmi-adv7535", NULL },
+	{ DEV_SETUP_VIN, "tevi-ov5640", NULL },
+	{ DEV_SETUP_VIN, "tevi-ap1302", "ap1302" },
+};
+
+static dev_setup_t _dev_setup_pico_8mq[] = {
+	{ DEV_SETUP_VOUT, "ili9881c", NULL },
+	{ DEV_SETUP_VOUT, "g101uan02", NULL },
+	{ DEV_SETUP_VOUT, "mipi2hdmi-adv7535", NULL },
+	{ DEV_SETUP_VOUT, "sn65dsi84-vl10112880", NULL },
+	{ DEV_SETUP_VOUT, "sn65dsi84-vl15613676", NULL },
+	{ DEV_SETUP_VOUT, "sn65dsi84-vl215192108", NULL },
+	{ DEV_SETUP_NFC, "clix1nfc", NULL },
+	{ DEV_SETUP_NFC, "clix2nfc", NULL },
+};
+
+#if(defined(CONFIG_TARGET_EDM_G_IMX8MM))
+static dev_setup_t _dev_setup_edm_g_8mm[] = {
+	{ DEV_SETUP_VOUT, "sn65dsi84-vl10112880", NULL },
+	{ DEV_SETUP_VOUT, "sn65dsi84-vl15613676", NULL },
+	{ DEV_SETUP_VOUT, "sn65dsi84-vl215192108", NULL },
+	{ DEV_SETUP_VIN, "tevi-ov5640", NULL },
+	{ DEV_SETUP_VIN, "tevi-ap1302", "ap1302" },
+	{ DEV_SETUP_VIN, "hdmi2mipi-tc3587432", NULL },
+	{ DEV_SETUP_VIN, "vizionlink-tevi-ov5640", NULL },
+	{ DEV_SETUP_VIN, "vizionlink-tevi-ap1302", "ap1302" },
+};
+#endif
+
+#if(defined(CONFIG_TARGET_PICO_IMX8MM))
+static dev_setup_t _dev_setup_pico_8mm[] = {
+	{ DEV_SETUP_VOUT, "ili9881c", NULL },
+	{ DEV_SETUP_VOUT, "g101uan02", NULL },
+	{ DEV_SETUP_VOUT, "mipi2hdmi-adv7535", NULL },
+	{ DEV_SETUP_VOUT, "sn65dsi84-vl10112880", NULL },
+	{ DEV_SETUP_VOUT, "sn65dsi84-vl15613676", NULL },
+	{ DEV_SETUP_VOUT, "sn65dsi84-vl215192108", NULL },
+	{ DEV_SETUP_VIN, "tevi-ov5640", NULL },
+	{ DEV_SETUP_VIN, "tevi-ap1302", "ap1302" },
+};
+#endif
+
+static int _get_dev_setup(const char *dtbo_token, dev_setup_t **dev_setup, size_t *dev_setup_cnt) {
+	dev_setup_t *__dev_setup = NULL;
+	size_t __dev_setup_cnt = 0;
+	int idx = NO_OVERLAY;
+
+	if(dtbo_token == NULL) {
+		goto _exit_get_dtbo_index;
+	}
+
+	if(is_imx8mp()) {
+		__dev_setup = _dev_setup_edm_g_8mp;
+		__dev_setup_cnt = EXT_DTBO_SIZE(_dev_setup_edm_g_8mp);
+	} else if(is_imx8mm()) {
+#if(defined(CONFIG_TARGET_EDM_G_IMX8MM))
+		__dev_setup = _dev_setup_edm_g_8mm;
+		__dev_setup_cnt = EXT_DTBO_SIZE(_dev_setup_edm_g_8mm);
+#elif(defined(CONFIG_TARGET_PICO_IMX8MM))
+		__dev_setup = _dev_setup_pico_8mm;
+		__dev_setup_cnt = EXT_DTBO_SIZE(_dev_setup_pico_8mm);
+#endif
+	} else if(is_imx8mq()) {
+		__dev_setup = _dev_setup_pico_8mq;
+		__dev_setup_cnt = EXT_DTBO_SIZE(_dev_setup_pico_8mq);
+	} else if(is_imx8mn()) {
+		__dev_setup = _dev_setup_edm_g_8mn;
+		__dev_setup_cnt = EXT_DTBO_SIZE(_dev_setup_edm_g_8mn);
+	}
+	else {
+		goto _exit_get_dtbo_index;
+	}
+
+	for(idx = 0; idx < __dev_setup_cnt; ++idx) {
+		if(strcmp(dtbo_token, __dev_setup[idx].dtoverlay) == 0) {
+			goto _exit_get_dtbo_index;
+		}
+	}
+
+	idx = NO_OVERLAY;
+
+_exit_get_dtbo_index:
+
+	if(dev_setup != NULL) {
+		*dev_setup = __dev_setup;
+	}
+
+	return(idx);
+}
+
+static int _dtoverlay_bootargs_add(void) {
+#if(BOOTARGS_APPEND_DTBO)
+	int dtbo_idx = NO_OVERLAY;
+	dev_setup_t *dev_setup = NULL;
+	char *dtoverlay_ptr = NULL, *dtbo_token = NULL;
+	char dtoverlay[128];
+
+	dtoverlay_ptr = env_get("dtoverlay");
+	if(dtoverlay_ptr == NULL) {
+		return(-1);
+	}
+
+	snprintf(dtoverlay, sizeof(dtoverlay)-1, "%s", dtoverlay_ptr);
+	dtbo_token = strtok(dtoverlay, " ");
+	while(dtbo_token != NULL) {
+		dtbo_idx = _get_dev_setup(dtbo_token, &dev_setup, NULL);
+		//printf("%s - dtbo_token: %s, dtbo_idx: %d, dev_setup: 0x%p\n", __func__, dtbo_token, dtbo_idx, dev_setup);
+		dtbo_token = strtok(NULL, " ");
+
+		if((dev_setup == NULL) || (dtbo_idx == NO_OVERLAY)) {
+			printf("%s - Invalid dev_setup (index: %d)\n", __func__, dtbo_idx);
+			continue;
+		}
+
+		//printf("---->>> %s - dtbo_idx: %d, type: %d, dtoverlay: %s\n", __func__, dtbo_idx, dev_setup[dtbo_idx].type, dev_setup[dtbo_idx].dtoverlay);
+		switch(dev_setup[dtbo_idx].type) {
+			case DEV_SETUP_VIN: {
+				char buf[64] = { '\0' };
+
+				//printf("---->>> %s - dev_conf: %s\n", __func__, dev_setup[dtbo_idx].dev_conf);
+				if((dev_setup[dtbo_idx].dev_conf != NULL) && (dev_setup[dtbo_idx].dev_conf[0] != '\0')) {
+					snprintf(buf, sizeof(buf)-1, "androidboot.camera.layout=%s", dev_setup[dtbo_idx].dev_conf);
+				}
+				// FIXME: need update the bootargs_3rd for more settings
+				printf("ANDROID: set bootargs_3rd: %s\n", buf);
+				env_set("bootargs_3rd", buf);
+
+				break;
+			}
+		}
+	}
+#endif
+
+	return(0);
+}
+
+static int _add_dt_overlay(struct dt_table_header *dt_img, const u32 fdt_addr) {
+	u32 dtbo_addr = fdt_addr + 0xF0000;
+	struct dt_table_entry *dt_entry_overlay = NULL;
+	int dtbo_idx = NO_OVERLAY;
+	u32 fdt_overlay_size = 0;
+	int ret = -1;
+	char dtoverlay[32];
+	char *dtoverlay_ptr = NULL, *dtbo_token = NULL;
+	u8 dt_entry_cnt = be32_to_cpu(dt_img->dt_entry_count);
+	u32 dt_entry_size = be32_to_cpu(dt_img->dt_entry_size);
+	u32 dt_entry_offset = be32_to_cpu(dt_img->dt_entries_offset);
+
+	if (dt_img == NULL) {
+		printf("%s - Invalid pointer of dt images\n", __func__);
+		goto _exit_add_dt_overlay;
+	}
+
+	dtoverlay_ptr = env_get("dtoverlay");
+	if(dtoverlay_ptr == NULL) {
+		goto _exit_add_dt_overlay;
+	}
+
+	sprintf(dtoverlay, "%s", dtoverlay_ptr);
+
+	dtbo_token = strtok(dtoverlay, " ");
+	while(dtbo_token != NULL) {
+		dtbo_idx = _get_dev_setup(dtbo_token, NULL, NULL);
+		//printf("%s - dtbo_token: %s, dtbo_idx: %d\n", __func__, dtbo_token, dtbo_idx);
+		dtbo_token = strtok(NULL, " ");
+
+		if(dtbo_idx == NO_OVERLAY) {
+			//printf("%s - Invalid dev_setup (index: %d)\n", __func__, dtbo_idx);
+			continue;
+		}
+
+		dt_entry_overlay = (struct dt_table_entry *)((ulong)dt_img + dt_entry_offset + ((u32)(dtbo_idx+1) * dt_entry_size));
+		fdt_overlay_size = be32_to_cpu(dt_entry_overlay->dt_size);
+		if (fdt_overlay_size < 0) {
+			printf("ERROR: Invalid size of fdt overlay\n");
+			continue;
+		}
+
+		memcpy((void *)(ulong)dtbo_addr, (void *)((ulong)dt_img +
+			be32_to_cpu(dt_entry_overlay->dt_offset)), fdt_overlay_size);
+
+		ret = fdt_increase_size((void *)(ulong)fdt_addr, fdt_overlay_size);
+		if(!ret) {
+			//printf("ANDROID: fdt increase OK\n");
+		} else {
+			//printf("ANDROID: fdt increase failed, ret=%d\n", ret);
+			continue;
+		}
+
+		ret = fdt_overlay_apply((void *)(ulong)fdt_addr, (void *)(ulong)dtbo_addr);
+		//ret = fdt_overlay_apply_verbose((void *)(ulong)fdt_addr, (void *)(ulong)dtbo_addr);
+		if(!ret) {
+			printf("ANDROID: apply fdt overlay %s OK\n", dtbo_token);
+			_dtoverlay_bootargs_add();
+		} else {
+			printf("ANDROID: apply fdt overlay %s failed, ret=%d\n", dtbo_token, ret);
+		}
+	}
+
+_exit_add_dt_overlay:
+	return(ret);
+}
+#endif	//#if(defined(CONFIG_ANDROID_EXT_DTBO) && defined(CONFIG_OF_LIBFDT_OVERLAY))
+
 int read_from_partition_multi(const char* partition,
 		int64_t offset, size_t num_bytes, void* buffer, size_t* out_num_read)
 {
@@ -1054,6 +1298,10 @@ int do_boota(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[]) {
 #endif
 		ramdisk_size = hdr->ramdisk_size;
 	}
+
+#if(defined(CONFIG_ANDROID_EXT_DTBO) && defined(CONFIG_OF_LIBFDT_OVERLAY))
+	_add_dt_overlay(dt_img, fdt_addr);
+#endif
 
 	/* Combine cmdline */
 	if (boot_header_version == 4) {
