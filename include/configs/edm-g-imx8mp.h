@@ -97,6 +97,7 @@
 #define MFG_NAND_PARTITION "mtdparts=gpmi-nand:64m(nandboot),16m(nandfit),32m(nandkernel),16m(nanddtb),8m(nandtee),-(nandrootfs)"
 #endif
 
+#if(!defined(CONFIG_ANDROID_SUPPORT))
 /* Initial environment variables */
 #if defined(CONFIG_NAND_BOOT)
 #define CONFIG_EXTRA_ENV_SETTINGS \
@@ -204,6 +205,7 @@
 		   "fi; " \
 	   "fi;"
 #endif
+#endif	//#if(!defined(CONFIG_ANDROID_SUPPORT))
 
 /* Link Definitions */
 #define CONFIG_SYS_INIT_RAM_ADDR	0x40000000
@@ -252,8 +254,8 @@
 #define CONFIG_USBD_HS
 #define CONFIG_USB_GADGET_VBUS_DRAW 2
 
-#ifdef CONFIG_ANDROID_SUPPORT
-#include "imx8mp_evk_android.h"
+#if(defined(CONFIG_ANDROID_SUPPORT))
+#include "edm-g-imx8mp_android.h"
 #endif
 
 #endif
