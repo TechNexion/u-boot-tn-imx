@@ -411,3 +411,8 @@ config BOOTLOADER_MENU
 	bool "Enable bootloader menu for android device"
 	help
 	bootloader menu feature for android device.
+
+config ANDROID_EXT_DTBO
+	bool "Enable device tree overlay support"
+	depends on ANDROID_SUPPORT || ANDROID_AUTO_SUPPORT || ANDROID_THINGS_SUPPORT
+	default n
