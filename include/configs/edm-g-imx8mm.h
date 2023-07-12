@@ -14,8 +14,10 @@
 #define CONFIG_SYS_BOOTM_LEN		(32 * SZ_1M)
 #define CONFIG_SPL_MAX_SIZE		(152 * 1024)
 #define CONFIG_SYS_MONITOR_LEN		SZ_512K
+#if(!defined(CONFIG_ANDROID_SUPPORT))
 #define CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_USE_SECTOR
 #define CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR	(0x300 + CONFIG_SECONDARY_BOOT_SECTOR_OFFSET)
+#endif
 #define CONFIG_SYS_UBOOT_BASE	\
 	(QSPI0_AMBA_BASE + CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR * 512)
 
@@ -89,6 +91,7 @@
 	"emmc_dev=2\0"\
 	"sd_dev=1\0" \
 
+#if(!defined(CONFIG_ANDROID_SUPPORT))
 /* Initial environment variables */
 #if defined(CONFIG_NAND_BOOT)
 #define CONFIG_EXTRA_ENV_SETTINGS \
@@ -190,6 +193,7 @@
 		   "fi; " \
 	   "fi;"
 #endif
+#endif	//#if(!defined(CONFIG_ANDROID_SUPPORT))
 
 #define CONFIG_SYS_INIT_RAM_ADDR        0x40000000
 #define CONFIG_SYS_INIT_RAM_SIZE        0x200000
@@ -224,8 +228,10 @@
 #ifndef CONFIG_SPL_BUILD
 #define CONFIG_USBD_HS
 
+#if(!defined(CONFIG_ANDROID_SUPPORT))
 #define CONFIG_CMD_USB_MASS_STORAGE
 #define CONFIG_USB_FUNCTION_MASS_STORAGE
+#endif
 
 #endif
 
@@ -235,17 +241,19 @@
 #define CONFIG_USB_MAX_CONTROLLER_COUNT         1
 
 #ifdef CONFIG_DM_VIDEO
+#if(!defined(CONFIG_ANDROID_SUPPORT))
 #define CONFIG_VIDEO_MXS
 #define CONFIG_VIDEO_LOGO
 #define CONFIG_BMP_16BPP
 #define CONFIG_BMP_24BPP
 #define CONFIG_BMP_32BPP
 #define CONFIG_VIDEO_BMP_RLE8
+#endif
 #define CONFIG_VIDEO_BMP_LOGO
 #endif
 
-#ifdef CONFIG_ANDROID_SUPPORT
-#include "imx8mm_evk_android.h"
+#if(defined(CONFIG_ANDROID_SUPPORT))
+#include "edm-g-imx8mm_android.h"
 #endif
 
 #endif
