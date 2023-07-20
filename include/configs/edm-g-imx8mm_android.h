@@ -17,7 +17,7 @@
 	"splashimage=0x50000000\0"\
 	"fdt_high=0xffffffffffffffff\0"\
 	"initrd_high=0xffffffffffffffff\0"\
-	"dtoverlay=sn65dsi84-vl10112880 tevi-ap1302\0"\
+	"dtoverlay=sn65dsi84-vl10112880 tevi-ov5640\0"\
 	"bootargs="\
 	"stack_depot_disable=on "\
 	"kasan.stacktrace=off "\
