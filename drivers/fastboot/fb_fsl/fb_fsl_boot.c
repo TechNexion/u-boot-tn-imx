@@ -249,7 +249,7 @@ static int _add_dt_overlay(struct dt_table_header *dt_img, const u32 fdt_addr) {
 	int ret = -1;
 	char dtoverlay[32];
 	char *dtoverlay_ptr = NULL, *dtbo_token = NULL;
-	u8 dt_entry_cnt = be32_to_cpu(dt_img->dt_entry_count);
+	//u8 dt_entry_cnt = be32_to_cpu(dt_img->dt_entry_count);
 	u32 dt_entry_size = be32_to_cpu(dt_img->dt_entry_size);
 	u32 dt_entry_offset = be32_to_cpu(dt_img->dt_entries_offset);
 
@@ -269,18 +269,17 @@ static int _add_dt_overlay(struct dt_table_header *dt_img, const u32 fdt_addr) {
 	while(dtbo_token != NULL) {
 		dtbo_idx = _get_dev_setup(dtbo_token, NULL, NULL);
 		//printf("%s - dtbo_token: %s, dtbo_idx: %d\n", __func__, dtbo_token, dtbo_idx);
-		dtbo_token = strtok(NULL, " ");
 
 		if(dtbo_idx == NO_OVERLAY) {
 			//printf("%s - Invalid dev_setup (index: %d)\n", __func__, dtbo_idx);
-			continue;
+			goto next_dtbo;
 		}
 
 		dt_entry_overlay = (struct dt_table_entry *)((ulong)dt_img + dt_entry_offset + ((u32)(dtbo_idx+1) * dt_entry_size));
 		fdt_overlay_size = be32_to_cpu(dt_entry_overlay->dt_size);
 		if (fdt_overlay_size < 0) {
 			printf("ERROR: Invalid size of fdt overlay\n");
-			continue;
+			goto next_dtbo;
 		}
 
 		memcpy((void *)(ulong)dtbo_addr, (void *)((ulong)dt_img +
@@ -291,7 +290,7 @@ static int _add_dt_overlay(struct dt_table_header *dt_img, const u32 fdt_addr) {
 			//printf("ANDROID: fdt increase OK\n");
 		} else {
 			//printf("ANDROID: fdt increase failed, ret=%d\n", ret);
-			continue;
+			goto next_dtbo;
 		}
 
 		ret = fdt_overlay_apply((void *)(ulong)fdt_addr, (void *)(ulong)dtbo_addr);
@@ -302,6 +301,9 @@ static int _add_dt_overlay(struct dt_table_header *dt_img, const u32 fdt_addr) {
 		} else {
 			printf("ANDROID: apply fdt overlay %s failed, ret=%d\n", dtbo_token, ret);
 		}
+
+next_dtbo:
+		dtbo_token = strtok(NULL, " ");
 	}
 
 _exit_add_dt_overlay:
