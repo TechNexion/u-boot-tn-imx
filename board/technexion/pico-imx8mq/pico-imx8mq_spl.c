@@ -64,7 +64,7 @@ void spl_dram_init(void)
 	information of DDR size into start address of TCM.
 	U-boot would extract this information in dram_init().
 	**************************************************/
-	
+
 	if (!gpio_get_value(DDR_DET_1) && !gpio_get_value(DDR_DET_2) && gpio_get_value(DDR_DET_3)) {
 		puts("dram_init: LPDDR4 4GB\n");
 		if (soc_rev() >= CHIP_REV_2_1) {
@@ -251,7 +251,7 @@ int board_mmc_init(bd_t *bis)
 }
 
 #ifdef CONFIG_POWER
-#define I2C_PMIC	0   
+#define I2C_PMIC	0
 int power_init_board(void)
 {
     struct pmic *p;
@@ -269,9 +269,6 @@ int power_init_board(void)
 
     /* unlock the PMIC regs */
     pmic_reg_write(p, BD71837_REGLOCK, 0x1);
-
-    /* increase VDD_DRAM to 0.9v for 3Ghz DDR */
-    pmic_reg_write(p, BD71837_BUCK5_VOLT, 0x2);
 
 #ifndef CONFIG_IMX8M_LPDDR4
     /* increase NVCC_DRAM_1V2 to 1.2v for DDR4 */
@@ -292,6 +289,14 @@ int power_init_board(void)
 
 void spl_board_init(void)
 {
+
+#ifdef CONFIG_FSL_CAAM
+	if (sec_init()) {
+		printf("\nsec_init failed!\n");
+	}
+#endif
+
+
 #ifndef CONFIG_SPL_USB_SDP_SUPPORT
 	/* Serial download mode */
 	if (is_usb_boot()) {
