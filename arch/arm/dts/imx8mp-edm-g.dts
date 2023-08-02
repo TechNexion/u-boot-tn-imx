@@ -253,6 +253,27 @@
 	sda-gpios = <&gpio5 17 GPIO_ACTIVE_HIGH>;
 	status = "okay";
 
+	pca9555_21: pca9555@21 {
+		compatible = "nxp,pca9555";
+		status = "okay";
+		reg =<0x21>;
+		gpio-controller;
+		#gpio-cells = <2>;
+
+		csi0_pwn-hog {
+			gpio-hog;
+			gpios = <2 GPIO_ACTIVE_HIGH>;
+			output-low;
+			line-name = "INFO_TRIG_IN1";
+		};
+		csi1_pwn-hog {
+			gpio-hog;
+			gpios = <10 GPIO_ACTIVE_HIGH>;
+			output-low;
+			line-name = "INFO_TRIG_IN2";
+		};
+	};
+
 	adv_bridge: adv7535@3d {
 		compatible = "adi,adv7533";
 		reg = <0x3d>;
