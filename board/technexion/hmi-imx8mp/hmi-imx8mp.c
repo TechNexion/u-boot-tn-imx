@@ -47,6 +47,7 @@ DECLARE_GLOBAL_DATA_PTR;
 struct tn_display const displays[]= {
 /*      bus, addr, id_reg, id, detect */
 	{  0,  0, 0x0eef, 101, "lvds-vl10112880",  detect_exc3000_usb },
+	{  0,  0, 0x0eef, 150, "lvds-vl15010276",  detect_exc3000_usb },
 	{  0,  0, 0x0eef, 156, "lvds-vl156192108", detect_exc3000_usb },
 	{  0,  0, 0x0eef, 215, "lvds-vl215192108", detect_exc3000_usb },
 };
