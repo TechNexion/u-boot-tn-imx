@@ -145,6 +145,129 @@ __weak int detect_exc3000_i2c(struct tn_display const *dev)
 	return 0;
 }
 
+#define VIZIONPANEL_SER_ADDR 0x0C
+#define VIZIONPANEL_DES_ADDR 0x2C
+#define VIZIONPANEL_SER_INIT_SIZE 11
+#define VIZIONPANEL_DES_INIT_SIZE 6
+int vizionpanel_init(int vizionpanel_i2c_bus)
+{
+	struct udevice *udev = NULL;
+	int i;
+	u8 buffer;
+
+	uint ser_init_offset[VIZIONPANEL_SER_INIT_SIZE] = {
+			0x01, 0x03, 0x1E, 0x5B, 0x40, 0x41, 0x42, 0x01, 0x07, 0x08,
+			0x30};
+	const u8 ser_init_buffer[VIZIONPANEL_SER_INIT_SIZE] = {
+			0x0F, 0xBA, 0x01, 0x21, 0x04, 0x05, 0x14, 0x00, 0x54, 0x54,
+			0x01};
+
+	uint des_init_offset[VIZIONPANEL_DES_INIT_SIZE] = {
+			0x01, 0x49, 0x34, 0x34, 0x08, 0x10};
+	const u8 des_init_buffer[VIZIONPANEL_DES_INIT_SIZE] = {
+			0x01, 0x62, 0x02, 0x02, 0x54, 0x54};
+
+	udev = _check_i2c_dev(vizionpanel_i2c_bus, VIZIONPANEL_SER_ADDR);
+	if (udev) {
+		// continue write for ser
+		for (i = 0 ; i < VIZIONPANEL_SER_INIT_SIZE ; i++) {
+			dm_i2c_write(udev, ser_init_offset[i], &ser_init_buffer[i], 1);
+			mdelay(50);
+		}
+
+		// continue read check for der
+		for (i = 0 ; i < VIZIONPANEL_SER_INIT_SIZE ; i++) {
+			//don't check reset reg
+			if (ser_init_offset[i] == 0x01)
+				continue;
+
+			dm_i2c_read(udev, ser_init_offset[i], &buffer, 1);
+			if (buffer != ser_init_buffer[i]) {
+				tn_debug("%s: check vizionpanel ser offset %02x failed\n", __func__, ser_init_offset[i]);
+				tn_debug("target is %02x, read buffer is %02x\n", ser_init_buffer[i], buffer);
+				return -1;
+			}
+			mdelay(50);
+		}
+	} else {
+		return -1;
+		tn_debug("%s: Can't find vizionpanel ser device\n", __func__);
+	}
+
+	udev = _check_i2c_dev(vizionpanel_i2c_bus, VIZIONPANEL_DES_ADDR);
+	if (udev) {
+		// continue write for des
+		for (i = 0 ; i < VIZIONPANEL_DES_INIT_SIZE ; i++) {
+			dm_i2c_write(udev, des_init_offset[i], &des_init_buffer[i], 1);
+			mdelay(50);
+		}
+
+		// continue read check for des
+		for (i = 0 ; i < VIZIONPANEL_DES_INIT_SIZE ; i++) {
+			//don't check reset reg
+			if (des_init_offset[i] == 0x01)
+				continue;
+
+			dm_i2c_read(udev, des_init_offset[i], &buffer, 1);
+			if (buffer != des_init_buffer[i]) {
+				tn_debug("%s: check vizionpanel des offset %02x failed\n", __func__, des_init_offset[i]);
+				tn_debug("target is %02x, read buffer is %02x\n", des_init_buffer[i], buffer);
+				return -1;
+			}
+			mdelay(50);
+		}
+	} else {
+		tn_debug("%s: Can't find vizionpanel des device\n", __func__);
+		return -1;
+	}
+
+	tn_debug("%s: vizionpanel init success\n", __func__);
+	return 0;
+}
+
+#ifdef CONFIG_DM_I2C
+/**
+ * state list of 'vizionpanel_inited_dm':
+ * -1 -> not init
+ *  0 -> init failed
+ *  1 -> init success
+ */
+int vizionpanel_inited_dm = -1;
+#endif
+
+#define VIZIONPANEL_INIT_RETRY 3
+/**
+ * { bus, addr, UNUSED, resolution, ov_name, detect_vizionpanel_i2c }
+ * Please put this detection after all of the 'detect_exc3000_i2c',
+ * prevent from the both touches are on the same bus.
+ * And reset DSI before all detecion.
+ * Do vizionpanel init and retry, and use 'detect_exc3000_i2c' to detect after that.
+ */
+int detect_vizionpanel_i2c(struct tn_display const *dev)
+{
+#if CONFIG_IS_ENABLED(DM_I2C)
+	int i;
+	if (vizionpanel_inited_dm == -1) {
+		vizionpanel_inited_dm = 0;
+		for (i = 0 ; i < VIZIONPANEL_INIT_RETRY ; i++) {
+			if (!vizionpanel_init(dev->bus)) {
+				vizionpanel_inited_dm = 1;
+				break;
+			}
+			tn_debug("%s: init failed retry %d times\n", __func__, i + 1);
+		}
+	}
+
+	if (vizionpanel_inited_dm == 0) {
+		tn_debug("%s: vizionpanel is not up\n", __func__);
+		return 0;
+	}
+
+	return detect_exc3000_i2c(dev);
+#endif
+	return 0;
+}
+
 #ifdef CONFIG_DM_USB
 int usb_inited_dm = -1;
 #endif
