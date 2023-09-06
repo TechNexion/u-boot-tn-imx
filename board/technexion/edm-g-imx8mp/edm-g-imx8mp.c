@@ -75,6 +75,7 @@ struct tn_display const displays[]= {
 	{ 1, 0x38, 0xA3, 0x54, "ili9881c", detect_i2c },
 	{ 1, 0x38, 0xA3, 0x59, "g101uan02", detect_i2c },
 	{ 1, 0x3d, 0x98, 0x03, "mipi2hdmi-adv7535", detect_i2c },
+	{ 4, 0x2a, 4,     101, "vizionpanel-vl10112880", detect_vizionpanel_i2c },
 };
 size_t tn_display_count = ARRAY_SIZE(displays);
 
@@ -503,6 +504,15 @@ void board_late_mmc_env_init(void)
 	run_command(cmd, 0);
 }
 
+#define DSI_GPIO_RST IMX_GPIO_NR(1, 6)
+void reset_dsi(void)
+{
+	gpio_request(DSI_GPIO_RST, "dsi_rst");
+	gpio_direction_output(DSI_GPIO_RST, 0);
+	mdelay(100);
+	gpio_direction_output(DSI_GPIO_RST, 1);
+}
+
 #define AT24C02D_55_I2C_ADDR 0x55
 #define GPIO_I2C_BUS 6	//imx8mp.dtsi has 6 i2c bus, i2c-gpio set as seq 7
 
@@ -537,6 +547,7 @@ int detect_baseboard(void)
 int board_late_init(void)
 {
 #ifndef CONFIG_AVB_SUPPORT
+	reset_dsi();
 	detect_baseboard();
 	detect_display_panel();
 	detect_camera();
