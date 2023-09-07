@@ -442,11 +442,44 @@ void board_late_mmc_env_init(void)
 	run_command(cmd, 0);
 }
 
+#define DSI1_RST_NODE "vizionpanel"
+#define PCA95554BS "pca9554bs@23"
+void reset_dsi(void)
+{
+	int node, ret;
+	struct udevice *udev;
+	struct gpio_desc *dsi1_rst_gpio;
+
+	ret = uclass_get_device_by_name(UCLASS_GPIO, PCA95554BS, &udev);
+	if (ret != 0) {
+		printf("%s: get %s udev failed\n", __func__, PCA95554BS);
+		return;
+	}
+
+	node = fdt_subnode_offset(gd->fdt_blob, dev_of_offset(udev), DSI1_RST_NODE);
+	if (node < 0) {
+		printf("%s: Can't find node name '%s'\n", __func__, DSI1_RST_NODE);
+		return;
+	}
+
+	ret = gpio_request_by_name_nodev(offset_to_ofnode(node), "reset-gpios",
+			 0, dsi1_rst_gpio, GPIOD_IS_OUT);
+	if ( (ret != 0) || (!dm_gpio_is_valid(dsi1_rst_gpio)) ) {
+		printf("%s: request reset-gpios failed\n", __func__);
+		return;
+	}
+
+	dm_gpio_set_value(dsi1_rst_gpio, 1);
+	dm_gpio_set_value(dsi1_rst_gpio, 0);
+	mdelay(50);
+	dm_gpio_set_value(dsi1_rst_gpio, 1);
+
+	dm_gpio_free(udev, dsi1_rst_gpio);
+}
+
 int board_late_init(void)
 {
-#ifndef CONFIG_AVB_SUPPORT
-	detect_display_panel();
-#endif
+	reset_dsi();
 
 #ifdef CONFIG_ENV_IS_IN_MMC
 	board_late_mmc_env_init();
