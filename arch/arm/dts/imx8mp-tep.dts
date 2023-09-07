@@ -261,6 +261,21 @@
 	scl-gpios = <&gpio5 20 GPIO_ACTIVE_HIGH>;
 	sda-gpios = <&gpio5 21 GPIO_ACTIVE_HIGH>;
 	status = "okay";
+
+	pca9554bs_a23: pca9554bs@23 {
+		compatible = "nxp,pca9554";
+		pinctrl-names = "default";
+		reg = <0x23>;
+		gpio-controller;
+		#gpio-cells = <2>;
+		status = "okay";
+		label = "io-i2c4";
+		gpio-line-names = "DSI1_TOUCH_RST_N", "DSI1_VDDEN", "DSI1_BL_EN", "DSI1_TE", "DST1_RST", "CSI2_DUMMY_HOST", "CSI1_DUMMY_HOST", "";
+
+		vizionpanel {
+			reset-gpios = <&pca9554bs_a23 4 0>;
+		};
+	};
 };
 
 &i2c5 {
