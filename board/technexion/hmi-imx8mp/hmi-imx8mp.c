@@ -44,6 +44,11 @@ DECLARE_GLOBAL_DATA_PTR;
 #define WDOG_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_ODE | PAD_CTL_PUE | PAD_CTL_PE)
 #define OTG_PWR_EN_PAD IMX_GPIO_NR(4, 0)
 
+const tn_camera_chk_t tn_camera_chk[] = {
+	{ 1, 1, 0x0f, "hdmi2mipi-tc358743" },
+};
+size_t tn_camera_chk_cnt = ARRAY_SIZE(tn_camera_chk);
+
 struct tn_display const displays[]= {
 /*      bus, addr, id_reg, id, detect */
 	{  0,  0, 0x0eef, 101, "lvds-vl10112880",  detect_exc3000_usb },
@@ -487,6 +492,7 @@ int board_late_init(void)
 #ifdef CONFIG_ENV_IS_IN_MMC
 	board_late_mmc_env_init();
 	detect_display_panel();
+	detect_camera();
 #endif
 
 	setup_fec();
