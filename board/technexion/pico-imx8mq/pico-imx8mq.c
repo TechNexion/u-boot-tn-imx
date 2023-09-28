@@ -448,7 +448,7 @@ int detect_baseboard(void)
 #define NUMS(x)        (sizeof(x) / sizeof(x[0]))
 
 #ifdef CONFIG_OF_BOARD_SETUP
-int ft_board_setup(void *blob, bd_t *bd)
+int ft_board_setup(void *blob, struct bd_info *bd)
 {
 	const int *cell;
 	int offs;
