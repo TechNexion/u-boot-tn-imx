@@ -1,6 +1,6 @@
 /*
  * Copyright 2019 TechNexion Ltd.
- * 
+ *
  * Author: Richard Hu <richard.hu@technexion.com>
  *
  * SPDX-License-Identifier:     GPL-2.0+
@@ -448,7 +448,7 @@ int detect_display_panel(void)
 }
 
 #ifdef CONFIG_OF_BOARD_SETUP
-int ft_board_setup(void *blob, bd_t *bd)
+int ft_board_setup(void *blob, struct bd_info *bd)
 {
 	const int *cell;
 	int offs;
