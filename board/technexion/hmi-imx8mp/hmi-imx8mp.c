@@ -37,6 +37,7 @@
 #include <mtd_node.h>
 #include <command.h>
 #include "../common/periph_detect.h"
+#include <asm/mach-imx/boot_mode.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -485,9 +486,19 @@ void reset_dsi(void)
 	dm_gpio_free(udev, dsi1_rst_gpio);
 }
 
+void check_if_boot_from_spi(void)
+{
+	enum boot_device bt_dev = get_boot_device();
+	if (bt_dev == QSPI_BOOT)
+		env_set("qspi_boot", "yes");
+	else
+		env_set("qspi_boot", "no");
+}
+
 int board_late_init(void)
 {
 	reset_dsi();
+	check_if_boot_from_spi();
 
 #ifdef CONFIG_ENV_IS_IN_MMC
 	board_late_mmc_env_init();
