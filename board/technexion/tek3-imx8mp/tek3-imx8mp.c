@@ -37,8 +37,14 @@
 #include <mtd_node.h>
 #include <command.h>
 #include <asm/mach-imx/boot_mode.h>
+#include "../common/periph_detect.h"
 
 DECLARE_GLOBAL_DATA_PTR;
+
+const tn_camera_chk_t tn_camera_chk[] = {
+	{ 1, 1, 0x0f, "hdmi2mipi-tc358743" },
+};
+size_t tn_camera_chk_cnt = ARRAY_SIZE(tn_camera_chk);
 
 #define UART_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_FSEL1)
 #define WDOG_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_ODE | PAD_CTL_PUE | PAD_CTL_PE)
@@ -428,6 +434,7 @@ void check_if_boot_from_spi(void)
 int board_late_init(void)
 {
 	check_if_boot_from_spi();
+	detect_camera();
 #ifdef CONFIG_ENV_IS_IN_MMC
 	board_late_mmc_env_init();
 #endif
