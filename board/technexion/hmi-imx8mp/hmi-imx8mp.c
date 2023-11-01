@@ -495,17 +495,43 @@ void check_if_boot_from_spi(void)
 		env_set("qspi_boot", "no");
 }
 
+void add_default_camera_overlay(void)
+{
+#define ENV_DTOVERLAY           "dtoverlay"
+#define SIZE_DTOVERLAY          (256)
+	int cam_ov_list_number = 3;
+	int i;
+	char* ov_list;
+	char* default_cam_ov = "vizionlink-tevi-ap1302";
+	char* cam_ov_list[] = { "hdmi2mipi-tc358743", "vizionlink-tevi-ap1302", "vizionlink-tevi-ov5640" };
+
+	ov_list = env_get("ENV_DTOVERLAY");
+	if (ov_list) {
+		for (i=0; i< cam_ov_list_number ; i++)
+		{
+			if (strstr(ov_list, cam_ov_list[i]))
+				return;
+		}
+		/* No any camera overlay found, add default overlay to it. */
+		snprintf(ov_list, SIZE_DTOVERLAY, "%s %s", ov_list, default_cam_ov);
+		env_set("ENV_DTOVERLAY", ov_list);
+	} else {
+		env_set("ENV_DTOVERLAY", default_cam_ov);
+	}
+}
+
 int board_late_init(void)
 {
 	reset_dsi();
 	check_if_boot_from_spi();
+	detect_display_panel();
+	detect_camera();
 
 #ifdef CONFIG_ENV_IS_IN_MMC
 	board_late_mmc_env_init();
-	detect_display_panel();
-	detect_camera();
 #endif
 
+	add_default_camera_overlay();
 	setup_fec();
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
