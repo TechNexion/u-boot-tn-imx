@@ -147,7 +147,7 @@ __weak int detect_exc3000_i2c(struct tn_display const *dev)
 
 #define VIZIONPANEL_SER_ADDR 0x0C
 #define VIZIONPANEL_DES_ADDR 0x2C
-#define VIZIONPANEL_SER_INIT_SIZE 11
+#define VIZIONPANEL_SER_INIT_SIZE 7
 #define VIZIONPANEL_DES_INIT_SIZE 6
 int vizionpanel_init(int vizionpanel_i2c_bus)
 {
@@ -156,16 +156,14 @@ int vizionpanel_init(int vizionpanel_i2c_bus)
 	u8 buffer;
 
 	uint ser_init_offset[VIZIONPANEL_SER_INIT_SIZE] = {
-			0x01, 0x03, 0x1E, 0x5B, 0x40, 0x41, 0x42, 0x01, 0x07, 0x08,
-			0x30};
+			0x01, 0x03, 0x1E, 0x5B, 0x01, 0x07, 0x08};
 	const u8 ser_init_buffer[VIZIONPANEL_SER_INIT_SIZE] = {
-			0x0F, 0xBA, 0x01, 0x21, 0x04, 0x05, 0x14, 0x00, 0x54, 0x54,
-			0x01};
+			0x0F, 0x9A, 0x01, 0x21, 0x00, 0x54, 0x54};
 
 	uint des_init_offset[VIZIONPANEL_DES_INIT_SIZE] = {
-			0x01, 0x49, 0x34, 0x34, 0x08, 0x10};
+			0x01, 0x49, 0x34, 0x08, 0x10, 0x1F};
 	const u8 des_init_buffer[VIZIONPANEL_DES_INIT_SIZE] = {
-			0x01, 0x62, 0x02, 0x02, 0x54, 0x54};
+			0x01, 0x62, 0x01, 0x54, 0x54, 0x09};
 
 	udev = _check_i2c_dev(vizionpanel_i2c_bus, VIZIONPANEL_SER_ADDR);
 	if (udev) {
@@ -222,6 +220,7 @@ int vizionpanel_init(int vizionpanel_i2c_bus)
 	}
 
 	tn_debug("%s: vizionpanel init success\n", __func__);
+	mdelay(100);
 	return 0;
 }
 
