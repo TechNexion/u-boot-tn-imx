@@ -58,6 +58,7 @@ struct tn_display const displays[]= {
 	{  0,  0, 0x0eef, 215, "lvds-vl215192108", detect_exc3000_usb },
 	{ 3, 0x2a, 0,     101, "vizionpanel-vl10112880", detect_vizionpanel_i2c },
 	{ 3, 0x2a, 0,     150, "vizionpanel-vl15010276", detect_vizionpanel_i2c },
+	{ 3, 0x2a, 0,     156, "vizionpanel-vl15613676", detect_vizionpanel_i2c },
 	{ 3, 0x2a, 0,     215, "vizionpanel-vl215192108", detect_vizionpanel_i2c },
 };
 size_t tn_display_count = ARRAY_SIZE(displays);
