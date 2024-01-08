@@ -28,8 +28,6 @@
 #include <power/pmic.h>
 #include <usb.h>
 #include <dwc3-uboot.h>
-#include <imx_sip.h>
-#include <linux/arm-smccc.h>
 #include <mmc.h>
 #include <asm/armv8/mmu.h>
 #include "edm-g-imx8mp-ddr.h"
@@ -348,9 +346,9 @@ static void dwc3_nxp_usb_phy_init(struct dwc3_device *dwc3)
 #if defined(CONFIG_USB_DWC3) || defined(CONFIG_USB_XHCI_IMX8M)
 int board_usb_init(int index, enum usb_init_type init)
 {
-	imx8m_usb_power(index, true);
 
 	if (index == 0 && init == USB_INIT_DEVICE) {
+		imx8m_usb_power(index, true);
 		dwc3_nxp_usb_phy_init(&dwc3_device_data);
 		return dwc3_uboot_init(&dwc3_device_data);
 	}
@@ -362,9 +360,8 @@ int board_usb_cleanup(int index, enum usb_init_type init)
 {
 	if (index == 0 && init == USB_INIT_DEVICE) {
 		dwc3_uboot_exit(index);
+		imx8m_usb_power(index, false);
 	}
-
-	imx8m_usb_power(index, false);
 
 	return 0;
 }
@@ -438,32 +435,22 @@ void setup_camera(void)
 
 #define FSL_SIP_GPC			0xC2000000
 #define FSL_SIP_CONFIG_GPC_PM_DOMAIN	0x3
-#define DISPMIX				13
-#define MIPI				15
-
 int board_init(void)
 {
-	struct arm_smccc_res res;
 
 	setup_wifi();
 	setup_touch();
 	setup_camera();
 
-#ifdef CONFIG_DWC_ETH_QOS
 	/* clock, pin, gpr */
-	setup_eqos();
-#endif
+	if(IS_ENABLED(CONFIG_DWC_ETH_QOS)) {
+			setup_eqos();
+	}
 
 #if defined(CONFIG_USB_DWC3) || defined(CONFIG_USB_XHCI_IMX8M)
 	setup_usb_rst();
 	init_usb_clk();
 #endif
-
-	/* enable the dispmix & mipi phy power domain */
-	arm_smccc_smc(IMX_SIP_GPC, IMX_SIP_GPC_PM_DOMAIN,
-			DISPMIX, true, 0, 0, 0, 0, &res);
-	arm_smccc_smc(IMX_SIP_GPC, IMX_SIP_GPC_PM_DOMAIN,
-			MIPI, true, 0, 0, 0, 0, &res);
 
 	return 0;
 }
