@@ -289,7 +289,7 @@ static void spl_dram_init(void)
 		* Get actual RAM size, so we can adjust DDR row size for <SZ_2G
 		* memories
 		*/
-		ram_size = get_ram_size((void *)CONFIG_SYS_SDRAM_BASE, SZ_2G);
+		ram_size = get_ram_size((void *)CFG_SYS_SDRAM_BASE, SZ_2G);
 		if (ram_size < SZ_2G) {
 			mx6_dram_cfg(&mem_s, &mx6q_1g_mmdc_calib, &d2516ecmdxgjd);
 		}
@@ -414,7 +414,7 @@ int board_mmc_init(struct bd_info *bis)
 			break;
 	}
 
-	for (index = 0; index < CONFIG_SYS_FSL_USDHC_NUM; ++index) {
+	for (index = 0; index < CFG_SYS_FSL_USDHC_NUM; ++index) {
 		ret = fsl_esdhc_initialize(bis, &usdhc_cfg[index]);
 		if (ret)
 			return ret;
