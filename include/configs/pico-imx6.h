@@ -18,8 +18,6 @@
 
 #ifdef CONFIG_SPL_OS_BOOT
 /* Falcon Mode */
-#define CONFIG_SPL_FS_LOAD_ARGS_NAME   "args"
-#define CONFIG_SPL_FS_LOAD_KERNEL_NAME "uImage"
 #define CONFIG_SYS_SPL_ARGS_ADDR   0x18000000
 
 /* Falcon Mode - MMC support: args@1MB kernel@2MB */
@@ -38,9 +36,8 @@
 //#define CONFIG_LOADADDR			0x12000000
 
 /* MMC Configuration */
-#define CONFIG_SYS_FSL_USDHC_NUM	2
+#define CFG_SYS_FSL_USDHC_NUM	2
 #define CFG_SYS_FSL_ESDHC_ADDR	USDHC3_BASE_ADDR
-#define CONFIG_SYS_FSL_ESDHC_HAS_DDR_MODE
 
 #define DFU_DEFAULT_POLL_TIMEOUT 300
 
@@ -114,7 +111,7 @@
 	"ramdisk_addr_r=0x13000000\0" \
 	"ramdiskaddr=0x13000000\0" \
 	"scriptaddr=" __stringify(CONFIG_SYS_LOAD_ADDR) "\0" \
-	BOOTENV
+	BOOTENV \
 	"mmcpart=1\0" \
 	"mmcautodetect=yes\0" \
 	"searchbootdev=" \
@@ -278,9 +275,9 @@
 #define CFG_SYS_INIT_RAM_ADDR	IRAM_BASE_ADDR
 #define CFG_SYS_INIT_RAM_SIZE	IRAM_SIZE
 
-#define CFG_SYS_INIT_SP_OFFSET \
+#define CONFIG_SYS_INIT_SP_OFFSET \
 	(CFG_SYS_INIT_RAM_SIZE - GENERATED_GBL_DATA_SIZE)
-#define CFG_SYS_INIT_SP_ADDR \
+#define CONFIG_SYS_INIT_SP_ADDR \
 	(CFG_SYS_INIT_RAM_ADDR + CFG_SYS_INIT_SP_OFFSET)
 
 /* Environment organization */
@@ -295,12 +292,13 @@
  * Currently CONFIG_BOARD_SIZE_LIMIT does not handle expressions, so
  * write the direct value here
  */
-#define CONFIG_BOARD_SIZE_LIMIT		715776
+//#define CONFIG_BOARD_SIZE_LIMIT		715776
+//+CONFIG_HAS_BOARD_SIZE_LIMIT=y
+//+CONFIG_BOARD_SIZE_LIMIT=715776
 
 /* Ethernet Configuration */
 #define IMX_FEC_BASE			ENET_BASE_ADDR
 #define CONFIG_FEC_XCV_TYPE		RGMII
-#define CONFIG_ETHPRIME			"FEC"
 #define CFG_FEC_MXC_PHYADDR		1
 
 /* Framebuffer */
