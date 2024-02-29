@@ -246,6 +246,53 @@ void setup_touch(void)
 	imx_iomux_v3_setup_multiple_pads(touch_rst_pads, ARRAY_SIZE(touch_rst_pads));
 }
 
+#ifdef CONFIG_SPLASH_SCREEN
+static struct splash_location imx_splash_locations[] = {
+	{
+		.name = "sf",
+		.storage = SPLASH_STORAGE_SF,
+		.flags = SPLASH_STORAGE_RAW,
+		.offset = 0x100000,
+	},
+	{
+		.name = "mmc_fs",
+		.storage = SPLASH_STORAGE_MMC,
+		.flags = SPLASH_STORAGE_FS,
+		.devpart = "0:1",
+	},
+	{
+		.name = "usb_fs",
+		.storage = SPLASH_STORAGE_USB,
+		.flags = SPLASH_STORAGE_FS,
+		.devpart = "0:1",
+	},
+	{
+		.name = "sata_fs",
+		.storage = SPLASH_STORAGE_SATA,
+		.flags = SPLASH_STORAGE_FS,
+		.devpart = "0:1",
+	},
+};
+
+/*This function is defined in common/splash.c.
+  Declare here to remove warning. */
+int splash_video_logo_load(void);
+
+int splash_screen_prepare(void)
+{
+	imx_splash_locations[1].devpart[0] = mmc_get_env_dev() + '0';
+	int ret;
+	ret = splash_source_load(imx_splash_locations, ARRAY_SIZE(imx_splash_locations));
+	if (!ret)
+		return 0;
+	else {
+		printf("\nNo splash.bmp in boot partition!!\n");
+		printf("Using default logo!!\n\n");
+		return splash_video_logo_load();
+	}
+}
+#endif /* CONFIG_SPLASH_SCREEN */
+
 #define FSL_SIP_GPC			0xC2000000
 #define FSL_SIP_CONFIG_GPC_PM_DOMAIN	0x3
 #define DISPMIX				9
