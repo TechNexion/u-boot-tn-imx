@@ -77,6 +77,7 @@ obj-$(CONFIG_VIDEO_CSI) += mxc_csi.o
 obj-$(CONFIG_VIDEO_PXP) += mxc_pxp.o
 obj-$(CONFIG_VIDEO_GIS) += mxc_gis.o
 
+obj-$(CONFIG_VIDEO_SN65DSI84) += sn65dsi84.o
 obj-y += bridge/
 obj-y += sunxi/
 obj-y += nxp/

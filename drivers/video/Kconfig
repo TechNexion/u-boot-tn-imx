@@ -1001,4 +1001,12 @@ config VIDEO_ADV7535
 	Say Y here if you want to enable support for ADI ADV7535
 	DSI to HDMI connector, currently only support 1920x1080.
 
+config VIDEO_SN65DSI84
+	bool "SN65DSI84 MIPI DSI to LVDS connector"
+	depends on DM_VIDEO
+	select VIDEO_MIPI_DSI
+	default n
+	help
+	Say Y here if you want to enable support for SN65DSI84
+	MIPI to LVDS connector.
 endmenu
