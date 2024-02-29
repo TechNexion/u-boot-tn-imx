@@ -101,6 +101,7 @@ obj-$(CONFIG_MXC_EPDC) += mxc_epdc_fb.o
 obj-$(CONFIG_VIDEO_LT8912B) += lontium-lt8912b.o
 obj-$(CONFIG_VIDEO_WAVESHARE_DSI) += panel-waveshare-dsi.o
 
+obj-$(CONFIG_VIDEO_SN65DSI84) += sn65dsi84.o
 obj-y += bridge/
 obj-y += sunxi/
 obj-y += tegra/
