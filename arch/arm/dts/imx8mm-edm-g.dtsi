@@ -53,6 +53,11 @@
 			enable-active-high;
 		};
 	};
+
+	dsi_host: dsi-host {
+		compatible = "samsung,sec-mipi-dsi";
+		status = "okay";
+	};
 };
 
 &iomuxc {
@@ -265,14 +270,58 @@
 				MX8MM_IOMUXC_GPIO1_IO02_WDOG1_WDOG_B		0xc6
 			>;
 		};
+
+		pinctrl_mipi_dsi_en: mipi_dsi_en {
+			fsl,pins = <
+				MX8MM_IOMUXC_NAND_DATA03_GPIO3_IO9      0x16   /* enable pin of sn65dsi84 */
+			>;
+		};
+
+		pinctrl_lvds0_backlight_pwr: lvds0_bl_pwrgrp {
+			fsl,pins = <
+				MX8MM_IOMUXC_GPIO1_IO12_GPIO1_IO12		0x19
+			>;
+		};
+
+		pinctrl_lvds0_pwr: lvds0_pwrgrp {
+			fsl,pins = <
+				MX8MM_IOMUXC_GPIO1_IO07_GPIO1_IO7		0x19
+			>;
+		};
+
+		pinctrl_lvds_bl_pwm: lvds_bl_pwngrp{
+			fsl,pins = <
+				MX8MM_IOMUXC_SPDIF_RX_GPIO5_IO4			0x19
+			>;
+		};
 	};
 };
+
+
 
 &i2c1 {
 	clock-frequency = <400000>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_i2c1>;
 	status = "okay";
+	dsi_lvds_bridge: sn65dsi84@2d {
+		reg = <0x2d>;
+		compatible = "ti,sn65dsi84";
+		#gpio-cells = <2>;
+		dsi-lanes = <4>;
+		pinctrl-0 = <&pinctrl_mipi_dsi_en>;
+		enable-gpios = <&gpio3 9 GPIO_ACTIVE_HIGH>;
+
+		status = "okay";
+
+		port@2 {
+			sn65dsi84_from_dsim: endpoint {
+				remote-endpoint = <&dsim_to_sn65dsi84>;
+			};
+		};
+
+	};
+
 };
 
 &i2c2 {
@@ -372,7 +421,65 @@
 	cpu-supply = <&buck2_reg>;
 };
 */
+
+&gpio1 {
+	lvds-pwr-on {
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_lvds0_pwr>;
+		gpio-hog;
+		gpios = <7 GPIO_ACTIVE_HIGH>;
+		output-high;
+	};
+
+	lvds-bl-pwr-on {
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_lvds0_backlight_pwr>;
+		gpio-hog;
+		gpios = <12 GPIO_ACTIVE_HIGH>;
+		output-high;
+	};
+};
+
+&gpio5 {
+	bl-pwm-on {
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_lvds_bl_pwm>;
+		gpio-hog;
+		gpios = <4 GPIO_ACTIVE_HIGH>;
+		output-high;
+	};
+};
+
+&mipi_dsi {
+	/delete-property/ assigned-clocks;
+	/delete-property/ assigned-clock-parents;
+	/delete-property/ assigned-clock-rates;
+	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	port@2{
+		dsim_to_sn65dsi84: endpoint {
+			remote-endpoint = <&sn65dsi84_from_dsim>;
+		};
+	};
+};
+
 &snvs_pwrkey {
 	status = "okay";
 };
 
+&lcdif {
+	enable_polarity_low;
+	/delete-property/ assigned-clocks;
+	/delete-property/ assigned-clock-parents;
+	/delete-property/ assigned-clock-rates;
+	display = <&display0>;
+	status = "okay";
+
+	display0: display@0 {
+		bits-per-pixel = <24>;
+		bus-width = <24>;
+	};
+
+};
