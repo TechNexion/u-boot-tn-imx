@@ -10,8 +10,8 @@
 #include "imx8mp.dtsi"
 
 / {
-	model = "TechNexion TEK3-IMX8MP box PC";
-	compatible = "fsl,imx8mp-tek3", "fsl,imx8mp";
+	model = "TechNexion TEK-IMX8MP box PC";
+	compatible = "fsl,imx8mp-tek", "fsl,imx8mp";
 
 	chosen {
 		bootargs = "console=ttymxc1,115200 earlycon=ec_imx6q,0x30890000,115200";
