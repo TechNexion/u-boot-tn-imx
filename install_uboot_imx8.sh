@@ -241,11 +241,11 @@ usage()
     * SC-IMX8MP:
     ./install_uboot_imx8.sh -b imx8mp-sc.dtb -d /dev/sdX
 
-    * TEK3-IMX8MP:
-    ./install_uboot_imx8.sh -b imx8mp-tek3.dtb -d /dev/sdX
+    * TEK-IMX8MP:
+    ./install_uboot_imx8.sh -b imx8mp-tek.dtb -d /dev/sdX
 
-    * TEK3-IMX8MP with flexspi boot (only generate flash.bin):
-    ./install_uboot_imx8.sh -b imx8mp-tek3.dtb -f -d /dev/null
+    * TEK-IMX8MP with flexspi boot (only generate flash.bin):
+    ./install_uboot_imx8.sh -b imx8mp-tek.dtb -f -d /dev/null
 
     i.MX8MN:
     * EDM-G-IMX8MN with WB:

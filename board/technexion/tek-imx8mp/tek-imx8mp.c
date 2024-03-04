@@ -416,7 +416,7 @@ int board_late_init(void)
 	setup_fec();
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
-	env_set("board_name", "EDM-G");
+	env_set("board_name", "TEK");
 	env_set("board_rev", "iMX8MP");
 #endif
 
