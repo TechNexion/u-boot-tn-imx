@@ -246,6 +246,12 @@ usage()
     * TEK-IMX8MP with flexspi boot (only generate flash.bin):
     ./install_uboot_imx8.sh -b imx8mp-tek.dtb -f -d /dev/null
 
+    * TEP-IMX8MP:
+    ./install_uboot_imx8.sh -b imx8mp-tep.dtb -d /dev/sdX
+
+    * TEP-IMX8MP with flexspi boot (only generate flash.bin):
+    ./install_uboot_imx8.sh -b imx8mp-tep.dtb -f -d /dev/null
+
     i.MX8MN:
     * EDM-G-IMX8MN with WB:
     ./install_uboot_imx8.sh -b imx8mn-edm-g.dtb -d /dev/sdX
