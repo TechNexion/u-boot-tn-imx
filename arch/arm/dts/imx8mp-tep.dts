@@ -10,8 +10,8 @@
 #include "imx8mp.dtsi"
 
 / {
-	model = "TechNexion HMI-IMX8MP";
-	compatible = "fsl,imx8mp-hmi", "fsl,imx8mp";
+	model = "TechNexion TEP-IMX8MP";
+	compatible = "fsl,imx8mp-tep", "fsl,imx8mp";
 
 	chosen {
 		bootargs = "console=ttymxc1,115200 earlycon=ec_imx6q,0x30890000,115200";
