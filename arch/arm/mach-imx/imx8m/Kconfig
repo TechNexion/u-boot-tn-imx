@@ -98,6 +98,16 @@ config TARGET_TEK_IMX8MP
 	select MISC
 	select SPL_CRYPTO_SUPPORT if SPL
 
+config TARGET_TEP_IMX8MP
+	bool "TechNexion TEP IMX8MP"
+	select IMX8MP
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+	select FSL_CAAM
+	select FSL_BLOB
+	select MISC
+	select SPL_CRYPTO_SUPPORT if SPL
+
 config TARGET_IMX8MQ_EVK
 	bool "imx8mq_evk"
 	select IMX8MQ
@@ -355,6 +365,7 @@ source "board/technexion/edm-g-imx8mp/Kconfig"
 source "board/technexion/flex-imx8mm/Kconfig"
 source "board/technexion/sc-imx8mp/Kconfig"
 source "board/technexion/tek-imx8mp/Kconfig"
+source "board/technexion/tep-imx8mp/Kconfig"
 source "board/gateworks/venice/Kconfig"
 source "board/google/imx8mq_phanbell/Kconfig"
 source "board/technexion/edm-g-imx8mm/Kconfig"
