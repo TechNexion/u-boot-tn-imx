@@ -9,7 +9,25 @@
 #include <i2c.h>
 #include <env.h>
 #include <dm/uclass.h>
+#include <usb.h>
 #include "periph_detect.h"
+#include <dm/device.h>
+#include <dm/uclass-internal.h>
+
+int tn_debug(const char *fmt, ...)
+{
+#ifdef TN_DEBUG
+	va_list args;
+	uint i;
+
+	va_start(args, fmt);
+	i = vprintf(fmt, args);
+	va_end(args);
+
+	return i;
+#endif
+	return 0;
+}
 
 int add_dtoverlay(const char *ov_name)
 {
@@ -53,6 +71,60 @@ int detect_i2c(struct tn_display const *dev)
 #endif
 }
 
+#ifdef CONFIG_DM_USB
+int usb_inited_dm = -1;
+#endif
+
+/* { UNUSED, UNUSED, idVendor, resolution, ov_name, detect_usb } */
+__weak int detect_exc3000_usb(struct tn_display const *dev)
+{
+#ifdef CONFIG_DM_USB
+	struct udevice *hub, *child;
+	struct uclass *uc_hub;
+	struct usb_device *udev;
+	int ret, id_num;
+	char resolution[4]= "000";
+
+	tn_debug("Detect func: %s, for overlay: %s\n", __func__, dev->ov_name);
+	if (usb_inited_dm != 1) {
+		usb_init();
+		usb_inited_dm = 1;
+	}
+
+	id_num = dev->id;
+	for (int i = 2 ; i >= 0 ; i-- ) {
+		resolution[i] = 0x30 + (id_num % 10);
+		id_num /= 10;
+	}
+	tn_debug("resolution=%s\n", resolution);
+
+	ret = uclass_get(UCLASS_USB_HUB, &uc_hub);
+	if (ret) {
+		tn_debug("%s: no available hub !!\n", __func__);
+		return 0;
+	}
+
+	uclass_foreach_dev(hub, uc_hub) {
+		if (!device_active(hub))
+			continue;
+		udev = dev_get_parent_priv(hub);
+
+		for (device_find_first_child(hub, &child);
+				child;
+				device_find_next_child(&child))
+		{
+			if (!device_active(hub))
+				continue;
+
+			udev = dev_get_parent_priv(child);
+			tn_debug("udev->prod=%s\n", udev->prod);
+			if (strstr(udev->prod, resolution) != NULL)
+				return 1;
+		}
+	}
+#endif /* !define(CONFIG_DM_USB) */
+	return 0;
+}
 
 int detect_display_panel(void)
 {

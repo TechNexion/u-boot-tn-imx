@@ -27,6 +27,8 @@ struct camera_cfg {
 extern struct tn_display const displays[];
 extern size_t tn_display_count;
 
+int tn_debug(const char *fmt, ...);
 int detect_i2c(struct tn_display const *dev);
+int detect_exc3000_usb(struct tn_display const *dev);
 int detect_display_panel(void);
 #endif
