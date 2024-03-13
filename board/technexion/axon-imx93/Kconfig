@@ -15,4 +15,6 @@ config AXON_IMX93_LPDDR4X
 	help
 	  Select the LPDDR4X timing and 0.6V VDDQ
 
+source "board/technexion/common/Kconfig"
+
 endif
