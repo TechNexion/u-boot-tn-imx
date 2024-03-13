@@ -267,6 +267,12 @@ config TARGET_IMX943_ORANGEBOX
 	imply BOOTSTD_BOOTCOMMAND
 	imply BOOTSTD_FULL
 
+config TARGET_AXON_IMX93
+	bool "axon_imx93"
+	select OF_BOARD_FIXUP
+	select IMX93
+	select IMX9_LPDDR4X
+
 endchoice
 
 source "board/nxp/imx91_evk/Kconfig"
@@ -278,6 +284,7 @@ source "board/nxp/imx93_frdm/Kconfig"
 source "board/nxp/imx93_qsb/Kconfig"
 source "board/kontron/osm-s-mx93/Kconfig"
 source "board/phytec/phycore_imx93/Kconfig"
+source "board/technexion/axon-imx93/Kconfig"
 source "board/variscite/imx93_var_som/Kconfig"
 source "board/nxp/imx94_evk/Kconfig"
 source "board/nxp/imx94_orangebox/Kconfig"
