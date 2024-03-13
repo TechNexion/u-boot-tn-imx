@@ -18,11 +18,11 @@ DRIVE=/dev/sdX
 #DTBS="fsl-imx8mq-evk"
 #DTBS="pico-imx8m"
 
-BRANCH_VER="lf-5.15.71_2.2.0" #branch used by imx-mkimage and imx-atf under meta-imx
-ATF_BRANCH_VER="lf_v2.6"
-MKIMAGE_SRC_GIT_ID='3bfcfccb71ddf894be9c402732ccb229fe72099e' #refer to 'imx-mkimage_git.inc' in Yocto
-ATF_SRC_GIT_ID='3c1583ba0a5d11e5116332e91065cb3740153a46' #refer to 'imx-atf_2.6.bb' in Yocto
-DDR_FW_VER="8.18" #refer to the name of 'firmware-imx-8m_8.x.bb'
+BRANCH_VER="lf-6.1.55_2.2.0" #branch used by imx-mkimage and imx-atf under meta-imx
+ATF_BRANCH_VER="lf_v2.8"
+MKIMAGE_SRC_GIT_ID='c4365450fb115d87f245df2864fee1604d97c06a' #refer to 'imx-mkimage_git.inc' in Yocto
+ATF_SRC_GIT_ID='08e9d4eef2262c0dd072b4325e8919e06d349e02' #refer to 'imx-atf_2.8.bb' in Yocto
+DDR_FW_VER="8.19" #refer to the name of 'firmware-imx-8m_8.x.bb'
 
 FSL_MIRROR="https://www.nxp.com/lgfiles/NMG/MAD/YOCTO"
 FIRMWARE_DIR="firmware_imx8"
@@ -37,7 +37,7 @@ ATF_BOOT_UART_BASE="0x30890000"
 
 setup_platform()
 {
-	SOC=$( echo "${DTBS}" | cut -d' ' -f1 | grep -o 'imx8m[mqpn]\?' )
+	SOC=$( echo "${DTBS}" | cut -d'-' -f1 )
 	if [ ${SOC} = "imx8m" ] || [ ${SOC} = "imx8mq" ] ; then
 		PLATFORM="imx8mq"
 		SOC_TARGET="iMX8M"
@@ -58,6 +58,12 @@ setup_platform()
 		SOC_TARGET="iMX8MN"
 		SOC_DIR="iMX8M"
 		IMX_BOOT_SEEK="32"
+	elif [ ${SOC} = "imx93" ] ; then
+		PLATFORM="imx93"
+		SOC_TARGET="iMX9"
+		SOC_DIR="iMX9"
+		IMX_BOOT_SEEK="32"
+		MKIMAGE_TARGET="flash_singleboot"
 	else
 		printf "Targest SOC isn't supported by this script\n"
 		exit 1
@@ -130,6 +136,11 @@ install_firmware()
 			cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_pmu_train_1d_imem_202006.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
 			cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_pmu_train_2d_dmem_202006.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
 			cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_pmu_train_2d_imem_202006.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+		elif [ ${SOC} = "imx93" ] ; then
+			cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_imem_1d_v202201.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+			cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_dmem_1d_v202201.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+			cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_imem_2d_v202201.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+			cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_dmem_2d_v202201.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
 		else
 			cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_pmu_train_1d_dmem.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
 			cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_pmu_train_1d_imem.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
@@ -140,13 +151,25 @@ install_firmware()
 	else
 		printf "Cannot find DDR firmware \n"
 	fi
+
+	if [ "${SOC_DIR}" = "iMX9" ] ; then
+		if [ ! -d firmware-ele-imx-0.1.0 ] ; then
+			wget https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/firmware-ele-imx-0.1.0.bin
+			chmod 777 firmware-ele-imx-0.1.0.bin
+			./firmware-ele-imx-0.1.0.bin
+		fi
+		cp firmware-ele-imx-0.1.0/mx93a0-ahab-container.img ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+		cp firmware-ele-imx-0.1.0/mx93a1-ahab-container.img ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+	fi
 }
 
 install_uboot_dtb()
 {
 	#Copy uboot binary
 	cd ${TWD}
-	if [ -f u-boot-nodtb.bin ] ; then
+	if [ "${SOC_DIR}" = "iMX9" ] ; then
+		cp u-boot.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+	elif [ -f u-boot-nodtb.bin ] ; then
 		cp u-boot-nodtb.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
 	else
 		printf "Cannot find u-boot-nodtb.bin. Please build u-boot first! \n"
@@ -255,6 +278,10 @@ usage()
     i.MX8MN:
     * EDM-G-IMX8MN with WB:
     ./install_uboot_imx8.sh -b imx8mn-edm-g.dtb -d /dev/sdX
+
+    i.MX9:
+    * AXON-IMX93:
+    ./install_uboot_imx8.sh -b imx93-axon.dtb -d /dev/sdX
 "
 }
 
