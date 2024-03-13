@@ -113,6 +113,7 @@
 				"bootm ${loadaddr}; " \
 			"else " \
 				"if run loadfdt; then " \
+					"run loadoverlay; " \
 					"run boot_os; " \
 				"else " \
 					"echo WARN: Cannot load the DT; " \

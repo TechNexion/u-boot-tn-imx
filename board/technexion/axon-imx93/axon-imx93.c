@@ -20,6 +20,7 @@
 #include <dwc3-uboot.h>
 #include <asm/gpio.h>
 #include <mmc.h>
+#include "../common/periph_detect.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -51,6 +52,13 @@ struct efi_capsule_update_info update_info = {
 
 u8 num_image_type_guids = ARRAY_SIZE(fw_images);
 #endif /* EFI_HAVE_CAPSULE_SUPPORT */
+
+struct tn_display const displays[]= {
+/*      bus, addr, id_reg, id, detect */
+	{ 2, 0x2a, 0, 101,  "lvds-vl10112880", detect_exc3000_i2c },
+	{ 2, 0x2a, 0,  80,  "vxt-vl0808060nt", detect_exc3000_i2c },
+};
+size_t tn_display_count = ARRAY_SIZE(displays);
 
 int board_early_init_f(void)
 {
@@ -144,6 +152,7 @@ int board_late_init(void)
 {
 #ifndef CONFIG_AVB_SUPPORT
 	detect_baseboard();
+	detect_display_panel();
 #endif
 
 #ifdef CONFIG_ENV_IS_IN_MMC
