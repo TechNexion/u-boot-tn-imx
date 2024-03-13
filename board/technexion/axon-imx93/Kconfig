@@ -1,0 +1,18 @@
+if TARGET_AXON_IMX93
+
+config SYS_BOARD
+	default "axon-imx93"
+
+config SYS_VENDOR
+	default "technexion"
+
+config SYS_CONFIG_NAME
+	default "axon-imx93"
+
+config AXON_IMX93_LPDDR4X
+	bool "Using LPDDR4X Timing and PMIC voltage"
+	select IMX9_LPDDR4X
+	help
+	  Select the LPDDR4X timing and 0.6V VDDQ
+
+endif
