@@ -974,6 +974,7 @@ dtb-$(CONFIG_ARCH_IMX9) += \
 	imx91-11x11-frdm-s.dtb \
 	imx93w-evk.dtb \
 	imx93w-frdm.dtb \
+	imx93-axon.dtb \
 	imx93-var-som-symphony.dtb \
 	imx937-evk.dtb \
 	imx937-frdm.dtb

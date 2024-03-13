@@ -1,0 +1,6 @@
+i.MX93 AXON BOARD
+M:	Joe Zhang <joe.zhang@technexion.com>
+S:	Maintained
+F:	board/technexion/axon_imx93/
+F:	include/configs/axon_imx93.h
+F:	configs/axon-imx93_defconfig
