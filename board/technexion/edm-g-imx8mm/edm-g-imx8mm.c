@@ -126,7 +126,7 @@ int board_phys_sdram_size(phys_size_t *size)
 }
 
 /* Get the top of usable RAM */
-ulong board_get_usable_ram_top(ulong total_size)
+phys_size_t board_get_usable_ram_top(phys_size_t total_size)
 {
 	if(gd->ram_top > 0x100000000)
 		gd->ram_top = 0x100000000;
