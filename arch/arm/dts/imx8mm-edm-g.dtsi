@@ -49,7 +49,7 @@
 			regulator-min-microvolt = <3300000>;
 			regulator-max-microvolt = <3300000>;
 			gpio = <&gpio2 19 GPIO_ACTIVE_HIGH>;
-			off-on-delay = <20000>;
+			off-on-delay-us = <20000>;
 			enable-active-high;
 		};
 	};
@@ -219,7 +219,7 @@
 
 		pinctrl_usdhc3: usdhc3grp {
 			fsl,pins = <
-				MX8MM_IOMUXC_NAND_WE_B_USDHC3_CLK		0x40000190
+				MX8MM_IOMUXC_NAND_WE_B_USDHC3_CLK		0x190
 				MX8MM_IOMUXC_NAND_WP_B_USDHC3_CMD		0x1d0
 				MX8MM_IOMUXC_NAND_DATA04_USDHC3_DATA0		0x1d0
 				MX8MM_IOMUXC_NAND_DATA05_USDHC3_DATA1		0x1d0
@@ -235,7 +235,7 @@
 
 		pinctrl_usdhc3_100mhz: usdhc3grp100mhz {
 			fsl,pins = <
-				MX8MM_IOMUXC_NAND_WE_B_USDHC3_CLK		0x40000194
+				MX8MM_IOMUXC_NAND_WE_B_USDHC3_CLK		0x194
 				MX8MM_IOMUXC_NAND_WP_B_USDHC3_CMD		0x1d4
 				MX8MM_IOMUXC_NAND_DATA04_USDHC3_DATA0		0x1d4
 				MX8MM_IOMUXC_NAND_DATA05_USDHC3_DATA1		0x1d4
@@ -251,7 +251,7 @@
 
 		pinctrl_usdhc3_200mhz: usdhc3grp200mhz {
 			fsl,pins = <
-				MX8MM_IOMUXC_NAND_WE_B_USDHC3_CLK		0x40000196
+				MX8MM_IOMUXC_NAND_WE_B_USDHC3_CLK		0x196
 				MX8MM_IOMUXC_NAND_WP_B_USDHC3_CMD		0x1d6
 				MX8MM_IOMUXC_NAND_DATA04_USDHC3_DATA0		0x1d6
 				MX8MM_IOMUXC_NAND_DATA05_USDHC3_DATA1		0x1d6
@@ -389,6 +389,8 @@
 
 /* SD card on baseboard */
 &usdhc2 {
+	assigned-clocks = <&clk IMX8MM_CLK_USDHC2>;
+	assigned-clock-rates = <200000000>;
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
 	pinctrl-0 = <&pinctrl_usdhc2>, <&pinctrl_usdhc2_gpio>;
 	pinctrl-1 = <&pinctrl_usdhc2_100mhz>, <&pinctrl_usdhc2_gpio>;
@@ -401,6 +403,8 @@
 
 /* eMMC on SOM */
 &usdhc3 {
+	assigned-clocks = <&clk IMX8MM_CLK_USDHC3_ROOT>;
+	assigned-clock-rates = <400000000>;
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
 	pinctrl-0 = <&pinctrl_usdhc3>;
 	pinctrl-1 = <&pinctrl_usdhc3_100mhz>;
