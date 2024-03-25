@@ -183,9 +183,9 @@ int ft_board_setup(void *blob, struct bd_info *bd)
 	cell = fdt_getprop(blob, offs, "size", NULL);
 	cma_size = fdt32_to_cpu(cell[1]);
 	cmasize = env_get("cma_size");
-	if(cmasize || ((u64)(gd->ram_size >> 1) < cma_size)) {
-		cma_size = env_get_ulong("cma_size", 10, 320 * 1024 * 1024);
-		cma_size = min((u64)(gd->ram_size >> 1), (u64)cma_size);
+	if(cmasize || ((u64)(gd->ram_size >> 2) < cma_size)) {
+		cma_size = env_get_ulong("cma_size", 10, 256 * 1024 * 1024);
+		cma_size = max((u64)(gd->ram_size >> 2), (u64)cma_size);
 		fdt_setprop_u64(blob, offs, "size", (uint64_t)cma_size);
 	}
 
