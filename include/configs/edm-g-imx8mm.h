@@ -75,8 +75,8 @@
 	"jh_netboot=mw 0x303d0518 0xff; setenv fdtfile imx8mm-evk-root.dtb; setenv jh_clk clk_ignore_unused mem=1340MB; run netboot; \0 "
 
 
-#define CONFIG_MFG_ENV_SETTINGS \
-	CONFIG_MFG_ENV_SETTINGS_DEFAULT \
+#define CFG_MFG_ENV_SETTINGS \
+	CFG_MFG_ENV_SETTINGS_DEFAULT \
 	"initrd_addr=0x43800000\0" \
 	"initrd_high=0xffffffffffffffff\0" \
 	"emmc_dev=2\0"\
@@ -84,8 +84,8 @@
 
 /* Initial environment variables */
 #if defined(CONFIG_NAND_BOOT)
-#define CONFIG_EXTRA_ENV_SETTINGS \
-	CONFIG_MFG_ENV_SETTINGS \
+#define CFG_EXTRA_ENV_SETTINGS \
+	CFG_MFG_ENV_SETTINGS \
 	"splashimage=0x50000000\0" \
 	"fdt_addr_r=0x43000000\0"			\
 	"fdt_addr=0x43000000\0"			\
@@ -102,8 +102,8 @@
 		"booti ${loadaddr} - ${fdt_addr_r}"
 
 #else
-#define CONFIG_EXTRA_ENV_SETTINGS		\
-	CONFIG_MFG_ENV_SETTINGS \
+#define CFG_EXTRA_ENV_SETTINGS		\
+	CFG_MFG_ENV_SETTINGS \
 	BOOTENV \
 	JAILHOUSE_ENV \
 	"scriptaddr=0x43500000\0" \
