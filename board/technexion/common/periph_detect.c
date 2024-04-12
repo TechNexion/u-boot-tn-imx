@@ -147,23 +147,22 @@ __weak int detect_exc3000_i2c(struct tn_display const *dev)
 
 #define VIZIONPANEL_SER_ADDR 0x0C
 #define VIZIONPANEL_DES_ADDR 0x2C
-#define VIZIONPANEL_SER_INIT_SIZE 7
-#define VIZIONPANEL_DES_INIT_SIZE 6
+#define VIZIONPANEL_SER_INIT_SIZE 14
+#define VIZIONPANEL_DES_INIT_SIZE 11
 int vizionpanel_init(int vizionpanel_i2c_bus)
 {
 	struct udevice *udev = NULL;
 	int i;
-	u8 buffer;
 
 	uint ser_init_offset[VIZIONPANEL_SER_INIT_SIZE] = {
-			0x01, 0x03, 0x1E, 0x5B, 0x01, 0x07, 0x08};
+			0x01, 0x03, 0x5B, 0x1E, 0x0F, 0x1E, 0x5B, 0x01, 0x07, 0x08, 0x70, 0x77, 0x71, 0x78};
 	const u8 ser_init_buffer[VIZIONPANEL_SER_INIT_SIZE] = {
-			0x0F, 0x9A, 0x01, 0x21, 0x00, 0x54, 0x54};
+			0x0F, 0x9A, 0x20, 0x02, 0x09, 0x01, 0x21, 0x00, 0x54, 0x54, 0x40, 0x40, 0x70, 0x70};
 
 	uint des_init_offset[VIZIONPANEL_DES_INIT_SIZE] = {
-			0x01, 0x49, 0x34, 0x08, 0x10, 0x1F};
+			0x01, 0x34, 0x08, 0x10, 0x1F, 0x09, 0x11, 0x0A, 0x12, 0x26, 0x27};
 	const u8 des_init_buffer[VIZIONPANEL_DES_INIT_SIZE] = {
-			0x01, 0x62, 0x01, 0x54, 0x54, 0x09};
+			0x0f, 0x01, 0x54, 0x54, 0x09, 0x40, 0x40, 0x70, 0x70, 0x19, 0x19};
 
 	udev = _check_i2c_dev(vizionpanel_i2c_bus, VIZIONPANEL_SER_ADDR);
 	if (udev) {
@@ -172,24 +171,9 @@ int vizionpanel_init(int vizionpanel_i2c_bus)
 			dm_i2c_write(udev, ser_init_offset[i], &ser_init_buffer[i], 1);
 			mdelay(50);
 		}
-
-		// continue read check for der
-		for (i = 0 ; i < VIZIONPANEL_SER_INIT_SIZE ; i++) {
-			//don't check reset reg
-			if (ser_init_offset[i] == 0x01)
-				continue;
-
-			dm_i2c_read(udev, ser_init_offset[i], &buffer, 1);
-			if (buffer != ser_init_buffer[i]) {
-				tn_debug("%s: check vizionpanel ser offset %02x failed\n", __func__, ser_init_offset[i]);
-				tn_debug("target is %02x, read buffer is %02x\n", ser_init_buffer[i], buffer);
-				return -1;
-			}
-			mdelay(50);
-		}
 	} else {
-		return -1;
 		tn_debug("%s: Can't find vizionpanel ser device\n", __func__);
+		return -1;
 	}
 
 	udev = _check_i2c_dev(vizionpanel_i2c_bus, VIZIONPANEL_DES_ADDR);
@@ -197,21 +181,6 @@ int vizionpanel_init(int vizionpanel_i2c_bus)
 		// continue write for des
 		for (i = 0 ; i < VIZIONPANEL_DES_INIT_SIZE ; i++) {
 			dm_i2c_write(udev, des_init_offset[i], &des_init_buffer[i], 1);
-			mdelay(50);
-		}
-
-		// continue read check for des
-		for (i = 0 ; i < VIZIONPANEL_DES_INIT_SIZE ; i++) {
-			//don't check reset reg
-			if (des_init_offset[i] == 0x01)
-				continue;
-
-			dm_i2c_read(udev, des_init_offset[i], &buffer, 1);
-			if (buffer != des_init_buffer[i]) {
-				tn_debug("%s: check vizionpanel des offset %02x failed\n", __func__, des_init_offset[i]);
-				tn_debug("target is %02x, read buffer is %02x\n", des_init_buffer[i], buffer);
-				return -1;
-			}
 			mdelay(50);
 		}
 	} else {
