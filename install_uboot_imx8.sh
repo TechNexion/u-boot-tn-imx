@@ -22,7 +22,7 @@ BRANCH_VER="lf-6.1.55_2.2.0" #branch used by imx-mkimage and imx-atf under meta-
 ATF_BRANCH_VER="lf_v2.8"
 MKIMAGE_SRC_GIT_ID='c4365450fb115d87f245df2864fee1604d97c06a' #refer to 'imx-mkimage_git.inc' in Yocto
 ATF_SRC_GIT_ID='08e9d4eef2262c0dd072b4325e8919e06d349e02' #refer to 'imx-atf_2.8.bb' in Yocto
-DDR_FW_VER="8.19" #refer to the name of 'firmware-imx-8m_8.x.bb'
+DDR_FW_VER="8.21" #refer to the name of 'firmware-imx-8m_8.x.bb'
 
 FSL_MIRROR="https://www.nxp.com/lgfiles/NMG/MAD/YOCTO"
 FIRMWARE_DIR="firmware_imx8"
@@ -153,13 +153,12 @@ install_firmware()
 	fi
 
 	if [ "${SOC_DIR}" = "iMX9" ] ; then
-		if [ ! -d firmware-ele-imx-0.1.0 ] ; then
-			wget https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/firmware-ele-imx-0.1.0.bin
-			chmod 777 firmware-ele-imx-0.1.0.bin
-			./firmware-ele-imx-0.1.0.bin
+		if [ ! -d firmware-sentinel-0.11 ] ; then
+			wget https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/firmware-sentinel-0.11.bin
+			chmod +x firmware-sentinel-0.11.bin
+			./firmware-sentinel-0.11.bin
 		fi
-		cp firmware-ele-imx-0.1.0/mx93a0-ahab-container.img ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
-		cp firmware-ele-imx-0.1.0/mx93a1-ahab-container.img ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+		cp firmware-sentinel-0.11/mx93a1-ahab-container.img ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
 	fi
 }
 
@@ -207,8 +206,13 @@ generate_imx_boot()
 
 	#Generate bootable binary (This binary contains SPL and u-boot.bin) for flashing
 	cd ${MKIMAGE_DIR}
-	make SOC=${SOC_TARGET} dtbs="${DTBS}" ${MKIMAGE_TARGET} && \
-	printf "Make target: ${MKIMAGE_TARGET} and generate flash.bin... \n" || printf "Fails to generate flash.bin... \n"
+	if [ "${SOC_DIR}" = "iMX9" ] ; then
+		make SOC=${SOC_TARGET} REV=A1 dtbs="${DTBS}" ${MKIMAGE_TARGET} && \
+			printf "Make target: ${MKIMAGE_TARGET} and generate flash.bin... \n" || printf "Fails to generate flash.bin... \n"
+	else
+		make SOC=${SOC_TARGET} dtbs="${DTBS}" ${MKIMAGE_TARGET} && \
+			printf "Make target: ${MKIMAGE_TARGET} and generate flash.bin... \n" || printf "Fails to generate flash.bin... \n"
+	fi
 }
 
 flash_imx_boot()
