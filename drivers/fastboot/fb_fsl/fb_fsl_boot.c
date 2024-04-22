@@ -91,6 +91,15 @@ typedef struct DEV_SETUP_T {
 //
 // Sync the order of _ext_dtbo with BoardConfig.mk
 //
+static dev_setup_t _dev_setup_axon_8mp[] = {
+	{ DEV_SETUP_VOUT, "lvds-vl10112880", NULL },
+	{ DEV_SETUP_VOUT, "lvds-vl15613676", NULL },
+	{ DEV_SETUP_VOUT, "lvds-vl215192108", NULL },
+	{ DEV_SETUP_VIN, "tevi-ov5640", NULL },
+	{ DEV_SETUP_VIN, "tevi-ap1302", "ap1302" },
+	{ DEV_SETUP_VIN, "vizionlink-tevi-ap1302", "ap1302" },
+};
+
 static dev_setup_t _dev_setup_edm_g_8mp[] = {
 	{ DEV_SETUP_VOUT, "lvds-vl10112880", NULL },
 	{ DEV_SETUP_VOUT, "lvds-vl15613676", NULL },
@@ -157,8 +166,13 @@ static int _get_dev_setup(const char *dtbo_token, dev_setup_t **dev_setup, size_
 	}
 
 	if(is_imx8mp()) {
+#if(defined(CONFIG_TARGET_AXON_IMX8MP))
+		__dev_setup = _dev_setup_axon_8mp;
+		__dev_setup_cnt = EXT_DTBO_SIZE(_dev_setup_axon_8mp);
+#elif(defined(CONFIG_TARGET_EDM_G_IMX8MP))
 		__dev_setup = _dev_setup_edm_g_8mp;
 		__dev_setup_cnt = EXT_DTBO_SIZE(_dev_setup_edm_g_8mp);
+#endif
 	} else if(is_imx8mm()) {
 #if(defined(CONFIG_TARGET_EDM_G_IMX8MM))
 		__dev_setup = _dev_setup_edm_g_8mm;
