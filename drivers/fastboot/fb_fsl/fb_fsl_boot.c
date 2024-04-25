@@ -144,6 +144,8 @@ static dev_setup_t _dev_setup_edm_g_8mm[] = {
 	{ DEV_SETUP_VIN, "hdmi2mipi-tc3587432", NULL },
 	{ DEV_SETUP_VIN, "vizionlink-tevi-ov5640", NULL },
 	{ DEV_SETUP_VIN, "vizionlink-tevi-ap1302", "ap1302" },
+	{ DEV_SETUP_VIN, "tevs", "NULL" },
+	{ DEV_SETUP_VIN, "vls", "NULL" },
 };
 #endif
 
