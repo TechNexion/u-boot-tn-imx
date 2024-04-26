@@ -56,7 +56,11 @@ u8 num_image_type_guids = ARRAY_SIZE(fw_images);
 struct tn_display const displays[]= {
 /*      bus, addr, id_reg, id, detect */
 	{ 2, 0x2a, 0, 101,  "lvds-vl10112880", detect_exc3000_i2c },
+	{ 2, 0x2a, 0, 156,  "lvds-vl15613676", detect_exc3000_i2c },
 	{ 2, 0x2a, 0,  80,  "vxt-vl0808060nt", detect_exc3000_i2c },
+	//5-inch and 7-inch panel shares the same overlay
+	{ 2, 0x38, 0xa6, 0x01, "vxt-vl0508048nt", detect_i2c },
+	{ 2, 0x38, 0xa6, 0x02, "vxt-vl0508048nt", detect_i2c },
 };
 size_t tn_display_count = ARRAY_SIZE(displays);
 
