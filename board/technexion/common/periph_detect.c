@@ -214,6 +214,8 @@ int vizionpanel_inited_dm = -1;
  * And reset DSI before all detecion.
  * Do vizionpanel init and retry, and use 'detect_exc3000_i2c' to detect after that.
  */
+#define EXC3000_addr 0x2a
+#define EDT_FT5X06_addr 0x38
 int detect_vizionpanel_i2c(struct tn_display const *dev)
 {
 #if CONFIG_IS_ENABLED(DM_I2C)
@@ -234,7 +236,10 @@ int detect_vizionpanel_i2c(struct tn_display const *dev)
 		return 0;
 	}
 
-	return detect_exc3000_i2c(dev);
+	if ( dev->addr == EXC3000_addr )
+		return detect_exc3000_i2c(dev);
+	else if ( dev->addr == EDT_FT5X06_addr )
+		return detect_i2c(dev);
 #endif
 	return 0;
 }
