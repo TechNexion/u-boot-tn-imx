@@ -35,6 +35,8 @@ IMX_BOOT="flash.bin"
 TWD=`pwd`
 ATF_BOOT_UART_BASE="0x30890000"
 
+old_imx93=0
+
 setup_platform()
 {
 	SOC=$( echo "${DTBS}" | cut -d'-' -f1 )
@@ -158,6 +160,7 @@ install_firmware()
 			chmod +x firmware-sentinel-0.11.bin
 			./firmware-sentinel-0.11.bin
 		fi
+		cp firmware-sentinel-0.11/mx93a0-ahab-container.img ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
 		cp firmware-sentinel-0.11/mx93a1-ahab-container.img ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
 	fi
 }
@@ -206,7 +209,7 @@ generate_imx_boot()
 
 	#Generate bootable binary (This binary contains SPL and u-boot.bin) for flashing
 	cd ${MKIMAGE_DIR}
-	if [ "${SOC_DIR}" = "iMX9" ] ; then
+	if [ "${SOC_DIR}" = "iMX9" ] && [ "${old_imx93}" = 0 ] ; then
 		make SOC=${SOC_TARGET} REV=A1 dtbs="${DTBS}" ${MKIMAGE_TARGET} && \
 			printf "Make target: ${MKIMAGE_TARGET} and generate flash.bin... \n" || printf "Fails to generate flash.bin... \n"
 	else
@@ -286,6 +289,8 @@ usage()
     i.MX9:
     * AXON-IMX93:
     ./install_uboot_imx8.sh -b imx93-axon.dtb -d /dev/sdX
+    * IMX93_EVK REV.beta:
+    ./install_uboot_imx8.sh -b imx93-11x11-evk.dtb -d /dev/sdX --old-imx93
 "
 }
 
@@ -309,30 +314,38 @@ if [ $# -eq 0 ]; then
 	exit 1
 fi
 
-while getopts "tcfhd:b:" OPTION
+while getopts "tcfhd:-:b:" OPTION
 do
-    case $OPTION in
-        d)
-           DRIVE="$OPTARG"
-           ;;
-        b)
-           DTBS="$DTBS $OPTARG"
-           ;;
-        t)
-           MKIMAGE_TARGET='flash_spl_uboot';
-           ;;
-        f)
-           MKIMAGE_TARGET='flash_evk_flexspi';
-           ;;
+	case $OPTION in
+		d)
+			DRIVE="$OPTARG"
+			;;
+		b)
+			DTBS="$DTBS $OPTARG"
+			;;
+		t)
+			MKIMAGE_TARGET='flash_spl_uboot';
+			;;
+		f)
+			MKIMAGE_TARGET='flash_evk_flexspi';
+			;;
 		c)
-		   rm -rf ${FIRMWARE_DIR} ${MKIMAGE_DIR}
-		   echo "Clean ${FIRMWARE_DIR} ${MKIMAGE_DIR}..."
-		   exit
-		   ;;
-        ?|h) usage
-           exit
-           ;;
-    esac
+			rm -rf ${FIRMWARE_DIR} ${MKIMAGE_DIR}
+			echo "Clean ${FIRMWARE_DIR} ${MKIMAGE_DIR}..."
+			exit
+			;;
+		-)
+			case ${OPTARG} in
+				old-imx93)
+					old_imx93=1
+					;;
+			esac
+			;;
+		?|h)
+			usage
+			exit
+			;;
+		esac
 done
 
 DTBS=$(echo ${DTBS} | cut -c 1-)
