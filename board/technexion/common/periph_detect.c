@@ -45,10 +45,13 @@ static int _add_dtoverlay(const char *ov_name)
 
 	dtoverlay = env_get(ENV_DTOVERLAY);
 	if (dtoverlay == NULL) {
+		printf("%s: adding overlay for %s\n", __FILE__, ov_name);
 		snprintf(arr_dtov, SIZE_DTOVERLAY, "%s", ov_name);
 	} else if(strstr(dtoverlay, ov_name)) {
+		printf("%s: existed overlay name: %s\n", __FILE__, ov_name);
 		snprintf(arr_dtov, SIZE_DTOVERLAY, "%s", dtoverlay);
 	} else {
+		printf("%s: adding overlay for %s\n", __FILE__, ov_name);
 		snprintf(arr_dtov, SIZE_DTOVERLAY, "%s %s", dtoverlay, ov_name);
 	}
 
