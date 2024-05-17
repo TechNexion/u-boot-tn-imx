@@ -501,8 +501,8 @@ void add_default_camera_overlay(void)
 	int cam_ov_list_number = 3;
 	int i;
 	char* ov_list;
-	char* default_cam_ov = "vizionlink-tevi-ap1302";
-	char* cam_ov_list[] = { "hdmi2mipi-tc358743", "vizionlink-tevi-ap1302", "vizionlink-tevi-ov5640" };
+	char* default_cam_ov = "vls";
+	char* cam_ov_list[] = { "hdmi2mipi-tc358743", "vls" };
 
 	ov_list = env_get("ENV_DTOVERLAY");
 	if (ov_list) {
