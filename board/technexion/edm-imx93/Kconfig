@@ -1,0 +1,20 @@
+if TARGET_EDM_IMX93
+
+config SYS_BOARD
+	default "edm-imx93"
+
+config SYS_VENDOR
+	default "technexion"
+
+config SYS_CONFIG_NAME
+	default "edm-imx93"
+
+config EDM_IMX93_LPDDR4X
+	bool "Using LPDDR4X Timing and PMIC voltage"
+	select IMX9_LPDDR4X
+	help
+	  Select the LPDDR4X timing and 0.6V VDDQ
+
+source "board/technexion/common/Kconfig"
+
+endif
