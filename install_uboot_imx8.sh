@@ -291,6 +291,9 @@ usage()
     ./install_uboot_imx8.sh -b imx93-axon.dtb -d /dev/sdX
     * IMX93_EVK REV.beta:
     ./install_uboot_imx8.sh -b imx93-11x11-evk.dtb -d /dev/sdX --old-imx93
+
+    * EDM-E-IMX93:
+    ./install_uboot_imx8.sh -b imx93-edm-e.dtb -d /dev/sdX
 "
 }
 
