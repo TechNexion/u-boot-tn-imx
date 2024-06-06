@@ -262,8 +262,6 @@
 
 /* Framebuffer */
 #define CONFIG_VIDEO_BMP_LOGO
-#define CONFIG_IMX_HDMI
-#define CONFIG_IMX_VIDEO_SKIP
 
 #if defined(CONFIG_ANDROID_SUPPORT)
 #include "pico-imx6_android_common.h"
