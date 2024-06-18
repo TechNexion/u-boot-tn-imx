@@ -223,7 +223,7 @@ int board_mmc_init(struct bd_info *bis)
 			break;
 	}
 
-	for (index = 0; index < CONFIG_SYS_FSL_USDHC_NUM; ++index) {
+	for (index = 0; index < CFG_SYS_FSL_USDHC_NUM; ++index) {
 		ret = fsl_esdhc_initialize(bis, &usdhc_cfg[index]);
 		if (ret)
 			return ret;

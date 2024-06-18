@@ -549,7 +549,7 @@ static void spl_dram_init(void)
 			* memories
 			*/
 			unsigned long ram_size;
-			ram_size = get_ram_size((void *)CONFIG_SYS_SDRAM_BASE, SZ_2G);
+			ram_size = get_ram_size((void *)CFG_SYS_SDRAM_BASE, SZ_2G);
 			if (ram_size < SZ_2G) {
 				mx6_dram_cfg(&mem_dl, &mx6dl_1g_mmdc_calib, &h5tq2g63dfr);
 			}
