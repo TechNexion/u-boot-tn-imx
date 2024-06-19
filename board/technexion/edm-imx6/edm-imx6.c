@@ -378,7 +378,7 @@ static void setup_iomux_i2c(void)
 	}
 }
 
-#if defined(CONFIG_DM_VIDEO)
+#if defined(CONFIG_VIDEO)
 static iomux_v3_cfg_t const ft5x06_wvga_pads[] = {
 	IOMUX_PADS(PAD_DI0_DISP_CLK__IPU1_DI0_DISP_CLK),
 	IOMUX_PADS(PAD_DI0_PIN2__IPU1_DI0_PIN02), /* HSync */
@@ -656,14 +656,14 @@ int splash_screen_prepare(void)
 	return splash_source_load(imx_splash_locations, ARRAY_SIZE(imx_splash_locations));
 }
 #endif /* CONFIG_SPLASH_SCREEN */
-#endif /* CONFIG_DM_VIDEO */
+#endif /* CONFIG_VIDEO */
 
 int board_early_init_f(void)
 {
 	setup_iomux_uart();
 	setup_iomux_som_detection();
 
-#if defined(CONFIG_DM_VIDEO)
+#if defined(CONFIG_VIDEO)
 	setup_display();
 #endif
 
