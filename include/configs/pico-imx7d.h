@@ -207,18 +207,6 @@
 #define CONFIG_POWER_PFUZE3000
 #define CFG_POWER_PFUZE3000_I2C_ADDR	0x08
 
-#ifdef CONFIG_DM_VIDEO
-#define CONFIG_VIDEO_MXS
-#define CONFIG_VIDEO_LOGO
-#define CONFIG_SPLASH_SCREEN_ALIGN
-#define CONFIG_SPLASH_SOURCE
-#define CONFIG_BMP_16BPP
-#define CONFIG_BMP_24BPP
-#define CONFIG_BMP_32BPP
-#define CONFIG_VIDEO_BMP_RLE8
-#define CONFIG_VIDEO_BMP_LOGO
-#endif
-
 /* FLASH and environment organization */
 
 /* Environment starts at 768k = 768 * 1024 = 786432 */
