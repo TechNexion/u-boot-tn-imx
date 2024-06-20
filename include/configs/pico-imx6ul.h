@@ -11,7 +11,6 @@
 #include <linux/sizes.h>
 #include "mx6_common.h"
 #include <asm/mach-imx/gpio.h>
-#include "imx6_spl.h"
 
 #ifdef CONFIG_SPL_OS_BOOT
 /* Falcon Mode */
@@ -265,10 +264,10 @@
 #define CFG_SYS_INIT_RAM_ADDR	IRAM_BASE_ADDR
 #define CFG_SYS_INIT_RAM_SIZE	IRAM_SIZE
 
-#define CFG_SYS_INIT_SP_OFFSET \
+#define CONFIG_SYS_INIT_SP_OFFSET \
 	(CFG_SYS_INIT_RAM_SIZE - GENERATED_GBL_DATA_SIZE)
-#define CFG_SYS_INIT_SP_ADDR \
-	(CFG_SYS_INIT_RAM_ADDR + CFG_SYS_INIT_SP_OFFSET)
+#define CONFIG_SYS_INIT_SP_ADDR \
+	(CF_SYS_INIT_RAM_ADDR + CONFIG_SYS_INIT_SP_OFFSET)
 
 /* environment organization */
 /* Environment starts at 768k = 768 * 1024 = 786432 */
@@ -281,8 +280,9 @@
  * Currently CONFIG_BOARD_SIZE_LIMIT does not handle expressions, so
  * write the direct value here
  */
-#define CONFIG_BOARD_SIZE_LIMIT		715776
-
+///#define CONFIG_BOARD_SIZE_LIMIT              715776
+//+CONFIG_HAS_BOARD_SIZE_LIMIT=y
+//+CONFIG_BOARD_SIZE_LIMIT=715776
 
 #define CONFIG_MMCROOT			"/dev/mmcblk0p2"  /* USDHC2 */
 #ifdef CONFIG_VIDEO
