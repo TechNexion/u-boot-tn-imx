@@ -9,7 +9,6 @@
 #define __PICO_IMX7D_CONFIG_H
 
 #include "mx7_common.h"
-#include "imx7_spl.h"
 
 #define CFG_MXC_UART_BASE		UART5_IPS_BASE_ADDR
 
@@ -94,7 +93,7 @@
 	"fastboot_partition_alias_system=rootfs\0" \
 	"setup_emmc=mmc dev 0; gpt write mmc 0 $partitions; reset;\0" \
 	"mmcautodetect=yes\0" \
-	PICO_BOOT_ENV
+	PICO_BOOT_ENV \
 	"tcm_addr=0x7F8000\0" \
 	"m4image=m4_tcm.bin\0" \
 	"loadm4image=fatload mmc ${mmcdev}:${mmcpart} ${tcm_addr} ${m4image}\0" \
@@ -265,13 +264,13 @@
 #define CFG_SYS_INIT_RAM_SIZE	IRAM_SIZE
 
 #define CONFIG_SYS_INIT_SP_OFFSET \
-	(CONFIG_SYS_INIT_RAM_SIZE - GENERATED_GBL_DATA_SIZE)
+	(CFG_SYS_INIT_RAM_SIZE - GENERATED_GBL_DATA_SIZE)
 #define CONFIG_SYS_INIT_SP_ADDR \
-	(CONFIG_SYS_INIT_RAM_ADDR + CONFIG_SYS_INIT_SP_OFFSET)
+	(CFG_SYS_INIT_RAM_ADDR + CONFIG_SYS_INIT_SP_OFFSET)
 
 /* PMIC */
 #define CONFIG_POWER_PFUZE3000
-#define CONFIG_POWER_PFUZE3000_I2C_ADDR	0x08
+#define CFG_POWER_PFUZE3000_I2C_ADDR	0x08
 
 #ifdef CONFIG_DM_VIDEO
 #define CONFIG_VIDEO_MXS
@@ -297,13 +296,13 @@
  * Currently CONFIG_BOARD_SIZE_LIMIT does not handle expressions, so
  * write the direct value here
  */
-#define CONFIG_BOARD_SIZE_LIMIT		715776
+//#define CONFIG_BOARD_SIZE_LIMIT               715776
+//+CONFIG_HAS_BOARD_SIZE_LIMIT=y
+//+CONFIG_BOARD_SIZE_LIMIT=715776
 
 #define CFG_SYS_FSL_USDHC_NUM		2
 
 /* USB Configs */
-#define CONFIG_EHCI_HCD_INIT_AFTER_RESET
 #define CONFIG_MXC_USB_PORTSC			(PORT_PTS_UTMI | PORT_PTS_PTW)
 #define CONFIG_MXC_USB_FLAGS			0
-#define CONFIG_USB_MAX_CONTROLLER_COUNT	2
 #endif
