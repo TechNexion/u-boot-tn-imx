@@ -22,6 +22,7 @@
 #include <mmc.h>
 #include <splash.h>
 #include <asm/mach-imx/boot_mode.h>
+#include <command.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
