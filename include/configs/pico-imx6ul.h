@@ -12,7 +12,6 @@
 #include <linux/sizes.h>
 #include "mx6_common.h"
 #include <asm/mach-imx/gpio.h>
-#include "imx6_spl.h"
 
 #ifdef CONFIG_SPL_OS_BOOT
 /* Falcon Mode */
@@ -33,16 +32,14 @@
 #define CONFIG_FEC_XCV_TYPE		RMII
 
 #define CONFIG_MXC_UART
-#define CONFIG_MXC_UART_BASE		UART6_BASE_ADDR
+#define CFG_MXC_UART_BASE		UART6_BASE_ADDR
 
 /* MMC Configs */
-#define CONFIG_SYS_FSL_ESDHC_ADDR	USDHC1_BASE_ADDR
+#define CFG_SYS_FSL_ESDHC_ADDR	USDHC1_BASE_ADDR
 
 /* USB Configs */
-#define CONFIG_EHCI_HCD_INIT_AFTER_RESET
 #define CONFIG_MXC_USB_PORTSC		(PORT_PTS_UTMI | PORT_PTS_PTW)
 #define CONFIG_MXC_USB_FLAGS		0
-#define CONFIG_USB_MAX_CONTROLLER_COUNT	2
 
 #define CONFIG_USBD_HS
 
@@ -50,7 +47,7 @@
 
 #define SYS_MMC_IMG_LOAD_PART	1
 
-#define CONFIG_EXTRA_ENV_SETTINGS \
+#define CFG_EXTRA_ENV_SETTINGS \
 	"stdin=serial\0" \
 	"stdout=\0" \
 	"stderr=\0" \
@@ -228,14 +225,14 @@
 /* Physical Memory Map */
 #define PHYS_SDRAM			MMDC0_ARB_BASE_ADDR
 
-#define CONFIG_SYS_SDRAM_BASE		PHYS_SDRAM
-#define CONFIG_SYS_INIT_RAM_ADDR	IRAM_BASE_ADDR
-#define CONFIG_SYS_INIT_RAM_SIZE	IRAM_SIZE
+#define CFG_SYS_SDRAM_BASE		PHYS_SDRAM
+#define CFG_SYS_INIT_RAM_ADDR	IRAM_BASE_ADDR
+#define CFG_SYS_INIT_RAM_SIZE	IRAM_SIZE
 
 #define CONFIG_SYS_INIT_SP_OFFSET \
-	(CONFIG_SYS_INIT_RAM_SIZE - GENERATED_GBL_DATA_SIZE)
+	(CFG_SYS_INIT_RAM_SIZE - GENERATED_GBL_DATA_SIZE)
 #define CONFIG_SYS_INIT_SP_ADDR \
-	(CONFIG_SYS_INIT_RAM_ADDR + CONFIG_SYS_INIT_SP_OFFSET)
+	(CF_SYS_INIT_RAM_ADDR + CONFIG_SYS_INIT_SP_OFFSET)
 
 /* environment organization */
 /* Environment starts at 768k = 768 * 1024 = 786432 */
@@ -248,8 +245,9 @@
  * Currently CONFIG_BOARD_SIZE_LIMIT does not handle expressions, so
  * write the direct value here
  */
-#define CONFIG_BOARD_SIZE_LIMIT		715776
-
+///#define CONFIG_BOARD_SIZE_LIMIT              715776
+//+CONFIG_HAS_BOARD_SIZE_LIMIT=y
+//+CONFIG_BOARD_SIZE_LIMIT=715776
 
 #define CONFIG_MMCROOT			"/dev/mmcblk0p2"  /* USDHC2 */
 #ifdef CONFIG_DM_VIDEO
