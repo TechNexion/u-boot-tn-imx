@@ -15,9 +15,6 @@
 #include <linux/sizes.h>
 #include <asm/mach-imx/gpio.h>
 #include "mx7_common.h"
-#ifdef CONFIG_SPL
-#include "imx7_spl.h"
-#endif
 
 #ifdef CONFIG_SECURE_BOOT
 #ifndef CONFIG_CSF_SIZE
@@ -30,9 +27,7 @@
 #define CONFIG_INITRD_TAG
 #define CONFIG_REVISION_TAG
 
-#define CONFIG_MXC_UART
-#undef CONFIG_MXC_UART_BASE
-#define CONFIG_MXC_UART_BASE            uart_base_reg_addr
+#define CFG_MXC_UART_BASE            uart_base_reg_addr
 #ifndef __ASSEMBLY__
 extern size_t uart_base_reg_addr;
 #endif
@@ -43,7 +38,7 @@ extern size_t uart_base_reg_addr;
 #define CONFIG_BAUDRATE			115200
 
 /* MMC Configs */
-#define CONFIG_SYS_FSL_ESDHC_ADDR	USDHC3_BASE_ADDR
+#define CFG_SYS_FSL_ESDHC_ADDR	USDHC3_BASE_ADDR
 
 /* FEC Configs */
 #define CONFIG_FEC_XCV_TYPE             RGMII
@@ -63,7 +58,7 @@ extern size_t uart_base_reg_addr;
 
 /* PMIC */
 #define CONFIG_POWER_PFUZE3000
-#define CONFIG_POWER_PFUZE3000_I2C_ADDR	0x08
+#define CFG_POWER_PFUZE3000_I2C_ADDR	0x08
 
 #undef CONFIG_BOOTM_NETBSD
 #undef CONFIG_BOOTM_PLAN9
@@ -132,7 +127,7 @@ extern size_t uart_base_reg_addr;
 	"bootcmd_mfg=run mfgtool_args;bootz ${loadaddr} ${initrd_addr} ${fdt_addr};\0" \
 
 #if defined(CONFIG_SYS_BOOT_NAND)
-#define CONFIG_EXTRA_ENV_SETTINGS \
+#define CFG_EXTRA_ENV_SETTINGS \
 	CONFIG_MFG_ENV_SETTINGS \
 	VIDEO_MODE \
 	"fdt_addr=0x83000000\0" \
@@ -146,7 +141,7 @@ extern size_t uart_base_reg_addr;
 		"bootz ${loadaddr} - ${fdt_addr}\0"
 
 #else
-#define CONFIG_EXTRA_ENV_SETTINGS \
+#define CFG_EXTRA_ENV_SETTINGS \
 	CONFIG_MFG_ENV_SETTINGS \
 	UPDATE_M4_ENV \
 	VIDEO_MODE \
@@ -280,7 +275,6 @@ extern size_t uart_base_reg_addr;
 #define CONFIG_SYS_PROMPT		"=> "
 
 /* Print Buffer Size */
-#define CONFIG_SYS_PBSIZE (CONFIG_SYS_CBSIZE + sizeof(CONFIG_SYS_PROMPT) + 16)
 #define CONFIG_SYS_BARGSIZE CONFIG_SYS_CBSIZE
 
 #define CONFIG_SYS_MEMTEST_START	0x80000000
@@ -291,14 +285,14 @@ extern size_t uart_base_reg_addr;
 /* Physical Memory Map */
 #define PHYS_SDRAM			MMDC0_ARB_BASE_ADDR
 
-#define CONFIG_SYS_SDRAM_BASE		PHYS_SDRAM
-#define CONFIG_SYS_INIT_RAM_ADDR	IRAM_BASE_ADDR
-#define CONFIG_SYS_INIT_RAM_SIZE	IRAM_SIZE
+#define CFG_SYS_SDRAM_BASE		PHYS_SDRAM
+#define CFG_SYS_INIT_RAM_ADDR	IRAM_BASE_ADDR
+#define CFG_SYS_INIT_RAM_SIZE	IRAM_SIZE
 
 #define CONFIG_SYS_INIT_SP_OFFSET \
-	(CONFIG_SYS_INIT_RAM_SIZE - GENERATED_GBL_DATA_SIZE)
+	(CFG_SYS_INIT_RAM_SIZE - GENERATED_GBL_DATA_SIZE)
 #define CONFIG_SYS_INIT_SP_ADDR \
-	(CONFIG_SYS_INIT_RAM_ADDR + CONFIG_SYS_INIT_SP_OFFSET)
+	(CFG_SYS_INIT_RAM_ADDR + CONFIG_SYS_INIT_SP_OFFSET)
 
 #ifdef CONFIG_SYS_BOOT_QSPI
 #define CONFIG_SYS_USE_QSPI
@@ -359,15 +353,12 @@ extern size_t uart_base_reg_addr;
 #else
 #define CONFIG_SYS_FSL_USDHC_NUM	2
 #endif
-#define CONFIG_SYS_FSL_ESDHC_HAS_DDR_MODE
 
 /* USB Configs */
-#define CONFIG_EHCI_HCD_INIT_AFTER_RESET
 #define CONFIG_USB_HOST_ETHER
 #define CONFIG_USB_ETHER_ASIX
 #define CONFIG_MXC_USB_PORTSC  (PORT_PTS_UTMI | PORT_PTS_PTW)
 #define CONFIG_MXC_USB_FLAGS   0
-#define CONFIG_USB_MAX_CONTROLLER_COUNT 2
 
 #if defined(CONFIG_MXC_EPDC) && defined(CONFIG_SYS_USE_QSPI)
 #error "EPDC Pins conflicts QSPI, Either EPDC or QSPI can be enabled!"
