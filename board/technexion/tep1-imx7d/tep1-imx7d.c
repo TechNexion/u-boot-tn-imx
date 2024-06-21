@@ -39,7 +39,6 @@
 
 #ifdef CONFIG_VIDEO_MXS
 #include <linux/fb.h>
-#include <mxsfb.h>
 #include <splash.h>
 #endif
 
@@ -522,7 +521,7 @@ int board_early_init_f(void)
 	return 0;
 }
 
-#ifdef CONFIG_DM_VIDEO
+#ifdef CONFIG_VIDEO
 void setup_lcd(void)
 {
 	/* Set Brightness to high */
@@ -554,7 +553,7 @@ int board_init(void)
 		imx_iomux_v3_setup_multiple_pads(uart2_pads, ARRAY_SIZE(uart2_pads));
 	}
 
-#ifdef CONFIG_DM_VIDEO
+#ifdef CONFIG_VIDEO
 	setup_lcd();
 #endif
 #ifdef CONFIG_FEC_MXC
