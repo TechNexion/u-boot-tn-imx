@@ -19,6 +19,11 @@ static struct anamix_pll *ana_pll = (struct anamix_pll *)ANATOP_BASE_ADDR;
 
 static u32 get_root_clk(enum clk_root_index clock_id);
 
+u32 get_dsi_phy_ref_clk(void)
+{
+       return get_root_clk(MIPI_DSI_PHY_REF_CLK_ROOT);
+}
+
 static u32 decode_frac_pll(enum clk_root_src frac_pll)
 {
 	u32 pll_cfg0, pll_cfg1, pllout;
