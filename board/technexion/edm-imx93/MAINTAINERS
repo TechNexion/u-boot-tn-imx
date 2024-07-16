@@ -1,0 +1,6 @@
+i.MX93 EDM BOARD
+M:	Alex Fang <alex.fang@technexion.com>
+S:	Maintained
+F:	board/technexion/edm-imx93/
+F:	include/configs/edm-imx93.h
+F:	configs/edm-imx93_defconfig

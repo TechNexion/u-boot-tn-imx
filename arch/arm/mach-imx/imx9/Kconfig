@@ -51,8 +51,8 @@ config TARGET_AXON_IMX93
 	select IMX93
 	select IMX9_LPDDR4X
 
-config TARGET_EDM_E_IMX93
-	bool "edm-e-imx93"
+config TARGET_EDM_IMX93
+	bool "edm-imx93"
 	select OF_BOARD_FIXUP
 	select IMX93
 	select IMX9_LPDDR4X
@@ -62,7 +62,7 @@ endchoice
 source "board/freescale/imx93_evk/Kconfig"
 source "board/freescale/imx93_qsb/Kconfig"
 source "board/technexion/axon-imx93/Kconfig"
-source "board/technexion/edm-e-imx93/Kconfig"
+source "board/technexion/edm-imx93/Kconfig"
 
 endif
 

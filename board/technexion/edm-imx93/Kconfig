@@ -1,15 +1,15 @@
-if TARGET_EDM_E_IMX93
+if TARGET_EDM_IMX93
 
 config SYS_BOARD
-	default "edm-e-imx93"
+	default "edm-imx93"
 
 config SYS_VENDOR
 	default "technexion"
 
 config SYS_CONFIG_NAME
-	default "edm-e-imx93"
+	default "edm-imx93"
 
-config EDM_E_IMX93_LPDDR4X
+config EDM_IMX93_LPDDR4X
 	bool "Using LPDDR4X Timing and PMIC voltage"
 	select IMX9_LPDDR4X
 	help
