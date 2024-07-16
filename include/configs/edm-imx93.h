@@ -6,8 +6,8 @@
  *
  */
 
-#ifndef __EDM_E_IMX93_H
-#define __EDM_E_IMX93_H
+#ifndef __EDM_IMX93_H
+#define __EDM_IMX93_H
 
 #include <linux/sizes.h>
 #include <linux/stringify.h>
@@ -34,7 +34,7 @@
 #define BOOTENV
 #endif
 
-#define JH_ROOT_DTB    "imx93-edm-e-root.dtb"
+#define JH_ROOT_DTB    "imx93-edm-root.dtb"
 
 #define JAILHOUSE_ENV \
 	"jh_root_dtb=" JH_ROOT_DTB "\0" \
@@ -98,7 +98,7 @@
 		"setexpr fdtovaddr ${fdt_addr} + 0xF0000; " \
 		"for ov in ${dtoverlay}; do " \
 			"echo Overlaying ${ov}...; " \
-			"fatload mmc ${mmcdev}:${mmcpart} ${fdtovaddr} imx93-edm-e-${baseboard}-${ov}.dtbo && fdt apply ${fdtovaddr}; " \
+			"fatload mmc ${mmcdev}:${mmcpart} ${fdtovaddr} imx93-edm-${baseboard}-${ov}.dtbo && fdt apply ${fdtovaddr}; " \
 		"done\0" \
 	"loadcntr=fatload mmc ${mmcdev}:${mmcpart} ${cntr_addr} ${cntr_file}\0" \
 	"auth_os=auth_cntr ${cntr_addr}\0" \
@@ -194,7 +194,7 @@
 #endif
 
 #ifdef CONFIG_ANDROID_SUPPORT
-#include "imx93_edm-e_android.h"
+#include "imx93_edm_android.h"
 #endif
 
 #endif
