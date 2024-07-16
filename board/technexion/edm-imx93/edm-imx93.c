@@ -44,7 +44,7 @@ static iomux_v3_cfg_t const uart_pads[] = {
 struct efi_fw_image fw_images[] = {
 	{
 		.image_type_id = IMX_BOOT_IMAGE_GUID,
-		.fw_name = u"EDM-E_IMX93-RAW",
+		.fw_name = u"EDM_IMX93-RAW",
 		.image_index = 1,
 	},
 };
@@ -148,7 +148,7 @@ int detect_baseboard(void)
 	env_set("baseboard", "wb");
 	baseboard = env_get("baseboard");
 
-	strcpy(str_fdtfile, "imx93-edm-e-");
+	strcpy(str_fdtfile, "imx93-edm-");
 	strcat(str_fdtfile, baseboard);
 	strcat(str_fdtfile, ".dtb");
 	env_set("fdtfile", str_fdtfile);
@@ -172,7 +172,7 @@ int board_late_init(void)
 #endif
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
-	env_set("board_name", "EDM-E");
+	env_set("board_name", "EDM");
 	env_set("board_rev", "iMX93");
 #endif
 	return 0;

@@ -68,7 +68,7 @@ extern struct dram_timing_info dram_timing_1866mts;
 void spl_dram_init(void)
 {
 	struct dram_timing_info *ptiming = &dram_timing;
-#if IS_ENABLED(CONFIG_EDM_E_IMX93_LPDDR4X)
+#if IS_ENABLED(CONFIG_EDM_IMX93_LPDDR4X)
 	if (is_voltage_mode(VOLT_LOW_DRIVE))
 		ptiming = &dram_timing_1866mts;
 #endif
