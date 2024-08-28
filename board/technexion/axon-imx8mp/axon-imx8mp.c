@@ -455,6 +455,41 @@ void board_late_mmc_env_init(void)
 	run_command(cmd, 0);
 }
 
+#define DSI1_RST_NODE "vizionpanel"
+#define PCA95554BS "pca9554bs@23"
+void reset_dsi(void)
+{
+	int node, ret;
+	struct udevice *udev;
+	struct gpio_desc *dsi1_rst_gpio;
+
+	ret = uclass_get_device_by_name(UCLASS_GPIO, PCA95554BS, &udev);
+	if (ret != 0) {
+		printf("%s: get %s udev failed\n", __func__, PCA95554BS);
+		return;
+	}
+
+	node = fdt_subnode_offset(gd->fdt_blob, dev_of_offset(udev), DSI1_RST_NODE);
+	if (node < 0) {
+		printf("%s: Can't find node name '%s'\n", __func__, DSI1_RST_NODE);
+		return;
+	}
+
+	ret = gpio_request_by_name_nodev(offset_to_ofnode(node), "reset-gpios",
+			 0, dsi1_rst_gpio, GPIOD_IS_OUT);
+	if ( (ret != 0) || (!dm_gpio_is_valid(dsi1_rst_gpio)) ) {
+		printf("%s: request reset-gpios failed\n", __func__);
+		return;
+	}
+
+	dm_gpio_set_value(dsi1_rst_gpio, 1);
+	dm_gpio_set_value(dsi1_rst_gpio, 0);
+	mdelay(50);
+	dm_gpio_set_value(dsi1_rst_gpio, 1);
+
+	dm_gpio_free(udev, dsi1_rst_gpio);
+}
+
 int detect_baseboard(void)
 {
 	char *fdtfile, *baseboard, str_fdtfile[64];
@@ -482,6 +517,9 @@ struct tn_display const displays[]= {
 	{ 4, 0x3d, 0x98, 0x3d, "mipi2hdmi-adv7535", detect_i2c },
 	{ 4, 0x3d, 0x98, 0x03, "mipi2hdmi-adv7535", detect_i2c },
 	{ 4, 0x3d, 0x00, 0x14, "mipi2hdmi-adv7535", detect_i2c },
+	{ 1, 0x2a, 1,     101, "vizionpanel-vl10112880", detect_vizionpanel_i2c },
+	{ 1, 0x2a, 1,     150, "vizionpanel-vl15010276", detect_vizionpanel_i2c },
+	{ 1, 0x2a, 1,     156, "vizionpanel-vl15613676", detect_vizionpanel_i2c },
 };
 
 size_t tn_display_count = ARRAY_SIZE(displays);
@@ -489,6 +527,7 @@ size_t tn_display_count = ARRAY_SIZE(displays);
 int board_late_init(void)
 {
 #ifndef CONFIG_AVB_SUPPORT
+	reset_dsi();
 	detect_baseboard();
 	detect_display_panel();
 	detect_camera();
