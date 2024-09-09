@@ -362,7 +362,6 @@ static int _detect_camera(const tn_camera_chk_t *list, size_t count) {
 	return(ret);
 }
 
-__weak const tn_camera_chk_t tn_camera_chk[] = {};
 __weak size_t tn_camera_chk_cnt = 0;
 
 // Camera sensor exclusive I2C address
