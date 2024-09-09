@@ -11,8 +11,6 @@
 #include <env.h>
 #include <errno.h>
 #include <init.h>
-#include <miiphy.h>
-#include <netdev.h>
 #include <linux/delay.h>
 #include <asm/global_data.h>
 #include <asm/io.h>
@@ -32,6 +30,7 @@
 #include <asm/armv8/mmu.h>
 #include "edm-g-imx8mp-ddr.h"
 #include "../common/periph_detect.h"
+#include <dm/uclass.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -59,6 +58,7 @@ static iomux_v3_cfg_t const ver_det_pads[] = {
 #define BOARD_ID1		IMX_GPIO_NR(3, 7)
 #define BOARD_ID2		IMX_GPIO_NR(3, 8)
 
+#ifdef CONFIG_TN_PHERIPHERAL_DETECT
 const tn_camera_chk_t tn_camera_chk[] = {
 	{ 1, 1, 0x3c, "tevi-ov5640" },
 	{ 2, 4, 0x3c, "tevi-ov5640" },
@@ -80,6 +80,7 @@ struct tn_display const displays[]= {
 	{ 4, 0x2a, 4,     156, "vizionpanel-vl15613676", detect_vizionpanel_i2c },
 };
 size_t tn_display_count = ARRAY_SIZE(displays);
+#endif
 
 static u8 ddr_code __section("data");
 
@@ -211,61 +212,6 @@ int ft_board_setup(void *blob, struct bd_info *bd)
 }
 #endif
 
-#ifdef CONFIG_DWC_ETH_QOS
-#define EQOS_RST_PAD IMX_GPIO_NR(1, 9)
-static iomux_v3_cfg_t const eqos_rst_pads[] = {
-	MX8MP_PAD_GPIO1_IO09__GPIO1_IO09 | MUX_PAD_CTRL(NO_PAD_CTRL),
-};
-
-#define EQOS_PWR_PAD IMX_GPIO_NR(1, 11)
-static iomux_v3_cfg_t const eqos_pwr_pads[] = {
-	MX8MP_PAD_GPIO1_IO11__GPIO1_IO11 | MUX_PAD_CTRL(NO_PAD_CTRL),
-};
-
-static void setup_iomux_eqos(void)
-{
-	imx_iomux_v3_setup_multiple_pads(eqos_rst_pads,
-					 ARRAY_SIZE(eqos_rst_pads));
-
-	imx_iomux_v3_setup_multiple_pads(eqos_pwr_pads,
-					 ARRAY_SIZE(eqos_pwr_pads));
-
-	gpio_request(EQOS_PWR_PAD, "eqos_pwr");
-	gpio_direction_output(EQOS_PWR_PAD, 1);
-	mdelay(20);
-
-	gpio_request(EQOS_RST_PAD, "eqos_rst");
-	gpio_direction_output(EQOS_RST_PAD, 0);
-	mdelay(40);
-	gpio_direction_output(EQOS_RST_PAD, 1);
-	mdelay(100);
-}
-
-static int setup_eqos(void)
-{
-	struct iomuxc_gpr_base_regs *gpr =
-		(struct iomuxc_gpr_base_regs *)IOMUXC_GPR_BASE_ADDR;
-
-	setup_iomux_eqos();
-
-	/* set INTF as RGMII, enable RGMII TXC clock */
-	clrsetbits_le32(&gpr->gpr[1],
-			IOMUXC_GPR_GPR1_GPR_ENET_QOS_INTF_SEL_MASK, BIT(16));
-	setbits_le32(&gpr->gpr[1], BIT(19) | BIT(21));
-
-	return set_clk_eqos(ENET_125MHZ);
-}
-#endif
-
-#if defined(CONFIG_FEC_MXC) || defined(CONFIG_DWC_ETH_QOS)
-int board_phy_config(struct phy_device *phydev)
-{
-	if (phydev->drv->config)
-		phydev->drv->config(phydev);
-	return 0;
-}
-#endif
-
 #ifdef CONFIG_USB_DWC3
 
 #define USB_PHY_CTRL0			0xF0040
@@ -301,9 +247,9 @@ static struct dwc3_device dwc3_device_data = {
 	.power_down_scale = 2,
 };
 
-int usb_gadget_handle_interrupts(void)
+int dm_usb_gadget_handle_interrupts(struct udevice *dev)
 {
-	dwc3_uboot_handle_interrupt(0);
+	dwc3_uboot_handle_interrupt(dev);
 	return 0;
 }
 
@@ -444,11 +390,6 @@ int board_init(void)
 	setup_touch();
 	setup_camera();
 
-	/* clock, pin, gpr */
-	if(IS_ENABLED(CONFIG_DWC_ETH_QOS)) {
-			setup_eqos();
-	}
-
 #if defined(CONFIG_USB_DWC3) || defined(CONFIG_USB_XHCI_IMX8M)
 	setup_usb_rst();
 	init_usb_clk();
@@ -540,8 +481,10 @@ int board_late_init(void)
 #ifndef CONFIG_AVB_SUPPORT
 	reset_dsi();
 	detect_baseboard();
+#ifdef CONFIG_TN_PHERIPHERAL_DETECT
 	detect_display_panel();
 	detect_camera();
+#endif
 #endif
 
 #ifdef CONFIG_ENV_IS_IN_MMC
@@ -572,7 +515,7 @@ bool is_power_key_pressed(void) {
 #ifdef CONFIG_SPL_MMC
 
 #define UBOOT_RAW_SECTOR_OFFSET 0x40
-unsigned long spl_mmc_get_uboot_raw_sector(struct mmc *mmc)
+unsigned long spl_mmc_get_uboot_raw_sector(struct mmc *mmc, unsigned long raw_sect)
 {
 	u32 boot_dev = spl_boot_device();
 	switch (boot_dev) {
