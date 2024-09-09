@@ -27,7 +27,7 @@ typedef struct tn_camera_chk {
 
 extern struct tn_display const displays[];
 extern size_t tn_display_count;
-extern const tn_camera_chk_t tn_camera_chk[];
+__weak extern const tn_camera_chk_t tn_camera_chk[];
 extern size_t tn_camera_chk_cnt;
 extern uint8_t tn_cam_exclusive_i2c_addr[];
 extern size_t tn_cam_exclusive_i2c_addr_cnt;
