@@ -30,6 +30,7 @@
 #include <mmc.h>
 #include <asm/arch/ddr.h>
 #include "edm-g-imx8mp-ddr.h"
+#include <asm/sections.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
