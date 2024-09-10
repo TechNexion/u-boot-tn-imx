@@ -17,8 +17,6 @@
 
 #define CONFIG_SPL_MAX_SIZE		(152 * 1024)
 #define CONFIG_SYS_MONITOR_LEN		(512 * 1024)
-#define CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_USE_SECTOR
-#define CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR	0x300
 #define CONFIG_SYS_UBOOT_BASE	(QSPI0_AMBA_BASE + CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR * 512)
 
 #ifdef CONFIG_SPL_BUILD
@@ -32,9 +30,6 @@
 #define CONFIG_SPL_ABORT_ON_RAW_IMAGE
 
 #if defined(CONFIG_NAND_BOOT)
-#define CONFIG_SPL_NAND_SUPPORT
-#define CONFIG_SPL_DMA
-#define CONFIG_SPL_NAND_MXS
 #define CONFIG_SPL_NAND_BASE
 #define CONFIG_SPL_NAND_IDENT
 #define CONFIG_SYS_NAND_U_BOOT_OFFS 	0x4000000 /* Put the FIT out of first 64MB boot area */
@@ -77,22 +72,27 @@
 #define BOOTENV
 #endif
 
+#define JH_BOOT_DTB		"imx8mp-evk-root.dtb"
+
+/* M7 Specific */
+#define SYS_AUXCORE_BOOTDATA_TCM    0x007E0000
 
 #define JAILHOUSE_ENV \
 	"jh_clk= \0 " \
-	"jh_mmcboot=setenv fdtfile imx8mp-evk-root.dtb;" \
+	"jh_root_dtb=" JH_BOOT_DTB "\0" \
+	"jh_mmcboot=setenv fdtfile ${jh_root_dtb};" \
 		"setenv jh_clk clk_ignore_unused mem=2048MB; " \
 			   "if run loadimage; then " \
 				   "run mmcboot; " \
 			   "else run jh_netboot; fi; \0" \
-	"jh_netboot=setenv fdtfile imx8mp-evk-root.dtb; setenv jh_clk clk_ignore_unused mem=2048MB; run netboot; \0 "
+	"jh_netboot=setenv fdtfile ${jh_root_dtb}; setenv jh_clk clk_ignore_unused mem=2048MB; run netboot; \0 "
 
 #define CONFIG_MFG_ENV_SETTINGS \
 	CONFIG_MFG_ENV_SETTINGS_DEFAULT \
 	"initrd_addr=0x43800000\0" \
 	"initrd_high=0xffffffffffffffff\0" \
 	"emmc_dev=2\0"\
-	"sd_dev=1\0" \
+	"sd_dev=1\0"
 
 
 #ifdef CONFIG_NAND_BOOT
@@ -123,7 +123,7 @@
 	JAILHOUSE_ENV \
 	BOOTENV \
 	"scriptaddr=0x43500000\0" \
-	"kernel_addr_r=" __stringify(CONFIG_LOADADDR) "\0" \
+	"kernel_addr_r=" __stringify(CONFIG_SYS_LOAD_ADDR) "\0" \
 	"bsp_script=boot.scr\0" \
 	"image=Image\0" \
 	"splashimage=0x50000000\0" \
@@ -136,6 +136,13 @@
 	"boot_fit=no\0" \
 	"fdtfile=undefined\0" \
 	"bootm_size=0x10000000\0" \
+	"initrd_addr=0x43800000\0"              \
+	"initrd_high=0xffffffffffffffff\0" \
+	"m7image=hello_world.bin\0" \
+	"m7loadaddr="__stringify(SYS_AUXCORE_BOOTDATA_TCM)"\0" \
+	"m7boot=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${m7image}; " \
+	"cp.b ${loadaddr} ${m7loadaddr} ${filesize}; " \
+	"dcache flush; bootaux ${m7loadaddr}\0" \
 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
 	"mmcpart=1\0" \
 	"mmcroot=" CONFIG_MMCROOT " rootwait rw\0" \
@@ -200,17 +207,13 @@
 	   "fi;"
 #endif
 
+/* Link Definitions */
 #define CONFIG_SYS_INIT_RAM_ADDR	0x40000000
 #define CONFIG_SYS_INIT_RAM_SIZE	0x80000
 #define CONFIG_SYS_INIT_SP_OFFSET \
 	(CONFIG_SYS_INIT_RAM_SIZE - GENERATED_GBL_DATA_SIZE)
 #define CONFIG_SYS_INIT_SP_ADDR \
 	(CONFIG_SYS_INIT_RAM_ADDR + CONFIG_SYS_INIT_SP_OFFSET)
-
-#define CONFIG_ENV_SPI_BUS		CONFIG_SF_DEFAULT_BUS
-#define CONFIG_ENV_SPI_CS		CONFIG_SF_DEFAULT_CS
-#define CONFIG_ENV_SPI_MODE		CONFIG_SF_DEFAULT_MODE
-#define CONFIG_ENV_SPI_MAX_HZ		CONFIG_SF_DEFAULT_SPEED
 
 #define CONFIG_MMCROOT			"/dev/mmcblk1p2"  /* USDHC2 */
 
@@ -241,32 +244,15 @@
 /* NAND stuff */
 #define CONFIG_SYS_MAX_NAND_DEVICE     1
 #define CONFIG_SYS_NAND_BASE           0x20000000
-#define CONFIG_SYS_NAND_5_ADDR_CYCLE
-#define CONFIG_SYS_NAND_ONFI_DETECTION
 #define CONFIG_SYS_NAND_USE_FLASH_BBT
 #endif /* CONFIG_NAND_MXS */
 
 #define CONFIG_SYS_I2C_SPEED		100000
 
 /* USB configs */
-#ifndef CONFIG_SPL_BUILD
-
-#define CONFIG_CMD_USB_MASS_STORAGE
-#define CONFIG_USB_FUNCTION_MASS_STORAGE
-#endif
-
 #define CONFIG_USB_MAX_CONTROLLER_COUNT         2
 #define CONFIG_USBD_HS
 #define CONFIG_USB_GADGET_VBUS_DRAW 2
-
-#ifdef CONFIG_DM_VIDEO
-#define CONFIG_VIDEO_LOGO
-#define CONFIG_BMP_16BPP
-#define CONFIG_BMP_24BPP
-#define CONFIG_BMP_32BPP
-#define CONFIG_VIDEO_BMP_RLE8
-#define CONFIG_VIDEO_BMP_LOGO
-#endif
 
 #ifdef CONFIG_ANDROID_SUPPORT
 #include "imx8mp_evk_android.h"

@@ -61,8 +61,6 @@ static iomux_v3_cfg_t const ver_det_pads[] = {
 #define BOARD_ID1		IMX_GPIO_NR(3, 7)
 #define BOARD_ID2		IMX_GPIO_NR(3, 8)
 
-static u8 ddr_code __section("data");
-
 const tn_camera_chk_t tn_camera_chk[] = {
 	{ 1, 1, 0x3c, "tevi-ov5640" },
 	{ 2, 4, 0x3c, "tevi-ov5640" },
@@ -70,6 +68,24 @@ const tn_camera_chk_t tn_camera_chk[] = {
 	{ 2, 4, 0x3d, "tevi-ap1302" },
 };
 size_t tn_camera_chk_cnt = ARRAY_SIZE(tn_camera_chk);
+
+struct tn_display const displays[]= {
+/*  bus, addr, id_reg, id, detect */
+	{ 3, 0x2a, 0,     101, "lvds-vl10112880", detect_exc3000_i2c },
+	{ 4, 0x38, 0xA3, 0x54, "ili9881c", detect_i2c },
+	{ 4, 0x38, 0xA3, 0x58, "g080uan01", detect_i2c },
+	{ 4, 0x38, 0xA3, 0x59, "g101uan02", detect_i2c },
+	{ 4, 0x3d, 0x98, 0x3d, "mipi2hdmi-adv7535", detect_i2c },
+	{ 4, 0x3d, 0x98, 0x03, "mipi2hdmi-adv7535", detect_i2c },
+	{ 4, 0x3d, 0x00, 0x14, "mipi2hdmi-adv7535", detect_i2c },
+	{ 1, 0x2a, 1,     101, "vizionpanel-vl10112880", detect_vizionpanel_i2c },
+	{ 1, 0x2a, 1,     150, "vizionpanel-vl15010276", detect_vizionpanel_i2c },
+	{ 1, 0x2a, 1,     156, "vizionpanel-vl15613676", detect_vizionpanel_i2c },
+};
+
+size_t tn_display_count = ARRAY_SIZE(displays);
+
+static u8 ddr_code __section("data");
 
 static void board_get_ddr_code(void)
 {
@@ -136,8 +152,8 @@ int board_early_init_f(void)
 int ft_board_setup(void *blob, struct bd_info *bd)
 {
 	const int *cell;
-	int offs;
-	uint32_t cma_size;
+	int offs, maxc, minc;
+	uint32_t cma_size, thermal_node;
 	char *cmasize;
 #ifdef CONFIG_IMX8M_DRAM_INLINE_ECC
 	int rc;
@@ -169,10 +185,30 @@ int ft_board_setup(void *blob, struct bd_info *bd)
 	cell = fdt_getprop(blob, offs, "size", NULL);
 	cma_size = fdt32_to_cpu(cell[1]);
 	cmasize = env_get("cma_size");
-	if(cmasize || ((u64)(gd->ram_size >> 1) < cma_size)) {
-		cma_size = env_get_ulong("cma_size", 10, 320 * 1024 * 1024);
-		cma_size = min((u64)(gd->ram_size >> 1), (u64)cma_size);
+	if(cmasize || ((u64)(gd->ram_size >> 2) < cma_size)) {
+		cma_size = env_get_ulong("cma_size", 10, 256 * 1024 * 1024);
+		cma_size = max((u64)(gd->ram_size >> 2), (u64)cma_size);
 		fdt_setprop_u64(blob, offs, "size", (uint64_t)cma_size);
+	}
+
+	get_cpu_temp_grade(&minc, &maxc);
+	maxc *= 1000;
+
+	offs = fdt_path_offset(blob, "/thermal-zones/cpu-thermal/trips/trip1");
+	cell = fdt_getprop(blob, offs, "temperature", NULL);
+	thermal_node = fdt32_to_cpu(cell[0]);
+	if (thermal_node != maxc){
+		printf("Change thermal-zone for different cpu grade.\n");
+
+		fdt_setprop_u32(blob, offs, "temperature", (uint64_t)maxc);
+		offs = fdt_path_offset(blob, "/thermal-zones/soc-thermal/trips/trip1");
+		fdt_setprop_u32(blob, offs, "temperature", (uint64_t)maxc);
+
+		maxc -= 10000;
+		offs = fdt_path_offset(blob, "/thermal-zones/cpu-thermal/trips/trip0");
+		fdt_setprop_u32(blob, offs, "temperature", (uint64_t)maxc);
+		offs = fdt_path_offset(blob, "/thermal-zones/soc-thermal/trips/trip0");
+		fdt_setprop_u32(blob, offs, "temperature", (uint64_t)maxc);
 	}
 
 	return 0;
@@ -204,7 +240,7 @@ static void setup_iomux_eqos(void)
 
 	gpio_request(EQOS_RST_PAD, "eqos_rst");
 	gpio_direction_output(EQOS_RST_PAD, 0);
-	mdelay(15);
+	mdelay(40);
 	gpio_direction_output(EQOS_RST_PAD, 1);
 	mdelay(100);
 }
@@ -510,22 +546,6 @@ int detect_baseboard(void)
 
 }
 
-struct tn_display const displays[]= {
-/*  bus, addr, id_reg, id, detect */
-	{ 3, 0x2a, 0,     101, "lvds-vl10112880", detect_exc3000_i2c },
-	{ 4, 0x38, 0xA3, 0x54, "ili9881c", detect_i2c },
-	{ 4, 0x38, 0xA3, 0x58, "g080uan01", detect_i2c },
-	{ 4, 0x38, 0xA3, 0x59, "g101uan02", detect_i2c },
-	{ 4, 0x3d, 0x98, 0x3d, "mipi2hdmi-adv7535", detect_i2c },
-	{ 4, 0x3d, 0x98, 0x03, "mipi2hdmi-adv7535", detect_i2c },
-	{ 4, 0x3d, 0x00, 0x14, "mipi2hdmi-adv7535", detect_i2c },
-	{ 1, 0x2a, 1,     101, "vizionpanel-vl10112880", detect_vizionpanel_i2c },
-	{ 1, 0x2a, 1,     150, "vizionpanel-vl15010276", detect_vizionpanel_i2c },
-	{ 1, 0x2a, 1,     156, "vizionpanel-vl15613676", detect_vizionpanel_i2c },
-};
-
-size_t tn_display_count = ARRAY_SIZE(displays);
-
 int board_late_init(void)
 {
 #ifndef CONFIG_AVB_SUPPORT
@@ -561,7 +581,7 @@ bool is_power_key_pressed(void) {
 }
 #endif
 
-#ifdef CONFIG_SPL_MMC_SUPPORT
+#ifdef CONFIG_SPL_MMC
 
 #define UBOOT_RAW_SECTOR_OFFSET 0x40
 unsigned long spl_mmc_get_uboot_raw_sector(struct mmc *mmc)
