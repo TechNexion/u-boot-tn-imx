@@ -46,16 +46,6 @@ static iomux_v3_cfg_t const wdog_pads[] = {
 
 
 #ifndef CONFIG_SPL_BUILD
-static iomux_v3_cfg_t const ver_det_pads[] = {
-	MX8MP_PAD_NAND_DATA00__GPIO3_IO06 | MUX_PAD_CTRL(NO_PAD_CTRL),	/* BOARD ID0 */
-	MX8MP_PAD_NAND_DATA01__GPIO3_IO07 | MUX_PAD_CTRL(NO_PAD_CTRL),	/* BOARD ID1 */
-	MX8MP_PAD_NAND_DATA02__GPIO3_IO08 | MUX_PAD_CTRL(NO_PAD_CTRL),	/* BOARD ID2 */
-};
-
-#define BOARD_ID0		IMX_GPIO_NR(3, 6)
-#define BOARD_ID1		IMX_GPIO_NR(3, 7)
-#define BOARD_ID2		IMX_GPIO_NR(3, 8)
-
 #ifdef CONFIG_TN_PHERIPHERAL_DETECT
 const tn_camera_chk_t tn_camera_chk[] = {
 	{ 1, 1, 0x3c, "tevi-ov5640" },
@@ -84,16 +74,7 @@ static u8 ddr_code __section("data");
 
 static void board_get_ddr_code(void)
 {
-	imx_iomux_v3_setup_multiple_pads(ver_det_pads, ARRAY_SIZE(ver_det_pads));
-
-	gpio_request(BOARD_ID0, "board_id0");
-	gpio_direction_input(BOARD_ID0);
-	gpio_request(BOARD_ID1, "board_id1");
-	gpio_direction_input(BOARD_ID1);
-	gpio_request(BOARD_ID2, "board_id2");
-	gpio_direction_input(BOARD_ID2);
-
-	ddr_code = gpio_get_value(BOARD_ID0) | gpio_get_value(BOARD_ID1) << 1 |  gpio_get_value(BOARD_ID2) << 2 ;
+	ddr_code = readl(OCRAM_BASE_ADDR);
 }
 
 int board_phys_sdram_size(phys_size_t *size)
