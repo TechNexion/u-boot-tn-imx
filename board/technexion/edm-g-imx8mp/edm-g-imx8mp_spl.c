@@ -128,6 +128,8 @@ void spl_dram_init(void)
 	default:
 		puts("Unknown DDR type!!!\n");
 	}
+
+	writel(ddrcode, OCRAM_BASE_ADDR);
 }
 
 #if CONFIG_IS_ENABLED(DM_PMIC_PCA9450)
