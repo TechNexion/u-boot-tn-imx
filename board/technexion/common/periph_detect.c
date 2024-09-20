@@ -388,7 +388,7 @@ __weak int detect_tevi_camera(void) {
 	int i = 0, ret = -1;
 	tn_camera_chk_t *tevi_cam = NULL;
 
-	if ((tevi_camera == NULL) || (tevi_camera_cnt <= 0)) {
+	if (tevi_camera_cnt <= 0) {
 		return(-1);
 	}
 
