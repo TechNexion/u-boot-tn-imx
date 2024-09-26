@@ -63,7 +63,7 @@ setup_platform()
 	elif [ ${SOC} = "imx93" ] ; then
 		PLATFORM="imx93"
 		SOC_TARGET="iMX9"
-		SOC_DIR="iMX9"
+		SOC_DIR="iMX93"
 		IMX_BOOT_SEEK="32"
 		MKIMAGE_TARGET="flash_singleboot"
 	else
@@ -154,7 +154,7 @@ install_firmware()
 		printf "Cannot find DDR firmware \n"
 	fi
 
-	if [ "${SOC_DIR}" = "iMX9" ] ; then
+	if [ "${SOC_DIR}" = "iMX93" ] ; then
 		if [ ! -d firmware-sentinel-0.11 ] ; then
 			wget https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/firmware-sentinel-0.11.bin
 			chmod +x firmware-sentinel-0.11.bin
@@ -169,7 +169,7 @@ install_uboot_dtb()
 {
 	#Copy uboot binary
 	cd ${TWD}
-	if [ "${SOC_DIR}" = "iMX9" ] ; then
+	if [ "${SOC_DIR}" = "iMX93" ] ; then
 		cp u-boot.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
 	elif [ -f u-boot-nodtb.bin ] ; then
 		cp u-boot-nodtb.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
@@ -209,7 +209,7 @@ generate_imx_boot()
 
 	#Generate bootable binary (This binary contains SPL and u-boot.bin) for flashing
 	cd ${MKIMAGE_DIR}
-	if [ "${SOC_DIR}" = "iMX9" ] && [ "${old_imx93}" = 0 ] ; then
+	if [ "${SOC_DIR}" = "iMX93" ] && [ "${old_imx93}" = 0 ] ; then
 		make SOC=${SOC_TARGET} REV=A1 dtbs="${DTBS}" ${MKIMAGE_TARGET} && \
 			printf "Make target: ${MKIMAGE_TARGET} and generate flash.bin... \n" || printf "Fails to generate flash.bin... \n"
 	else
