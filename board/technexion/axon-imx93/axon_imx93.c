@@ -258,11 +258,6 @@ int detect_baseboard(void)
 
 int board_late_init(void)
 {
-#ifndef CONFIG_AVB_SUPPORT
-	detect_baseboard();
-	detect_display_panel();
-#endif
-
 #ifdef CONFIG_ENV_IS_IN_MMC
 	board_late_mmc_env_init();
 #endif
@@ -275,6 +270,11 @@ int board_late_init(void)
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	env_set("board_name", "AXON");
 	env_set("board_rev", "iMX93");
+#endif
+
+#ifndef CONFIG_AVB_SUPPORT
+	detect_baseboard();
+	detect_display_panel();
 #endif
 	return 0;
 }
