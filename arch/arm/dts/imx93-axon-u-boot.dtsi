@@ -8,6 +8,7 @@
 		compatible = "wdt-reboot";
 		wdt = <&wdog3>;
 		bootph-pre-ram;
+		bootph-some-ram;
 	};
 
 	aliases {
@@ -37,6 +38,14 @@
 	};
 };
 
+&A55_0 {
+	clocks = <&clk IMX93_CLK_A55_SEL>;
+};
+
+&A55_1 {
+	clocks = <&clk IMX93_CLK_A55_SEL>;
+};
+
 &{/soc@0} {
 	bootph-all;
 	bootph-pre-ram;
@@ -49,14 +58,17 @@
 
 &aips2 {
 	bootph-pre-ram;
+	bootph-some-ram;
 };
 
 &aips3 {
 	bootph-pre-ram;
+	bootph-some-ram;
 };
 
 &iomuxc {
 	bootph-pre-ram;
+	bootph-some-ram;
 };
 
 &reg_usdhc2_vmmc {
@@ -70,6 +82,7 @@
 
 &pinctrl_uart1 {
 	bootph-pre-ram;
+	bootph-some-ram;
 };
 
 &pinctrl_usdhc1 {
@@ -86,22 +99,27 @@
 
 &gpio1 {
 	bootph-pre-ram;
+	bootph-some-ram;
 };
 
 &gpio2 {
 	bootph-pre-ram;
+	bootph-some-ram;
 };
 
 &gpio3 {
 	bootph-pre-ram;
+	bootph-some-ram;
 };
 
 &gpio4 {
 	bootph-pre-ram;
+	bootph-some-ram;
 };
 
 &lpuart1 {
 	bootph-pre-ram;
+	bootph-some-ram;
 };
 
 &usdhc1 {
@@ -167,6 +185,7 @@
 
 &s4muap {
 	bootph-pre-ram;
+	bootph-some-ram;
 	status = "okay";
 };
 
