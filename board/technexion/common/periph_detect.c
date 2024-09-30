@@ -91,6 +91,7 @@ __weak int detect_i2c(struct tn_display const *dev)
 	return 0;
 }
 
+#define EXC3000_RETRY_TIMES 1
 /* { bus, addr, UNUSED, resolution, ov_name, detect_exc3000_i2c } */
 __weak int detect_exc3000_i2c(struct tn_display const *dev)
 {
@@ -99,6 +100,7 @@ __weak int detect_exc3000_i2c(struct tn_display const *dev)
 	struct i2c_msg msg_read_frame, msg_vendor_req;
 	int vendor_resolution = 0;
 	u8 read_vendor_buf[20];
+	int retry = 0;
 
 	u8 i2c_buf_read_frame[2] = { 0x27, 0x00 };
 	msg_read_frame.addr = 0x2a;
@@ -120,31 +122,47 @@ __weak int detect_exc3000_i2c(struct tn_display const *dev)
 
 	tn_debug("Detect func: %s, for overlay: %s\n", __func__, dev->ov_name);
 	udev = _check_i2c_dev(dev->bus, dev->addr);
-	if (udev != NULL) {
-		// clear read_frame
-		dm_i2c_xfer(udev, &msg_read_frame, 1);
-		mdelay(20);
-		dm_i2c_read(udev, 0, read_vendor_buf, 20);
+	if (udev == NULL)
+		goto skip_detect_exc3000_i2c;
+RETRY_EXC3000:
+	// clear read_frame
+	mdelay(20);
+	dm_i2c_xfer(udev, &msg_read_frame, 1);
+	mdelay(50);
+	dm_i2c_read(udev, 0, read_vendor_buf, 20);
+	mdelay(50);
 
-		// send vendor request
-		dm_i2c_xfer(udev, &msg_vendor_req, 1);
+	// send vendor request
+	dm_i2c_xfer(udev, &msg_vendor_req, 1);
+	mdelay(50);
+	dm_i2c_xfer(udev, &msg_read_frame, 1);
+	mdelay(50);
+	dm_i2c_read(udev, 0, read_vendor_buf, 20);
 
-		dm_i2c_xfer(udev, &msg_read_frame, 1);
-		mdelay(20);
-		dm_i2c_read(udev, 0, read_vendor_buf, 20);
-
-		// change ascii char to int
-		for (int i=16; i< 19; i++) {
-			tn_debug("detect_exc3000_i2c: read_buf[%d] = %c\n",i , read_vendor_buf[i]);
-			vendor_resolution += (read_vendor_buf[i] - 0x30);
-			if (i!=18)
-				vendor_resolution *= 10;
-			tn_debug("detect_exc3000_i2c: vendor_resolution=%u\n", vendor_resolution);
+	// change ascii char to int
+	for (int i=16; i< 19; i++) {
+		// if not ASCII number, retry or exit.
+		if ((read_vendor_buf[i] < 0x30) || (read_vendor_buf[i] > 0x39)){
+			if (retry < EXC3000_RETRY_TIMES){
+				retry ++;
+				tn_debug("%s: i2c transfer error. retry=%d\n",__func__, retry);
+				goto RETRY_EXC3000;
+			} else {
+				tn_debug("%s: i2c transfer error. retry=%d, exit.\n",__func__, retry);
+				goto skip_detect_exc3000_i2c;
+			}
 		}
-		if (vendor_resolution == dev->id)
-			return(1);
+		tn_debug("detect_exc3000_i2c: read_buf[%d] = %c\n",i , read_vendor_buf[i]);
+		vendor_resolution += (read_vendor_buf[i] - 0x30);
+		if (i!=18)
+			vendor_resolution *= 10;
+		tn_debug("detect_exc3000_i2c: vendor_resolution=%u\n", vendor_resolution);
 	}
+	if (vendor_resolution == dev->id)
+		return(1);
+
 #endif
+skip_detect_exc3000_i2c:
 	return 0;
 }
 
