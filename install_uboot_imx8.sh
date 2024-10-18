@@ -212,6 +212,9 @@ generate_imx_boot()
 	if [ "${SOC_DIR}" = "iMX93" ] && [ "${old_imx93}" = 0 ] ; then
 		make SOC=${SOC_TARGET} REV=A1 dtbs="${DTBS}" ${MKIMAGE_TARGET} && \
 			printf "Make target: ${MKIMAGE_TARGET} and generate flash.bin... \n" || printf "Fails to generate flash.bin... \n"
+	elif [ "${SOC_DIR}" = "iMX93" ] && [ "${old_imx93}" = 1 ] ; then
+		make SOC=${SOC_TARGET} REV=A0 dtbs="${DTBS}" ${MKIMAGE_TARGET} && \
+			printf "Make target: ${MKIMAGE_TARGET} and generate flash.bin... \n" || printf "Fails to generate flash.bin... \n"
 	else
 		make SOC=${SOC_TARGET} dtbs="${DTBS}" ${MKIMAGE_TARGET} && \
 			printf "Make target: ${MKIMAGE_TARGET} and generate flash.bin... \n" || printf "Fails to generate flash.bin... \n"
