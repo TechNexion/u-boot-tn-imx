@@ -180,8 +180,61 @@ void board_late_mmc_env_init(void)
 	run_command(cmd, 0);
 }
 
+#define EXC3000_I2C_ADDR 0x2A
+#define TOUCH_I2C_BUS 2
+void board_modify_fdt(void)
+{
+	struct udevice *bus = NULL;
+	struct udevice *i2c_dev = NULL;
+	int nodeoff;
+	int ret;
+	uint32_t new_value;
+	void *fdt = (void *)gd->fdt_blob;
+
+	if (uclass_get_device_by_seq(UCLASS_I2C, TOUCH_I2C_BUS, &bus)) {
+		printf("%s: Can't find bus\n", __func__);
+		return;
+	}
+
+	dm_i2c_probe(bus, EXC3000_I2C_ADDR, 0, &i2c_dev);
+
+	// change splash screen resolution to 8-inch
+	if (i2c_dev) {
+		printf("%s: detect exc3000 panel, change resolution to 8-inch\n", __func__);
+		// Find the node /panel/display-timings/timing0
+		nodeoff = fdt_path_offset(fdt, "/panel/display-timings/timing0");
+		if (nodeoff < 0) {
+			printf("Node not found: %s\n", fdt_strerror(nodeoff));
+			return;
+		}
+
+		new_value = cpu_to_fdt32(0x258);
+		ret = fdt_setprop(fdt, nodeoff, "vactive", &new_value, sizeof(new_value));
+		if (ret) {
+			printf("Failed to set property 'vactive': %s\n", fdt_strerror(ret));
+			return;
+		}
+
+		new_value = cpu_to_fdt32(0x3);
+		ret = fdt_setprop(fdt, nodeoff, "vfront-porch", &new_value, sizeof(new_value));
+		if (ret) {
+			printf("Failed to set property 'vfront-porch': %s\n", fdt_strerror(ret));
+			return;
+		}
+
+		new_value = cpu_to_fdt32(0x2625A00);
+		ret = fdt_setprop(fdt, nodeoff, "clock-frequency", &new_value, sizeof(new_value));
+		if (ret) {
+			printf("Failed to set property 'clock-frequency': %s\n", fdt_strerror(ret));
+			return;
+		}
+	}
+}
+
 int board_init(void)
 {
+	board_modify_fdt();
+
 	if (IS_ENABLED(CONFIG_FEC_MXC))
 		setup_fec();
 
