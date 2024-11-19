@@ -986,6 +986,7 @@ dtb-$(CONFIG_ARCH_IMX9) += \
 	imx91-11x11-frdm.dtb \
 	imx91-11x11-frdm-imx91s.dtb \
 	imx93-axon.dtb \
+	imx93-pico.dtb \
 	imx93-edm.dtb \
 	imx93-var-som-symphony.dtb \
 	imx93-phyboard-segin.dtb \
