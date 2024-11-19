@@ -89,6 +89,12 @@ config TARGET_AXON_IMX93
 	select IMX93
 	select IMX9_LPDDR4X
 
+config TARGET_PICO_IMX93
+	bool "pico_imx93"
+	select OF_BOARD_FIXUP
+	select IMX93
+	select IMX9_LPDDR4X
+
 config TARGET_EDM_IMX93
 	bool "edm-imx93"
 	select OF_BOARD_FIXUP
@@ -102,6 +108,7 @@ source "board/freescale/imx91_qsb/Kconfig"
 source "board/freescale/imx93_evk/Kconfig"
 source "board/phytec/phycore_imx93/Kconfig"
 source "board/technexion/axon-imx93/Kconfig"
+source "board/technexion/pico-imx93/Kconfig"
 source "board/technexion/edm-imx93/Kconfig"
 source "board/variscite/imx93_var_som/Kconfig"
 source "board/freescale/imx93_qsb/Kconfig"
