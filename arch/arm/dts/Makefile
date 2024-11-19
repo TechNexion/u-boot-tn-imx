@@ -1212,6 +1212,7 @@ dtb-$(CONFIG_ARCH_IMX9) += \
 	imx93-9x9-qsb.dtb \
 	imx93-9x9-qsb-tianma-wvga-panel.dtb \
 	imx93-axon.dtb \
+	imx93-pico.dtb \
 	imx93-edm.dtb \
 	imx93-var-som-symphony.dtb \
 	imx93-phyboard-segin.dtb
