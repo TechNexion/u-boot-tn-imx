@@ -9,7 +9,7 @@
 #define __PICO_IMX7D_CONFIG_H
 
 #include "mx7_common.h"
-
+#include "imx_env.h"
 #include "imx7_spl.h"
 
 #ifdef CONFIG_SPL_OS_BOOT
@@ -31,7 +31,15 @@
 
 #define SYS_MMC_IMG_LOAD_PART	1
 
+#define CONFIG_MFG_ENV_SETTINGS \
+	CONFIG_MFG_ENV_SETTINGS_DEFAULT \
+	"initrd_addr=0x86800000\0" \
+	"initrd_high=0xffffffff\0" \
+	"emmc_dev=2\0" \
+	"sd_dev=0\0" \
+
 #define CONFIG_EXTRA_ENV_SETTINGS \
+	CONFIG_MFG_ENV_SETTINGS \
 	"tcm_addr=0x7F8000\0" \
 	"m4image=m4_tcm.bin\0" \
 	"loadm4image=fatload mmc ${mmcdev}:${mmcpart} ${tcm_addr} ${m4image}\0" \
