@@ -12,7 +12,7 @@
 #define __PICO_IMX6_CONFIG_H
 
 #include "mx6_common.h"
-
+#include "imx_env.h"
 #include "imx6_spl.h"
 
 #ifdef CONFIG_SPL_OS_BOOT
@@ -50,6 +50,13 @@
 
 #define DFU_DEFAULT_POLL_TIMEOUT 300
 
+#define CONFIG_MFG_ENV_SETTINGS \
+	CONFIG_MFG_ENV_SETTINGS_DEFAULT \
+	"initrd_addr=0x86800000\0" \
+	"initrd_high=0xffffffff\0" \
+	"emmc_dev=2\0"\
+	"sd_dev=0\0" \
+
 #define CONFIG_DFU_ENV_SETTINGS \
 	"dfu_alt_info=" \
 		"spl raw 0x2 0x400;" \
@@ -58,6 +65,7 @@
 		"rootfs part 0 1\0" \
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
+	CONFIG_MFG_ENV_SETTINGS \
 	"script=boot.scr\0" \
 	"image=zImage\0" \
 	"console=ttymxc0\0" \
