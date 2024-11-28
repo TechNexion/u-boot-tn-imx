@@ -13,6 +13,7 @@
 #include "mx6_common.h"
 #include <asm/mach-imx/gpio.h>
 #include "imx6_spl.h"
+#include "imx_env.h"
 
 #ifdef CONFIG_SPL_OS_BOOT
 /* Falcon Mode */
@@ -50,7 +51,16 @@
 
 #define SYS_MMC_IMG_LOAD_PART	1
 
+#define CONFIG_MFG_ENV_SETTINGS \
+	CONFIG_MFG_ENV_SETTINGS_DEFAULT \
+	"initrd_addr=0x86800000\0" \
+	"initrd_high=0xffffffff\0" \
+	"emmc_dev=0\0"\
+	"emmc_ack=1\0"\
+	"sd_dev=0\0" \
+
 #define CONFIG_EXTRA_ENV_SETTINGS \
+	CONFIG_MFG_ENV_SETTINGS \
 	"stdin=serial\0" \
 	"stdout=\0" \
 	"stderr=\0" \
