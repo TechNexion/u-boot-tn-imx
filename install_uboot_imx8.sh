@@ -66,6 +66,12 @@ setup_platform()
 		SOC_DIR="iMX93"
 		IMX_BOOT_SEEK="32"
 		MKIMAGE_TARGET="flash_singleboot"
+	elif [ ${SOC} = "imx91" ] ; then
+		PLATFORM="imx91"
+		SOC_TARGET="iMX91"
+		SOC_DIR="iMX91"
+		IMX_BOOT_SEEK="32"
+		MKIMAGE_TARGET="flash_singleboot"
 	else
 		printf "Targest SOC isn't supported by this script\n"
 		exit 1
@@ -138,7 +144,7 @@ install_firmware()
 			cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_pmu_train_1d_imem_202006.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
 			cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_pmu_train_2d_dmem_202006.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
 			cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_pmu_train_2d_imem_202006.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
-		elif [ ${SOC} = "imx93" ] ; then
+		elif [ ${SOC} = "imx93" ]||[ ${SOC} = "imx91" ] ; then
 			cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_imem_1d_v202201.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
 			cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_dmem_1d_v202201.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
 			cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_imem_2d_v202201.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
@@ -154,7 +160,7 @@ install_firmware()
 		printf "Cannot find DDR firmware \n"
 	fi
 
-	if [ "${SOC_DIR}" = "iMX93" ] ; then
+	if [ "${SOC_DIR}" = "iMX93" ]; then
 		if [ ! -d firmware-sentinel-0.11 ] ; then
 			wget https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/firmware-sentinel-0.11.bin
 			chmod +x firmware-sentinel-0.11.bin
@@ -163,13 +169,21 @@ install_firmware()
 		cp firmware-sentinel-0.11/mx93a0-ahab-container.img ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
 		cp firmware-sentinel-0.11/mx93a1-ahab-container.img ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
 	fi
+	if [ "${SOC_DIR}" = "iMX91" ]; then
+		if [ ! -d firmware-ele-imx-0.1.3-4b30ee5 ] ; then
+			wget https://www.nxp.com/lgfiles/NMG/MAD/YOCTO//firmware-ele-imx-0.1.3-4b30ee5.bin
+			chmod +x firmware-ele-imx-0.1.3-4b30ee5.bin
+			./firmware-ele-imx-0.1.3-4b30ee5.bin
+		fi
+		cp firmware-ele-imx-0.1.3-4b30ee5/mx91a0-ahab-container.img ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+	fi
 }
 
 install_uboot_dtb()
 {
 	#Copy uboot binary
 	cd ${TWD}
-	if [ "${SOC_DIR}" = "iMX93" ] ; then
+	if [ "${SOC_DIR}" = "iMX93" ]||[ "${SOC_DIR}" = "iMX91" ] ; then
 		cp u-boot.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
 	elif [ -f u-boot-nodtb.bin ] ; then
 		cp u-boot-nodtb.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
