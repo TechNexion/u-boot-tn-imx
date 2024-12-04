@@ -971,6 +971,7 @@ dtb-$(CONFIG_ARCH_IMX9) += \
 	imx943-orangebox.dtb \
 	imx91-9x9-qsb.dtb \
 	imx91-11x11-frdm-imx91s.dtb \
+	imx91-axon.dtb \
 	imx93w-evk.dtb \
 	imx93w-frdm.dtb \
 	imx93-axon.dtb \
