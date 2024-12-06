@@ -1003,7 +1003,7 @@ config VIDEO_ADV7535
 
 config VIDEO_SN65DSI84
 	bool "SN65DSI84 MIPI DSI to LVDS connector"
-	depends on DM_VIDEO
+	depends on VIDEO
 	select VIDEO_MIPI_DSI
 	default n
 	help
