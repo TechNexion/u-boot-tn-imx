@@ -67,6 +67,7 @@ static struct udevice * _check_i2c_dev(int bus_idx, uint addr) {
 		return(NULL);
 	}
 
+	mdelay(100);
 	dm_i2c_probe(bus, addr, 0, &i2c_dev);
 
 	return(i2c_dev);
