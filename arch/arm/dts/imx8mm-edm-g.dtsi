@@ -474,10 +474,6 @@
 };
 
 &lcdif {
-	enable_polarity_low;
-	/delete-property/ assigned-clocks;
-	/delete-property/ assigned-clock-parents;
-	/delete-property/ assigned-clock-rates;
 	display = <&display0>;
 	status = "okay";
 
@@ -485,5 +481,4 @@
 		bits-per-pixel = <24>;
 		bus-width = <24>;
 	};
-
 };
