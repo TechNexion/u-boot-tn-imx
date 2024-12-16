@@ -162,8 +162,8 @@ RETRY_EXC3000:
 	if (vendor_resolution == dev->id)
 		return(1);
 
-#endif
 skip_detect_exc3000_i2c:
+#endif
 	return 0;
 }
 
