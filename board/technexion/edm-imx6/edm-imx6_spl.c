@@ -24,6 +24,7 @@
 #include <asm/mach-imx/sata.h>
 #include <init.h>
 #include <linux/delay.h>
+#include <asm/sections.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
