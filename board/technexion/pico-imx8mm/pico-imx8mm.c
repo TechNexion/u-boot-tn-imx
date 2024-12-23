@@ -31,6 +31,7 @@
 #include <linux/delay.h>
 #include <command.h>
 #include "../common/periph_detect.h"
+#include <dm/uclass.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -46,6 +47,7 @@ static iomux_v3_cfg_t const wdog_pads[] = {
 	IMX8MM_PAD_GPIO1_IO02_WDOG1_WDOG_B  | MUX_PAD_CTRL(WDOG_PAD_CTRL),
 };
 
+#ifdef CONFIG_TN_PHERIPHERAL_DETECT
 const tn_camera_chk_t tn_camera_chk[] = {
 	{ 1, 1, 0x3c, "tevi-ov5640" },
 	{ 1, 1, 0x3d, "tevi-ap1302" },
@@ -61,7 +63,7 @@ struct tn_display const displays[]= {
 	{ 2, 0x3d, 0x98, 0x03, "mipi2hdmi-adv7535", detect_i2c },
 };
 size_t tn_display_count = ARRAY_SIZE(displays);
-
+#endif
 
 #if CONFIG_IS_ENABLED(EFI_HAVE_CAPSULE_SUPPORT)
 struct efi_fw_image fw_images[] = {
@@ -423,8 +425,10 @@ int board_late_init(void)
 {
 #ifndef CONFIG_AVB_SUPPORT
 	detect_baseboard();
+#ifdef CONFIG_TN_PHERIPHERAL_DETECT
 	detect_display_panel();
 	detect_camera();
+#endif
 #endif
 
 #ifdef CONFIG_ENV_IS_IN_MMC
