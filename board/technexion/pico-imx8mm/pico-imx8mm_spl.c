@@ -31,6 +31,7 @@
 #include <fsl_sec.h>
 #include <mmc.h>
 #include <linux/delay.h>
+#include <asm/sections.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
