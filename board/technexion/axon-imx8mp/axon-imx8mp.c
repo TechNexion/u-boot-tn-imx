@@ -9,8 +9,6 @@
 #include <command.h>
 #include <env.h>
 #include <init.h>
-#include <miiphy.h>
-#include <netdev.h>
 #include <linux/delay.h>
 #include <asm/global_data.h>
 #include <asm/io.h>
@@ -26,12 +24,12 @@
 #include <power/pmic.h>
 #include <usb.h>
 #include <dwc3-uboot.h>
-#include <imx_sip.h>
-#include <linux/arm-smccc.h>
 #include <mmc.h>
 #include <asm/armv8/mmu.h>
 #include "axon-imx8mp-ddr.h"
 #include "../common/periph_detect.h"
+#include <dm/uclass.h>
+#include <dm/device.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -59,8 +57,7 @@ static iomux_v3_cfg_t const ver_det_pads[] = {
 #define BOARD_ID1		IMX_GPIO_NR(3, 7)
 #define BOARD_ID2		IMX_GPIO_NR(3, 8)
 
-static u8 ddr_code __section("data");
-
+#ifdef CONFIG_TN_PHERIPHERAL_DETECT
 const tn_camera_chk_t tn_camera_chk[] = {
 	{ 1, 1, 0x3c, "tevi-ov5640" },
 	{ 2, 4, 0x3c, "tevi-ov5640" },
@@ -70,6 +67,24 @@ const tn_camera_chk_t tn_camera_chk[] = {
 	{ 2, 4, 0x48, "tevs" },
 };
 size_t tn_camera_chk_cnt = ARRAY_SIZE(tn_camera_chk);
+
+struct tn_display const displays[]= {
+/*      bus, addr, id_reg, id, detect */
+	{ 4, 0x2a, 0,    101,  "lvds-vl10112880", detect_exc3000_i2c },
+	{ 1, 0x38, 0xA3, 0x54, "ili9881c", detect_i2c },
+	{ 1, 0x38, 0xA3, 0x59, "g101uan02", detect_i2c },
+	{ 1, 0x3d, 0x98, 0x03, "mipi2hdmi-adv7535", detect_i2c },
+	{ 4, 0x2a, 4,     101, "vizionpanel-vl10112880", detect_vizionpanel_i2c },
+	{ 4, 0x2a, 4,     150, "vizionpanel-vl15010276", detect_vizionpanel_i2c },
+	{ 4, 0x2a, 4,     156, "vizionpanel-vl15613676", detect_vizionpanel_i2c },
+	{ 4, 0x2a, 4,      80, "vizionpanel-vl808060",   detect_vizionpanel_i2c },
+	{ 4, 0x38, 0xa6, 0x02, "vizionpanel-vl708048",   detect_vizionpanel_i2c },
+	{ 4, 0x38, 0xa6, 0x01, "vizionpanel-vl508048",   detect_vizionpanel_i2c },
+};
+size_t tn_display_count = ARRAY_SIZE(displays);
+#endif
+
+static u8 ddr_code __section("data");
 
 static void board_get_ddr_code(void)
 {
@@ -179,61 +194,6 @@ int ft_board_setup(void *blob, struct bd_info *bd)
 }
 #endif
 
-#ifdef CONFIG_DWC_ETH_QOS
-#define EQOS_RST_PAD IMX_GPIO_NR(1, 9)
-static iomux_v3_cfg_t const eqos_rst_pads[] = {
-	MX8MP_PAD_GPIO1_IO09__GPIO1_IO09 | MUX_PAD_CTRL(NO_PAD_CTRL),
-};
-
-#define EQOS_PWR_PAD IMX_GPIO_NR(1, 11)
-static iomux_v3_cfg_t const eqos_pwr_pads[] = {
-	MX8MP_PAD_GPIO1_IO11__GPIO1_IO11 | MUX_PAD_CTRL(NO_PAD_CTRL),
-};
-
-static void setup_iomux_eqos(void)
-{
-	imx_iomux_v3_setup_multiple_pads(eqos_rst_pads,
-					 ARRAY_SIZE(eqos_rst_pads));
-
-	imx_iomux_v3_setup_multiple_pads(eqos_pwr_pads,
-					 ARRAY_SIZE(eqos_pwr_pads));
-
-	gpio_request(EQOS_PWR_PAD, "eqos_pwr");
-	gpio_direction_output(EQOS_PWR_PAD, 1);
-	mdelay(20);
-
-	gpio_request(EQOS_RST_PAD, "eqos_rst");
-	gpio_direction_output(EQOS_RST_PAD, 0);
-	mdelay(15);
-	gpio_direction_output(EQOS_RST_PAD, 1);
-	mdelay(100);
-}
-
-static int setup_eqos(void)
-{
-	struct iomuxc_gpr_base_regs *gpr =
-		(struct iomuxc_gpr_base_regs *)IOMUXC_GPR_BASE_ADDR;
-
-	setup_iomux_eqos();
-
-	/* set INTF as RGMII, enable RGMII TXC clock */
-	clrsetbits_le32(&gpr->gpr[1],
-			IOMUXC_GPR_GPR1_GPR_ENET_QOS_INTF_SEL_MASK, BIT(16));
-	setbits_le32(&gpr->gpr[1], BIT(19) | BIT(21));
-
-	return set_clk_eqos(ENET_125MHZ);
-}
-#endif
-
-#if defined(CONFIG_FEC_MXC) || defined(CONFIG_DWC_ETH_QOS)
-int board_phy_config(struct phy_device *phydev)
-{
-	if (phydev->drv->config)
-		phydev->drv->config(phydev);
-	return 0;
-}
-#endif
-
 #ifdef CONFIG_USB_DWC3
 
 #define USB_PHY_CTRL0			0xF0040
@@ -269,9 +229,9 @@ static struct dwc3_device dwc3_device_data = {
 	.power_down_scale = 2,
 };
 
-int usb_gadget_handle_interrupts(void)
+int dm_usb_gadget_handle_interrupts(struct udevice *dev)
 {
-	dwc3_uboot_handle_interrupt(0);
+	dwc3_uboot_handle_interrupt(dev);
 	return 0;
 }
 
@@ -316,9 +276,9 @@ static void dwc3_nxp_usb_phy_init(struct dwc3_device *dwc3)
 #if defined(CONFIG_USB_DWC3) || defined(CONFIG_USB_XHCI_IMX8M)
 int board_usb_init(int index, enum usb_init_type init)
 {
-	imx8m_usb_power(index, true);
 
 	if (index == 0 && init == USB_INIT_DEVICE) {
+		imx8m_usb_power(index, true);
 		dwc3_nxp_usb_phy_init(&dwc3_device_data);
 		return dwc3_uboot_init(&dwc3_device_data);
 	}
@@ -330,9 +290,8 @@ int board_usb_cleanup(int index, enum usb_init_type init)
 {
 	if (index == 0 && init == USB_INIT_DEVICE) {
 		dwc3_uboot_exit(index);
+		imx8m_usb_power(index, false);
 	}
-
-	imx8m_usb_power(index, false);
 
 	return 0;
 }
@@ -406,32 +365,17 @@ void setup_camera(void)
 
 #define FSL_SIP_GPC			0xC2000000
 #define FSL_SIP_CONFIG_GPC_PM_DOMAIN	0x3
-#define DISPMIX				13
-#define MIPI				15
-
 int board_init(void)
 {
-	struct arm_smccc_res res;
 
 	setup_wifi();
 	setup_touch();
 	setup_camera();
 
-#ifdef CONFIG_DWC_ETH_QOS
-	/* clock, pin, gpr */
-	setup_eqos();
-#endif
-
 #if defined(CONFIG_USB_DWC3) || defined(CONFIG_USB_XHCI_IMX8M)
 	setup_usb_rst();
 	init_usb_clk();
 #endif
-
-	/* enable the dispmix & mipi phy power domain */
-	arm_smccc_smc(IMX_SIP_GPC, IMX_SIP_GPC_PM_DOMAIN,
-			DISPMIX, true, 0, 0, 0, 0, &res);
-	arm_smccc_smc(IMX_SIP_GPC, IMX_SIP_GPC_PM_DOMAIN,
-			MIPI, true, 0, 0, 0, 0, &res);
 
 	return 0;
 }
@@ -527,29 +471,15 @@ int detect_baseboard(void)
 
 }
 
-struct tn_display const displays[]= {
-/*  bus, addr, id_reg, id, detect */
-	{ 3, 0x2a, 0,     101, "lvds-vl10112880", detect_exc3000_i2c },
-	{ 4, 0x38, 0xA3, 0x54, "ili9881c", detect_i2c },
-	{ 4, 0x38, 0xA3, 0x58, "g080uan01", detect_i2c },
-	{ 4, 0x38, 0xA3, 0x59, "g101uan02", detect_i2c },
-	{ 4, 0x3d, 0x98, 0x3d, "mipi2hdmi-adv7535", detect_i2c },
-	{ 4, 0x3d, 0x98, 0x03, "mipi2hdmi-adv7535", detect_i2c },
-	{ 4, 0x3d, 0x00, 0x14, "mipi2hdmi-adv7535", detect_i2c },
-	{ 1, 0x2a, 1,     101, "vizionpanel-vl10112880", detect_vizionpanel_i2c },
-	{ 1, 0x2a, 1,     150, "vizionpanel-vl15010276", detect_vizionpanel_i2c },
-	{ 1, 0x2a, 1,     156, "vizionpanel-vl15613676", detect_vizionpanel_i2c },
-};
-
-size_t tn_display_count = ARRAY_SIZE(displays);
-
 int board_late_init(void)
 {
 #ifndef CONFIG_AVB_SUPPORT
 	reset_dsi();
 	detect_baseboard();
+#ifdef CONFIG_TN_PHERIPHERAL_DETECT
 	detect_display_panel();
 	detect_camera();
+#endif
 #endif
 
 #ifdef CONFIG_ENV_IS_IN_MMC
@@ -559,7 +489,6 @@ int board_late_init(void)
 	env_set("board_name", "AXON");
 	env_set("board_rev", "iMX8MP");
 #endif
-
 	return 0;
 }
 
@@ -578,10 +507,10 @@ bool is_power_key_pressed(void) {
 }
 #endif
 
-#ifdef CONFIG_SPL_MMC_SUPPORT
+#ifdef CONFIG_SPL_MMC
 
 #define UBOOT_RAW_SECTOR_OFFSET 0x40
-unsigned long spl_mmc_get_uboot_raw_sector(struct mmc *mmc)
+unsigned long spl_mmc_get_uboot_raw_sector(struct mmc *mmc, unsigned long raw_sect)
 {
 	u32 boot_dev = spl_boot_device();
 	switch (boot_dev) {
