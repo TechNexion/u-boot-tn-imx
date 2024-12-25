@@ -377,11 +377,3 @@ int mmc_get_env_dev(void)
 }
 #endif
 #endif /* CONFIG_FSL_ESDHC_IMX */
-
-#ifdef CONFIG_ENV_IS_IN_MMC
-/* This should be defined for each board */
-__weak int mmc_map_to_kernel_blk(int dev_no)
-{
-	return dev_no;
-}
-#endif
