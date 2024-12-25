@@ -21,7 +21,6 @@
 #include "../../freescale/common/pfuze.h"
 #include <mmc.h>
 #include <splash.h>
-#include <asm/mach-imx/boot_mode.h>
 #include <command.h>
 
 DECLARE_GLOBAL_DATA_PTR;
@@ -113,60 +112,6 @@ static int setup_fec(void)
 #endif
 
 static void setup_iomux_uart(void)
-
-#ifdef CONFIG_FSL_ESDHC_IMX
-int check_mmc_autodetect(void)
-{
-	char *autodetect_str = env_get("mmcautodetect");
-
-	if ((autodetect_str != NULL) &&
-		(strcmp(autodetect_str, "yes") == 0)) {
-		return 1;
-	}
-
-	return 0;
-}
-
-void board_late_mmc_init(void)
-{
-	if (!check_mmc_autodetect())
-		return;
-
-	switch (get_boot_device()) {
-		case SD3_BOOT:
-		case MMC3_BOOT:
-			env_set("bootdev", "SD0");
-			break;
-		case SD1_BOOT:
-			env_set("bootdev", "SD1");
-			break;
-		default:
-			printf("Wrong boot device!");
-	}
-}
-
-void board_late_mmc_env_init(void)
-{
-	char cmd[32];
-	char mmcblk[32];
-	u32 dev_no = mmc_get_env_dev();
-
-	if (!check_mmc_autodetect())
-		return;
-
-	env_set_ulong("mmcdev", dev_no);
-
-	/* Set mmcblk env */
-	sprintf(mmcblk, "/dev/mmcblk%dp2 rootwait rw",
-		mmc_map_to_kernel_blk(dev_no));
-	env_set("mmcroot", mmcblk);
-
-	sprintf(cmd, "mmc dev %d", dev_no);
-	run_command(cmd, 0);
-}
-#endif
-
-int board_phy_config(struct phy_device *phydev)
 {
 	imx_iomux_v3_setup_multiple_pads(uart5_pads, ARRAY_SIZE(uart5_pads));
 }
@@ -264,11 +209,6 @@ int board_late_init(void)
 	board_late_mmc_env_init();
 #endif /* CONFIG_ENV_IS_IN_MMC or CONFIG_ENV_IS_NOWHERE */
 #endif
-
-#ifdef CONFIG_ENV_IS_IN_MMC
-	board_late_mmc_init();
-	board_late_mmc_env_init();
-#endif /* CONFIG_ENV_IS_IN_MMC */
 
 	/*
 	 * Do not assert internal WDOG_RESET_B_DEB(controlled by bit 4),
