@@ -70,7 +70,7 @@
     "mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
     "mmcpart=" __stringify(SYS_MMC_IMG_LOAD_PART) "\0" \
     "searchbootdev=" \
-        "if test ${bootdev} = SD0; then " \
+        "if test ${bootdev} = MMC3; then " \
             "setenv mmcrootdev /dev/mmcblk2; " \
             "setenv mmcroot /dev/mmcblk2p2 rootwait rw; " \
         "else " \
