@@ -1207,6 +1207,7 @@ dtb-$(CONFIG_ARCH_IMX9) += \
 	imx91-11x11-evk-spinand.dtb \
 	imx91-11x11-evk-tianma-wvga-panel.dtb \
 	imx91-axon.dtb \
+	imx91-edm.dtb \
 	imx93-11x11-evk.dtb \
 	imx93-11x11-evk-pmic-pf0900.dtb \
 	imx93-14x14-evk.dtb \
