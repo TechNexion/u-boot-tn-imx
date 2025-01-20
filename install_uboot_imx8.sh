@@ -170,12 +170,12 @@ install_firmware()
 		cp firmware-sentinel-0.11/mx93a1-ahab-container.img ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
 	fi
 	if [ "${SOC_DIR}" = "iMX91" ]; then
-		if [ ! -d firmware-ele-imx-0.1.3-4b30ee5 ] ; then
-			wget https://www.nxp.com/lgfiles/NMG/MAD/YOCTO//firmware-ele-imx-0.1.3-4b30ee5.bin
-			chmod +x firmware-ele-imx-0.1.3-4b30ee5.bin
-			./firmware-ele-imx-0.1.3-4b30ee5.bin
+		if [ ! -d firmware-ele-imx-1.3.0-17945fc ] ; then
+			wget https://www.nxp.com/lgfiles/NMG/MAD/YOCTO//firmware-ele-imx-1.3.0-17945fc.bin
+			chmod +x firmware-ele-imx-1.3.0-17945fc.bin
+			./firmware-ele-imx-1.3.0-17945fc.bin
 		fi
-		cp firmware-ele-imx-0.1.3-4b30ee5/mx91a0-ahab-container.img ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+		cp firmware-ele-imx-1.3.0-17945fc/mx91a0-ahab-container.img ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
 	fi
 }
 
