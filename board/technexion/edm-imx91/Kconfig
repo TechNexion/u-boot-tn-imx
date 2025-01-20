@@ -1,0 +1,21 @@
+if TARGET_EDM_IMX91
+
+config SYS_BOARD
+	default "edm-imx91"
+
+config SYS_VENDOR
+	default "technexion"
+
+config SYS_CONFIG_NAME
+	default "edm-imx91"
+
+config IMX91_EDM_LPDDR4
+	bool "Using LPDDR4 Timing and PMIC voltage"
+	default y
+	select IMX9_LPDDR4X
+	help
+	  Select the LPDDR4 timing and 1.1V VDDQ
+
+source "board/technexion/common/Kconfig"
+
+endif
