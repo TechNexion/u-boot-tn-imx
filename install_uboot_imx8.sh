@@ -316,7 +316,10 @@ usage()
     ./install_uboot_imx8.sh -b imx93-pico.dtb -d /dev/sdX
 
     * AXON-IMX91:
-    ./install_uboot_imx8.sh -b imx91-axon.dtb -d /dev/sdf
+    ./install_uboot_imx8.sh -b imx91-axon.dtb -d /dev/sdX
+
+    * EDM-IMX91:
+    ./install_uboot_imx8.sh -b imx91-edm.dtb -d /dev/sdX
 "
 }
 
