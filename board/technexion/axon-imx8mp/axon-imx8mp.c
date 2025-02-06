@@ -60,16 +60,16 @@ size_t tn_camera_chk_cnt = ARRAY_SIZE(tn_camera_chk);
 
 struct tn_display const displays[]= {
 /*      bus, addr, id_reg, id, detect */
-	{ 4, 0x2a, 0,    101,  "lvds-vl10112880", detect_exc3000_i2c },
-	{ 1, 0x38, 0xA3, 0x54, "ili9881c", detect_i2c },
-	{ 1, 0x38, 0xA3, 0x59, "g101uan02", detect_i2c },
-	{ 1, 0x3d, 0x98, 0x03, "mipi2hdmi-adv7535", detect_i2c },
-	{ 4, 0x2a, 4,     101, "vizionpanel-vl10112880", detect_vizionpanel_i2c },
-	{ 4, 0x2a, 4,     150, "vizionpanel-vl15010276", detect_vizionpanel_i2c },
-	{ 4, 0x2a, 4,     156, "vizionpanel-vl15613676", detect_vizionpanel_i2c },
-	{ 4, 0x2a, 4,      80, "vizionpanel-vl808060",   detect_vizionpanel_i2c },
-	{ 4, 0x38, 0xa6, 0x02, "vizionpanel-vl708048",   detect_vizionpanel_i2c },
-	{ 4, 0x38, 0xa6, 0x01, "vizionpanel-vl508048",   detect_vizionpanel_i2c },
+	{ 3, 0x2a, 0,    101,  "lvds-vl10112880", detect_exc3000_i2c },
+	{ 4, 0x38, 0xA3, 0x54, "ili9881c", detect_i2c },
+	{ 4, 0x38, 0xA3, 0x59, "g101uan02", detect_i2c },
+	{ 4, 0x3d, 0x98, 0x03, "mipi2hdmi-adv7535", detect_i2c },
+	{ 1, 0x2a, 1,     101, "vizionpanel-vl10112880", detect_vizionpanel_i2c },
+	{ 1, 0x2a, 1,     150, "vizionpanel-vl15010276", detect_vizionpanel_i2c },
+	{ 1, 0x2a, 1,     156, "vizionpanel-vl15613676", detect_vizionpanel_i2c },
+	{ 1, 0x2a, 4,      80, "vizionpanel-vl808060",   detect_vizionpanel_i2c },
+	{ 1, 0x38, 0xa6, 0x02, "vizionpanel-vl708048",   detect_vizionpanel_i2c },
+	{ 1, 0x38, 0xa6, 0x01, "vizionpanel-vl508048",   detect_vizionpanel_i2c },
 };
 size_t tn_display_count = ARRAY_SIZE(displays);
 #endif
