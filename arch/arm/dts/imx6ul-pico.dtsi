@@ -60,18 +60,6 @@
 		regulator-max-microvolt = <5000000>;
 		gpio = <&gpio1 6 0>;
 	};
-
-	reg_brcm: regulator-brcm {
-		compatible = "regulator-fixed";
-		enable-active-high;
-		gpio = <&gpio4 8 GPIO_ACTIVE_HIGH>;
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_brcm_reg>;
-		regulator-name = "brcm_reg";
-		regulator-min-microvolt = <3300000>;
-		regulator-max-microvolt = <3300000>;
-		startup-delay-us = <200000>;
-	};
 };
 
 &can1 {
@@ -252,7 +240,6 @@
 	non-removable;
 	keep-power-in-suspend;
 	wakeup-source;
-	vmmc-supply = <&reg_brcm>;
 	status = "okay";
 };
 
@@ -262,11 +249,36 @@
 	fsl,ext-reset-output;
 };
 
+&gpio4 {
+	wlreg-on {
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_wlreg_on>;
+		gpio-hog;
+		gpios = <8 GPIO_ACTIVE_HIGH>;
+		output-low;
+	};
+};
+
+&gpio5 {
+	btreg-on {
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_btreg_on>;
+		gpio-hog;
+		gpios = <9 GPIO_ACTIVE_HIGH>;
+		output-low;
+	};
+};
+
 &iomuxc {
-	pinctrl_brcm_reg: brcmreggrp {
+	pinctrl_wlreg_on: wlregongrp {
 		fsl,pins = <
-			MX6UL_PAD_NAND_DATA06__GPIO4_IO08	0x10b0	/* WL_REG_ON */
-			MX6UL_PAD_NAND_DATA04__GPIO4_IO06	0x10b0	/* WL_HOST_WAKE */
+			MX6UL_PAD_NAND_DATA06__GPIO4_IO08	0x18b0	/* WL_REG_ON */
+		>;
+	};
+
+	pinctrl_btreg_on: btregonlgrp {
+		fsl,pins = <
+			MX6UL_PAD_SNVS_TAMPER9__GPIO5_IO09	0x18b0
 		>;
 	};
 
