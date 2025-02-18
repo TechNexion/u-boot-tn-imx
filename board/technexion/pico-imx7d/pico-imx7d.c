@@ -31,7 +31,7 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #define PICO_MMC0 2
 #define PICO_MMC0_BLK 2
-#define PICO_MMC1 1
+#define PICO_MMC1 0
 #define PICO_MMC1_BLK 0
 
 int dram_init(void)
