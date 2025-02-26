@@ -86,6 +86,7 @@ install_firmware()
 		git clone https://github.com/nxp-imx/imx-mkimage.git -b ${BRANCH_VER} || printf "Fails to fetch imx-mkimage source code \n"
 		cd imx-mkimage
 		git checkout -b ${BRANCH_VER}_local ${MKIMAGE_SRC_GIT_ID}
+		sed -i 's|dtb = evk.dtb|dtb = $(dtbs)|g' iMX8M/soc.mak
 	fi
 	cd ${TWD}
 	#Collect required firmware files to generate bootable binary
