@@ -25,6 +25,7 @@
 #include <imx_sip.h>
 #include <linux/arm-smccc.h>
 #include <cli.h>
+#include <linux/delay.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -190,6 +191,57 @@ void board_late_mmc_env_init(void)
 	run_command(cmd, 0);
 }
 
+#define WL_REG_ON "wl_reg_on"
+#define BT_REG_ON "bt_reg_on"
+#define TCA9554 "gpio@22"
+
+void setup_wifi(void)
+{
+	int node, ret;
+	struct udevice *udev;
+	struct gpio_desc *wl_gpio, *bt_gpio;
+
+	ret = uclass_get_device_by_name(UCLASS_GPIO, TCA9554, &udev);
+	if (ret != 0) {
+		printf("%s: get %s udev failed\n", __func__, TCA9554);
+		return;
+	}
+
+	/* WL_REG_ON */
+	node = fdt_subnode_offset(gd->fdt_blob, dev_of_offset(udev), WL_REG_ON);
+	if (node < 0) {
+		printf("%s: Can't find node name '%s'\n", __func__, WL_REG_ON);
+		return;
+	}
+
+	ret = gpio_request_by_name_nodev(offset_to_ofnode(node), "gpio",
+			 0, wl_gpio, GPIOD_IS_OUT);
+	if ( (ret != 0) || (!dm_gpio_is_valid(wl_gpio)) ) {
+		printf("%s: request wl_reg_on failed\n", __func__);
+		return;
+	}
+	dm_gpio_set_value(wl_gpio, 0);
+	mdelay(50);
+	dm_gpio_free(udev, wl_gpio);
+
+	/* BT_REG_ON */
+	node = fdt_subnode_offset(gd->fdt_blob, dev_of_offset(udev), BT_REG_ON);
+	if (node < 0) {
+		printf("%s: Can't find node name '%s'\n", __func__, BT_REG_ON);
+		return;
+	}
+
+	ret = gpio_request_by_name_nodev(offset_to_ofnode(node), "gpio",
+			 0, bt_gpio, GPIOD_IS_OUT);
+	if ( (ret != 0) || (!dm_gpio_is_valid(bt_gpio)) ) {
+		printf("%s: request bt_reg_on failed\n", __func__);
+		return;
+	}
+	dm_gpio_set_value(bt_gpio, 0);
+	mdelay(50);
+	dm_gpio_free(udev, bt_gpio);
+}
+
 #define EXC3000_I2C_ADDR 0x2A
 #define TOUCH_I2C_BUS 2
 void board_modify_fdt(void)
@@ -243,6 +295,8 @@ void board_modify_fdt(void)
 
 int board_init(void)
 {
+	setup_wifi();
+
 	board_modify_fdt();
 
 	if (IS_ENABLED(CONFIG_FEC_MXC))
