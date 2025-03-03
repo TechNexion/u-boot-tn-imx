@@ -256,6 +256,14 @@
 		#interrupt-cells = <2>;
 		interrupt-parent = <&gpio4>;
 		interrupts = <28 IRQ_TYPE_LEVEL_LOW>;
+
+		wl_reg_on {
+			gpio = <&pcal6524 1 0>;
+		};
+
+		bt_reg_on {
+			gpio = <&pcal6524 2 0>;
+		};
 	};
 };
 
