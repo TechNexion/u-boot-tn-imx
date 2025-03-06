@@ -65,6 +65,12 @@ struct tn_display const displays[]= {
 	{ 2, 0x2a, 0,  80,  "vxt-vl0808060nt", detect_exc3000_i2c },
 	{ 2, 0x38, 0xa6, 0x01, "vxt-vl050-070-8048nt", detect_i2c },
 	{ 2, 0x38, 0xa6, 0x02, "vxt-vl050-070-8048nt", detect_i2c },
+	{ 0, 0x2a, 0,     101, "vizionpanel-vl10112880", detect_vizionpanel_i2c },
+	{ 0, 0x2a, 0,     150, "vizionpanel-vl15010276", detect_vizionpanel_i2c },
+	{ 0, 0x2a, 0,     156, "vizionpanel-vl15613676", detect_vizionpanel_i2c },
+	{ 0, 0x2a, 0,      80, "vizionpanel-vl808060",   detect_vizionpanel_i2c },
+	{ 0, 0x38, 0xa6, 0x02, "vizionpanel-vl708048",   detect_vizionpanel_i2c },
+	{ 0, 0x38, 0xa6, 0x01, "vizionpanel-vl508048",   detect_vizionpanel_i2c },
 };
 size_t tn_display_count = ARRAY_SIZE(displays);
 
