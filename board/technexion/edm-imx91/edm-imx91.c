@@ -221,8 +221,7 @@ void setup_wifi(void)
 		return;
 	}
 	dm_gpio_set_value(wl_gpio, 0);
-	mdelay(50);
-	dm_gpio_free(udev, wl_gpio);
+
 
 	/* BT_REG_ON */
 	node = fdt_subnode_offset(gd->fdt_blob, dev_of_offset(udev), BT_REG_ON);
@@ -238,8 +237,7 @@ void setup_wifi(void)
 		return;
 	}
 	dm_gpio_set_value(bt_gpio, 0);
-	mdelay(50);
-	dm_gpio_free(udev, bt_gpio);
+
 }
 
 #define EXC3000_I2C_ADDR 0x2A
