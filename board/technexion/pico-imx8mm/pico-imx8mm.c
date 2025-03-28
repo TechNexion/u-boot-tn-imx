@@ -151,7 +151,7 @@ static void setup_iomux_fec(void)
 
 	gpio_request(FEC_RST_PAD, "fec1_rst");
 	gpio_direction_output(FEC_RST_PAD, 0);
-	udelay(500);
+	udelay(40000);
 	gpio_direction_output(FEC_RST_PAD, 1);
 }
 
@@ -179,6 +179,8 @@ int board_phy_config(struct phy_device *phydev)
 	phy_write(phydev, MDIO_DEVAD_NONE, 0x1d, 0x05);
 	phy_write(phydev, MDIO_DEVAD_NONE, 0x1e, 0x100);
 #endif
+	if (phydev->drv->config)
+		phydev->drv->config(phydev);
 	return 0;
 }
 #endif
