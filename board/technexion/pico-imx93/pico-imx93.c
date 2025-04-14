@@ -251,7 +251,7 @@ int detect_baseboard(void)
 	char *baseboard, str_fdtfile[64];
 
 
-	env_set("baseboard", "wb");
+	env_set("baseboard", "sk");
 	baseboard = env_get("baseboard");
 
 	strcpy(str_fdtfile, "imx93-pico-");
