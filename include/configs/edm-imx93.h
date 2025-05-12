@@ -36,6 +36,9 @@
 
 #define JH_ROOT_DTB    "imx93-edm-root.dtb"
 
+#define SYS_AUXCORE_BOOTDATA_TCM    0x1FFE0000
+#define SYS_AUXCORE_FLEXRAM_TCM     0x201E0000
+
 #define JAILHOUSE_ENV \
 	"jh_root_dtb=" JH_ROOT_DTB "\0" \
 	"jh_mmcboot=setenv fdtfile ${jh_root_dtb}; " \
@@ -84,6 +87,11 @@
 	"boot_fit=no\0" \
 	"fdtfile=undefined\0" \
 	"bootm_size=0x10000000\0" \
+	"m33image=sdk20-app.bin\0" \
+	"m33loadaddr="__stringify(SYS_AUXCORE_BOOTDATA_TCM)"\0" \
+	"m33boot=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${m33image}; " \
+	"cp.b ${loadaddr} "__stringify(SYS_AUXCORE_FLEXRAM_TCM)" ${filesize}; " \
+	"dcache flush; run prepare_mcore; bootaux ${m33loadaddr}\0" \
 	"mmcdev=" __stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
 	"mmcpart=1\0" \
 	"mmcroot=/dev/mmcblk1p2 rootwait rw\0" \
