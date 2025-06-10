@@ -250,7 +250,7 @@
 //+CONFIG_BOARD_SIZE_LIMIT=715776
 
 #define CONFIG_MMCROOT			"/dev/mmcblk0p2"  /* USDHC2 */
-#ifdef CONFIG_DM_VIDEO
+#ifdef CONFIG_VIDEO
 #define CONFIG_VIDEO_BMP_LOGO
 #endif
 
