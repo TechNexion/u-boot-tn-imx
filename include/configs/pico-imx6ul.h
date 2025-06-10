@@ -287,8 +287,6 @@
 #define CONFIG_MMCROOT			"/dev/mmcblk0p2"  /* USDHC2 */
 #ifdef CONFIG_VIDEO
 #define MXS_LCDIF_BASE MX6UL_LCDIF1_BASE_ADDR
-#endif
-#ifdef CONFIG_DM_VIDEO
 #define CONFIG_VIDEO_BMP_LOGO
 #endif
 
