@@ -600,7 +600,7 @@ config VIDEO_LCD_USMP_RM67162
 
 config VIDEO_LCD_ILITEK_ILI9881C
 	bool "ILI9881C MIPI DSI LCD panel support"
-	depends on DM_VIDEO
+	depends on VIDEO
 	select VIDEO_MIPI_DSI
 	default n
 	help
