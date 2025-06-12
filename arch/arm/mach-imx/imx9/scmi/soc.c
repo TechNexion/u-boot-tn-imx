@@ -194,8 +194,9 @@ u32 get_cpu_temp_grade(int *minc, int *maxc)
 			*minc = -40;
 			*maxc = 105;
 		} else if (val == TEMP_EXTCOMMERCIAL) {
-			*minc = -20;
-			*maxc = 105;
+			/* Map to Ext industrial */
+			*minc = -40;
+			*maxc = 125;
 		} else {
 			*minc = 0;
 			*maxc = 95;
@@ -786,10 +787,7 @@ int print_cpuinfo(void)
 		puts("Industrial temperature grade ");
 		break;
 	case TEMP_EXTCOMMERCIAL:
-		if (is_imx93())
-			puts("Extended Industrial temperature grade ");
-		else
-			puts("Extended Consumer temperature grade ");
+		puts("Extended Industrial temperature grade ");
 		break;
 	default:
 		puts("Consumer temperature grade ");
