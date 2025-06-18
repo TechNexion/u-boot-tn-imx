@@ -44,6 +44,7 @@
 		usb1 = &usb_dwc3_1;
 		spi0 = &flexspi;
 		video0 = &lcdif1;
+		video1 = &lcdif2;
 	};
 
 	cpus {
@@ -1508,6 +1509,40 @@
 				};
 			};
 
+			lcdif2: lcd-controller@32e90000 {
+				compatible = "fsl,imx8mp-lcdif2";
+				reg = <0x32e90000 0x10000>;
+				clocks = <&clk IMX8MP_CLK_MEDIA_DISP2_PIX_ROOT>,
+					 <&clk IMX8MP_CLK_MEDIA_AXI_ROOT>,
+					 <&clk IMX8MP_CLK_MEDIA_APB_ROOT>;
+				clock-names = "pix", "disp-axi", "disp-apb";
+				assigned-clocks = <&clk IMX8MP_CLK_MEDIA_DISP2_PIX>,
+						  <&clk IMX8MP_CLK_MEDIA_AXI>,
+						  <&clk IMX8MP_CLK_MEDIA_APB>;
+				assigned-clock-parents = <&clk IMX8MP_VIDEO_PLL1_OUT>,
+							 <&clk IMX8MP_SYS_PLL2_1000M>,
+							 <&clk IMX8MP_SYS_PLL1_800M>;
+				assigned-clock-rates = <0>, <500000000>, <200000000>;
+				interrupts = <GIC_SPI 6 IRQ_TYPE_LEVEL_HIGH>;
+				power-domains = <&media_blk_ctrl IMX8MP_MEDIABLK_PD_LCDIF_2>;
+				status = "disabled";
+
+				lcdif2_disp: port {
+					#address-cells = <1>;
+					#size-cells = <0>;
+
+					lcdif2_disp_ldb_ch0: endpoint@0 {
+						reg = <0>;
+						remote-endpoint = <&ldb_ch0>;
+					};
+
+					lcdif2_disp_ldb_ch1: endpoint@1 {
+						reg = <1>;
+						remote-endpoint = <&ldb_ch1>;
+					};
+				};
+			};
+
 			media_blk_ctrl: blk-ctrl@32ec0000 {
 				compatible = "fsl,imx8mp-media-blk-ctrl",
 					     "syscon";
@@ -1777,6 +1812,70 @@
 				phy-names = "usb2-phy", "usb3-phy";
 				snps,gfladj-refclk-lpm-sel-quirk;
 			};
+		};
+	};
+
+	ldb: ldb-display-controller {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "fsl,imx8mp-ldb";
+		clocks = <&clk IMX8MP_CLK_MEDIA_LDB_ROOT>;
+		clock-names = "ldb";
+		assigned-clocks = <&clk IMX8MP_CLK_MEDIA_LDB>;
+		assigned-clock-parents = <&clk IMX8MP_VIDEO_PLL1_OUT>;
+		gpr = <&media_blk_ctrl>;
+		power-domains = <&pgc_mediamix>;
+		status = "disabled";
+
+		lvds-channel@0 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0>;
+			phys = <&ldb_phy1>;
+			phy-names = "ldb_phy";
+			status = "disabled";
+
+			port@0 {
+				reg = <0>;
+
+				ldb_ch0: endpoint {
+					remote-endpoint = <&lcdif2_disp_ldb_ch0>;
+				};
+			};
+		};
+
+		lvds-channel@1 {
+			reg = <1>;
+			phys = <&ldb_phy2>;
+			phy-names = "ldb_phy";
+			status = "disabled";
+
+			port {
+				ldb_ch1: endpoint {
+					remote-endpoint = <&lcdif2_disp_ldb_ch1>;
+				};
+			};
+		};
+	};
+
+	ldb_phy: phy-lvds {
+		compatible = "fsl,imx8mp-lvds-phy";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		gpr = <&media_blk_ctrl>;
+		clocks = <&clk IMX8MP_CLK_MEDIA_APB_ROOT>;
+		clock-names = "apb";
+		power-domains = <&pgc_mediamix>;
+		status = "disabled";
+
+		ldb_phy1: port@0 {
+			reg = <0>;
+			#phy-cells = <0>;
+		};
+
+		ldb_phy2: port@1 {
+			reg = <1>;
+			#phy-cells = <0>;
 		};
 	};
 

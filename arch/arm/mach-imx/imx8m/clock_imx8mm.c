@@ -307,7 +307,11 @@ int intpll_configure(enum pll_clocks pll, ulong freq)
 	return 0;
 }
 
+#if IS_ENABLED(CONFIG_VIDEO_IMX8MP_LVDS)
+#define VIDEO_PLL_RATE 933000000U
+#else
 #define VIDEO_PLL_RATE 594000000U
+#endif
 
 void mxs_set_lcdclk(uint32_t base_addr, uint32_t freq)
 {
@@ -336,6 +340,9 @@ find:
 
 #ifdef CONFIG_IMX8MP
 	clock_set_target_val(MEDIA_DISP1_PIX_CLK_ROOT, CLK_ROOT_ON | CLK_ROOT_SOURCE_SEL(1) | CLK_ROOT_PRE_DIV(pre - 1) | CLK_ROOT_POST_DIV(post - 1));
+  #if IS_ENABLED(CONFIG_VIDEO_IMX8MP_LVDS)
+	clock_set_target_val(MEDIA_DISP2_CLK_ROOT, CLK_ROOT_ON | CLK_ROOT_SOURCE_SEL(1) | CLK_ROOT_PRE_DIV(pre - 1) | CLK_ROOT_POST_DIV(post - 1));
+  #endif
 #elif defined(CONFIG_IMX8MN)
 	clock_set_target_val(DISPLAY_PIXEL_CLK_ROOT, CLK_ROOT_ON | CLK_ROOT_SOURCE_SEL(1) | CLK_ROOT_PRE_DIV(pre - 1) | CLK_ROOT_POST_DIV(post - 1));
 #else
@@ -350,7 +357,7 @@ void enable_display_clk(unsigned char enable)
 	if (enable) {
 		clock_enable(CCGR_DISPMIX, false);
 
-		/* Set Video PLL to 594Mhz, p = 1, m = 99,  k = 0, s = 2 */
+		/* Set Video PLL to 933Mhz, p = 4, m = 311,  k = 0, s = 1 */
 		fracpll_configure(ANATOP_VIDEO_PLL, VIDEO_PLL_RATE);
 
 		/* 400Mhz */
@@ -360,7 +367,11 @@ void enable_display_clk(unsigned char enable)
 		clock_set_target_val(MEDIA_APB_CLK_ROOT, CLK_ROOT_ON | CLK_ROOT_SOURCE_SEL(2) |CLK_ROOT_PRE_DIV(CLK_ROOT_PRE_DIV4));
 
 		/* 27Mhz MIPI DPHY PLL ref from video PLL */
-		clock_set_target_val(MEDIA_MIPI_PHY1_REF_CLK_ROOT, CLK_ROOT_ON | CLK_ROOT_SOURCE_SEL(7) |CLK_ROOT_POST_DIV(CLK_ROOT_POST_DIV22));
+		clock_set_target_val(MEDIA_MIPI_PHY1_REF_CLK_ROOT, CLK_ROOT_ON | CLK_ROOT_SOURCE_SEL(7) |CLK_ROOT_POST_DIV(CLK_ROOT_POST_DIV34));
+	#if IS_ENABLED(CONFIG_VIDEO_IMX8MP_LVDS)
+		/* 466Mhz LVDS PLL ref from video PLL */
+		clock_set_target_val(MEDIA_LDB_CLK_ROOT, CLK_ROOT_ON | CLK_ROOT_SOURCE_SEL(7) |CLK_ROOT_POST_DIV(CLK_ROOT_POST_DIV2));
+	#endif
 		clock_enable(CCGR_DISPMIX, true);
 	} else {
 		clock_enable(CCGR_DISPMIX, false);
