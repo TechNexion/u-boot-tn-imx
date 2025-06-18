@@ -15,6 +15,7 @@
 #include <asm/arch/sys_proto.h>
 #include <linux/err.h>
 #include <asm/io.h>
+#include <display.h>
 
 #include "../../videomodes.h"
 #include <linux/string.h>
@@ -108,10 +109,11 @@ static void lcdifv3_set_mode(struct lcdifv3_priv *priv,
 	else
 		writel(CTRL_INV_HS, (ulong)(priv->reg_base + LCDIFV3_CTRL_SET));
 
+#if IS_ENABLED(CONFIG_VIDEO_SEC_MIPI_DSI)
 	/* SEC MIPI DSI specific */
 	writel(CTRL_INV_PXCK, (ulong)(priv->reg_base + LCDIFV3_CTRL_CLR));
 	writel(CTRL_INV_DE, (ulong)(priv->reg_base + LCDIFV3_CTRL_CLR));
-
+#endif
 }
 
 static void lcdifv3_set_bus_fmt(struct lcdifv3_priv *priv)
@@ -369,6 +371,14 @@ static int lcdifv3_video_probe(struct udevice *dev)
 				dev_err(dev, "fail to set backlight\n");
 				return ret;
 			}
+	#if IS_ENABLED(CONFIG_VIDEO_IMX8MP_LVDS)
+		} else if (device_get_uclass_id(priv->disp_dev) == UCLASS_DISPLAY) {
+			ret = display_enable(priv->disp_dev, 0, NULL);
+			if (ret) {
+				dev_err(dev, "Display enable error %d\n", ret);
+				return ret;
+			}
+	#endif
 		}
 #endif
 	}
@@ -434,6 +444,7 @@ static int lcdifv3_video_remove(struct udevice *dev)
 
 static const struct udevice_id lcdifv3_video_ids[] = {
 	{ .compatible = "fsl,imx8mp-lcdif1" },
+	{ .compatible = "fsl,imx8mp-lcdif2" },
 	{ .compatible = "fsl,imx93-lcdif" },
 	{ /* sentinel */ }
 };

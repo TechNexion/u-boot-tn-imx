@@ -42,6 +42,15 @@ config VIDEO_IMX8_LVDS
 	help
 	  Support for i.MX8 LDVS bridge controller for i.MX8 processors.
 
+config VIDEO_IMX8MP_LVDS
+	bool "i.MX8MP LDVS bridge support"
+	default n
+	depends on IMX8MP && VIDEO
+	select DISPLAY
+	select VIDEO_LINK
+	help
+	  Support for i.MX8MP LDVS bridge controller for i.MX8 processors.
+
 config VIDEO_IMX_HDP_LOAD
 	bool "i.MX8 HDMI/DP firmware loading"
 	default n
