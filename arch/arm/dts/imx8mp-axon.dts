@@ -61,28 +61,56 @@
 		off-on-delay-us = <12000>;
 	};
 
-	dsi_host: dsi-host {
-		compatible = "samsung,sec-mipi-dsi";
-		status = "okay";
+	reg_lvds_pwr: regulator_lvdspwr {
+		pinctrl-names = "default";
+		compatible = "regulator-fixed";
+		regulator-name = "lvds_pwr_en";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		gpio = <&pca9554bs_a23 6 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
 	};
 
-	rm67191_panel {
-		compatible = "raydium,rm67191";
+	backlight: backlight-0 {
+		compatible = "gpio-backlight";
 		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_mipi_dsi_en>;
-		reset-gpio = <&gpio1 8 GPIO_ACTIVE_LOW>;
-		dsi-lanes = <4>;
-		video-mode = <2>;	/* 0: burst mode
-					 * 1: non-burst mode with sync event
-					 * 2: non-burst mode with sync pulse
-					 */
-		panel-width-mm = <68>;
-		panel-height-mm = <121>;
-		status = "okay";
+		pinctrl-0 = <&pinctrl_pwm2>;
+		gpios = <&gpio3 21 GPIO_ACTIVE_HIGH>;
+		default-on;
+	};
+
+	lvds0_panel {
+		compatible = "simple-panel";
+		backlight = <&backlight>;
+		power-supply = <&reg_lvds_pwr>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_lvds0_bl_pwr>;
+		enable-gpios = <&gpio4 14 GPIO_ACTIVE_HIGH>;
+		bootph-pre-ram;
+		width-mm = <243>;
+		height-mm = <161>;
+		data-mapping = "vesa-24";
+
+		display-timings {
+			native-mode = <&timing0>;
+			timing0: timing0 {
+				bootph-pre-ram;
+				clock-frequency = <71100000>;
+				hactive = <1280>;
+				vactive = <800>;
+				hback-porch = <40>;
+				hfront-porch = <40>;
+				vback-porch = <10>;
+				vfront-porch = <3>;
+				hsync-len = <80>;
+				vsync-len = <10>;
+				de-active = <1>;
+			};
+		};
 
 		port {
-			rm67191_from_dsim: endpoint {
-				remote-endpoint = <&dsim_to_rm67191>;
+			panel_lvds_in: endpoint {
+				remote-endpoint = <&lvds_out>;
 			};
 		};
 	};
@@ -270,20 +298,6 @@
 			line-name = "INFO_TRIG_IN2";
 		};
 	};
-
-	adv_bridge: adv7535@3d {
-		compatible = "adi,adv7533";
-		reg = <0x3d>;
-		adi,addr-cec = <0x3c>;
-		adi,dsi-lanes = <4>;
-		status = "okay";
-
-		port {
-			adv7535_from_dsim: endpoint {
-				remote-endpoint = <&dsim_to_adv7535>;
-			};
-		};
-	};
 };
 
 &i2c4 {
@@ -322,24 +336,46 @@
 	status = "okay";
 };
 
-&lcdif1 {
+&lcdif2 {
 	status = "okay";
 };
 
-&mipi_dsi {
+&ldb {
+	/delete-property/ assigned-clocks;
+	/delete-property/ assigned-clock-parents;
+	/delete-property/ assigned-clock-rates;
 	status = "okay";
 
-	port@1 {
-		dsim_to_adv7535: endpoint {
-			remote-endpoint = <&adv7535_from_dsim>;
-		};
-	};
+	lvds-channel@0 {
+		fsl,data-mapping = "spwg";
+		fsl,data-width = <24>;
+		status = "okay";
 
-	port@2 {
-		dsim_to_rm67191: endpoint {
-			remote-endpoint = <&rm67191_from_dsim>;
+		port@1 {
+			reg = <1>;
+			lvds_out: endpoint {
+				remote-endpoint = <&panel_lvds_in>;
+			};
 		};
 	};
+};
+
+&ldb_phy {
+	status = "okay";
+};
+
+&media_blk_ctrl {
+	power-domains = <&pgc_mediamix>,
+			<&pgc_mipi_phy1>,
+			<&pgc_mipi_phy1>,
+			<&pgc_mediamix>,
+			<&pgc_mediamix>,
+			<&pgc_mipi_phy2>,
+			<&pgc_mediamix>,
+			<&pgc_mipi_phy2>;
+	power-domain-names = "bus", "mipi-dsi1", "mipi-csi1",
+					"lcdif1", "isi", "mipi-csi2",
+					"lcdif2", "mipi-dsi2";
 };
 
 &snvs_pwrkey {
@@ -495,9 +531,15 @@
 		>;
 	};
 
-	pinctrl_mipi_dsi_en: mipi_dsi_en {
+	pinctrl_lvds0_bl_pwr: lvds0_bl_pwrgrp {
 		fsl,pins = <
-			MX8MP_IOMUXC_GPIO1_IO08__GPIO1_IO08	0x16
+			MX8MP_IOMUXC_SAI1_TXD2__GPIO4_IO14	0x19	/* GPIO_X4_P7, LVDS_BL_EN */
+		>;
+	};
+
+	pinctrl_pwm2: pwm2grp {
+		fsl,pins = <
+			MX8MP_IOMUXC_SAI5_RXD0__GPIO3_IO21	0x116 /* LVDS0_BL_PWM */
 		>;
 	};
 
