@@ -66,6 +66,7 @@
 	SR_IR_V2_COMMAND \
 	"scriptaddr=0x83500000\0" \
 	"kernel_addr_r=" __stringify(CONFIG_SYS_LOAD_ADDR) "\0" \
+	"script=boot.scr\0" \
 	"image=Image\0" \
 	"splashimage=0x90000000\0" \
 	"splashpos=m,m\0" \
