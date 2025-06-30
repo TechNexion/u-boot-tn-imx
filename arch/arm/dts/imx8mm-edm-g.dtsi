@@ -304,6 +304,7 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_i2c1>;
 	status = "okay";
+
 	dsi_lvds_bridge: sn65dsi84@2d {
 		reg = <0x2d>;
 		compatible = "ti,sn65dsi84";
@@ -311,7 +312,6 @@
 		dsi-lanes = <4>;
 		pinctrl-0 = <&pinctrl_mipi_dsi_en>;
 		enable-gpios = <&gpio3 9 GPIO_ACTIVE_HIGH>;
-
 		status = "okay";
 
 		port@2 {
@@ -462,9 +462,11 @@
 	#address-cells = <1>;
 	#size-cells = <0>;
 
-	port@2{
-		dsim_to_sn65dsi84: endpoint {
-			remote-endpoint = <&sn65dsi84_from_dsim>;
+	ports {
+		port@2{
+			dsim_to_sn65dsi84: endpoint {
+				remote-endpoint = <&sn65dsi84_from_dsim>;
+			};
 		};
 	};
 };
