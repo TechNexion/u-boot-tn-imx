@@ -58,7 +58,6 @@ void setup_iomux_ver_det(void)
 /***********************************************
 DDR_DET_1    DDR_DET_2   DDR_DET_3
    0            0            1       4G LPDDR4
-   1            1            1       3G LPDDR4
    1            1            0       2G LPDDR4
    1            0            1       1G LPDDR4
 ************************************************/
