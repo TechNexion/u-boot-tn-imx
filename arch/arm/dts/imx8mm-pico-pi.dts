@@ -100,9 +100,11 @@
 	/delete-property/ assigned-clock-rates;
 	status = "okay";
 
-	port@1 {
-		dsim_to_ili9881c: endpoint {
-			remote-endpoint = <&ili9881c_from_dsim>;
+	ports {
+		port@1 {
+			dsim_to_ili9881c: endpoint {
+				remote-endpoint = <&ili9881c_from_dsim>;
+			};
 		};
 	};
 };
