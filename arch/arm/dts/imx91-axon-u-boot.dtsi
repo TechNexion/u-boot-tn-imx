@@ -3,8 +3,6 @@
  * Copyright 2024 NXP
  */
 
-#include "imx91-u-boot.dtsi"
-
 / {
 	wdt-reboot {
 		compatible = "wdt-reboot";
@@ -41,7 +39,7 @@
 };
 
 &A55_0 {
-	clocks = <&clk IMX91_CLK_A55_SEL>;
+	clocks = <&clk IMX93_CLK_A55_SEL>;
 };
 
 &{/soc@0} {
@@ -204,8 +202,8 @@
 };
 
 &lcdif {
-	assigned-clocks = <&clk IMX91_CLK_MEDIA_AXI>, <&clk IMX91_CLK_MEDIA_APB>;
-	assigned-clock-parents = <&clk IMX91_CLK_SYS_PLL_PFD1>, <&clk IMX91_CLK_SYS_PLL_PFD1_DIV2>;
+	assigned-clocks = <&clk IMX93_CLK_MEDIA_AXI>, <&clk IMX93_CLK_MEDIA_APB>;
+	assigned-clock-parents = <&clk IMX93_CLK_SYS_PLL_PFD1>, <&clk IMX93_CLK_SYS_PLL_PFD1_DIV2>;
 	assigned-clock-rates = <200000000>, <133333334>;
 };
 
