@@ -9,6 +9,7 @@
 /dts-v1/;
 
 #include "imx93.dtsi"
+#include "imx93-u-boot.dtsi"
 
 / {
 	model = "TechnNexion i.MX93 EDM board";
@@ -283,7 +284,7 @@
 	};
 
 	adp5585gpio: gpio@34 {
-		compatible = "adp5585";
+		compatible = "adi,adp5585";
 		reg = <0x34>;
 		gpio-controller;
 		#gpio-cells = <2>;
