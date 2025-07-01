@@ -7,6 +7,7 @@
 
 #include <dt-bindings/usb/pd.h>
 #include "imx91.dtsi"
+#include "imx91-u-boot.dtsi"
 
 / {
 	model = "TechNexion i.MX91 AXON board";
@@ -99,10 +100,6 @@
 
 &adc1 {
 	vref-supply = <&reg_vref_1v8>;
-	status = "okay";
-};
-
-&mu1 {
 	status = "okay";
 };
 
@@ -346,10 +343,6 @@
 };
 
 &wdog3 {
-	status = "okay";
-};
-
-&tempsense0 {
 	status = "okay";
 };
 
