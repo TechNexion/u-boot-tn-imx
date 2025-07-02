@@ -78,11 +78,9 @@ struct tn_display const displays[]= {
 size_t tn_display_count = ARRAY_SIZE(displays);
 #endif
 
-static u8 ddr_code __section("data");
-
-static void board_get_ddr_code(void)
+static u8 board_get_ddr_code(void)
 {
-	ddr_code = readl(OCRAM_BASE_ADDR);
+	return (readl(OCRAM_BASE_ADDR));
 }
 
 int board_phys_sdram_size(phys_size_t *size)
@@ -90,7 +88,7 @@ int board_phys_sdram_size(phys_size_t *size)
 	if (!size)
 		return -EINVAL;
 
-	switch (ddr_code) {
+	switch (board_get_ddr_code()) {
 	case LPDDR4_8GB:
 		*size = SZ_8G;
 		break;
@@ -126,9 +124,6 @@ int board_early_init_f(void)
 
 	init_uart_clk(1);
 
-#ifndef CONFIG_SPL_BUILD
-	board_get_ddr_code();
-#endif
 	return 0;
 }
 
