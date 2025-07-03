@@ -219,8 +219,6 @@ void board_init_f(ulong dummy)
 
 	timer_init();
 
-	preloader_console_init();
-
 	ret = spl_early_init();
 	if (ret) {
 		debug("spl_early_init() failed: %d\n", ret);
@@ -234,6 +232,8 @@ void board_init_f(ulong dummy)
 		printf("Failed to find clock node. Check device tree\n");
 		hang();
 	}
+
+	preloader_console_init();
 
 	enable_tzc380();
 
