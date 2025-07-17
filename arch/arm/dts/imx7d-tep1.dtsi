@@ -47,7 +47,8 @@
 		regulator-name = "usb_otg1_vbus";
 		regulator-min-microvolt = <5000000>;
 		regulator-max-microvolt = <5000000>;
-		gpio = <&gpio4 5 GPIO_ACTIVE_LOW>;
+		gpio = <&gpio1 5 GPIO_ACTIVE_LOW>;
+		enable-active-low;
 	};
 
 	reg_usb_otg2_vbus: regulator-usb-otg2-vbus {
@@ -144,26 +145,14 @@
 };
 
 &i2c1 {
-	clock-frequency = <100000>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_i2c1>;
-	status = "okay";
-};
-
-&i2c2 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_i2c2>;
-	status = "okay";
-};
-
-&i2c4 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_i2c4>;
 	status = "okay";
 
 	pmic: pfuze3000@8 {
 		compatible = "fsl,pfuze3000";
 		reg = <0x08>;
+		fsl,lpsr-mode;
 
 		regulators {
 			sw1a_reg: sw1a {
@@ -251,6 +240,24 @@
 	};
 };
 
+&i2c2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c2>;
+	status = "okay";
+};
+
+&i2c3 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c3>;
+	status = "okay";
+};
+
+&i2c4 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c4>;
+	status = "okay";
+};
+
 &lcdif {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_lcdif_dat
@@ -319,29 +326,27 @@
 	status = "okay";
 };
 
-&uart5 {
+&uart1 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_uart5>;
-	assigned-clocks = <&clks IMX7D_UART5_ROOT_SRC>;
+	pinctrl-0 = <&pinctrl_uart1>;
+	assigned-clocks = <&clks IMX7D_UART1_ROOT_SRC>;
 	assigned-clock-parents = <&clks IMX7D_PLL_SYS_MAIN_240M_CLK>;
 	status = "okay";
 };
 
-&uart6 {
+&uart2 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_uart6>;
-	assigned-clocks = <&clks IMX7D_UART6_ROOT_SRC>;
-	assigned-clock-parents = <&clks IMX7D_OSC_24M_CLK>;
-	uart-has-rtscts;
+	pinctrl-0 = <&pinctrl_uart2>;
+	assigned-clocks = <&clks IMX7D_UART2_ROOT_SRC>;
+	assigned-clock-parents = <&clks IMX7D_PLL_SYS_MAIN_240M_CLK>;
 	status = "okay";
 };
 
-&uart7 { /* Bluetooth */
+&uart3 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_uart7>;
-	assigned-clocks = <&clks IMX7D_UART7_ROOT_SRC>;
+	pinctrl-0 = <&pinctrl_uart3>;
+	assigned-clocks = <&clks IMX7D_UART3_ROOT_SRC>;
 	assigned-clock-parents = <&clks IMX7D_PLL_SYS_MAIN_240M_CLK>;
-	uart-has-rtscts;
 	status = "okay";
 };
 
@@ -401,15 +406,22 @@
 
 	pinctrl_i2c1: i2c1grp {
 		fsl,pins = <
-			MX7D_PAD_UART1_TX_DATA__I2C1_SDA	0x4000007f
-			MX7D_PAD_UART1_RX_DATA__I2C1_SCL	0x4000007f
+			MX7D_PAD_I2C1_SDA__I2C1_SDA	0x4000007f
+			MX7D_PAD_I2C1_SCL__I2C1_SCL	0x4000007f
 		>;
 	};
 
 	pinctrl_i2c2: i2c2grp {
 		fsl,pins = <
-			MX7D_PAD_UART2_TX_DATA__I2C2_SDA	0x4000007f
-			MX7D_PAD_UART2_RX_DATA__I2C2_SCL	0x4000007f
+			MX7D_PAD_I2C2_SDA__I2C2_SDA	0x4000007f
+			MX7D_PAD_I2C2_SCL__I2C2_SCL	0x4000007f
+		>;
+	};
+
+	pinctrl_i2c3: i2c3grp {
+		fsl,pins = <
+			MX7D_PAD_I2C3_SDA__I2C3_SDA	0x4000007f
+			MX7D_PAD_I2C3_SCL__I2C3_SCL	0x4000007f
 		>;
 	};
 
@@ -532,34 +544,30 @@
 		>;
 	};
 
-	pinctrl_uart5: uart5grp {
+	pinctrl_uart1: uart1grp {
 		fsl,pins = <
-			MX7D_PAD_I2C4_SDA__UART5_DCE_TX		0x79
-			MX7D_PAD_I2C4_SCL__UART5_DCE_RX		0x79
+			MX7D_PAD_UART1_TX_DATA__UART1_DCE_TX	0x79
+			MX7D_PAD_UART1_RX_DATA__UART1_DCE_RX	0x79
 		>;
 	};
 
-	pinctrl_uart6: uart6grp {
+	pinctrl_uart2: uart2grp {
 		fsl,pins = <
-			MX7D_PAD_EPDC_DATA08__UART6_DCE_RX	0x79
-			MX7D_PAD_EPDC_DATA09__UART6_DCE_TX	0x79
-			MX7D_PAD_EPDC_DATA10__UART6_DCE_RTS	0x79
-			MX7D_PAD_EPDC_DATA11__UART6_DCE_CTS	0x79
+			MX7D_PAD_UART2_TX_DATA__UART2_DCE_TX	0x79
+			MX7D_PAD_UART2_RX_DATA__UART2_DCE_RX	0x79
 		>;
 	};
 
-	pinctrl_uart7: uart7grp {
+	pinctrl_uart3: uart3grp {
 		fsl,pins = <
-			MX7D_PAD_ECSPI2_MOSI__UART7_DCE_TX	0x79
-			MX7D_PAD_ECSPI2_SCLK__UART7_DCE_RX	0x79
-			MX7D_PAD_ECSPI2_SS0__UART7_DCE_CTS	0x79
-			MX7D_PAD_ECSPI2_MISO__UART7_DCE_RTS	0x79
+			MX7D_PAD_UART3_TX_DATA__UART3_DCE_TX	0x79
+			MX7D_PAD_UART3_RX_DATA__UART3_DCE_RX	0x79
 		>;
 	};
 
 	pinctrl_usbotg1_pwr: usbotg_pwr {
 		fsl,pins = <
-			MX7D_PAD_UART3_TX_DATA__GPIO4_IO5	0x14
+			MX7D_PAD_LPSR_GPIO1_IO05__GPIO1_IO5		0x14
 		>;
 	};
 
