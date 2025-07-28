@@ -43,7 +43,7 @@
 		regulator-name = "enet_pwr";
 		regulator-min-microvolt = <3300000>;
 		regulator-max-microvolt = <3300000>;
-		gpio = <&gpio5 2 GPIO_ACTIVE_HIGH>;
+		gpio = <&gpio1 11 GPIO_ACTIVE_HIGH>;
 		enable-active-high;
 		regulator-always-on;
 	};
@@ -135,7 +135,6 @@
 	phy-mode = "rgmii-id";
 	phy-handle = <&ethphy0>;
 	phy-supply = <&enet_power_en>;
-	phy-reset-gpios = <&gpio1 9 GPIO_ACTIVE_LOW>;
 	status = "okay";
 
 	mdio {
@@ -146,8 +145,14 @@
 		ethphy0: ethernet-phy@1 {
 			compatible = "ethernet-phy-ieee802.3-c22";
 			reg = <1>;
+			eee-broken-1000t;
+			reset-gpios = <&gpio1 9 GPIO_ACTIVE_LOW>;
+			reset-assert-us = <35000>;
+			reset-deassert-us = <75000>;
 			at803x,eee-disabled;
 			at803x,vddio-1p8v;
+			realtek,aldps-disable;
+			realtek,clkout-disable;
 		};
 	};
 };
