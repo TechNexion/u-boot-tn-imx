@@ -226,6 +226,12 @@ config TARGET_IMX952_EVK
 	select IMX_SM_LMM
 	select IMX_SM_CPU
 
+config TARGET_EDM_IMX95
+	bool "edm-imx95"
+	select IMX95
+	imply BOOTSTD_BOOTCOMMAND
+	imply BOOTSTD_FULL
+
 config TARGET_IMX95_15X15_EVK
 	bool "imx95_15x15_evk"
 	select IMX95
@@ -313,6 +319,7 @@ source "board/technexion/edm-imx91/Kconfig"
 source "board/technexion/axon-imx93/Kconfig"
 source "board/technexion/pico-imx93/Kconfig"
 source "board/technexion/edm-imx93/Kconfig"
+source "board/technexion/edm-imx95/Kconfig"
 source "board/variscite/imx93_var_som/Kconfig"
 source "board/nxp/imx94_evk/Kconfig"
 source "board/nxp/imx94_orangebox/Kconfig"
