@@ -124,6 +124,12 @@ config TARGET_VERDIN_IMX95_19X19
 	imply BOOTSTD_BOOTCOMMAND
 	imply BOOTSTD_FULL
 
+config TARGET_EDM_IMX95
+	bool "edm-imx95"
+	select IMX95
+	imply BOOTSTD_BOOTCOMMAND
+	imply BOOTSTD_FULL
+
 config TARGET_IMX95_15X15_EVK
 	bool "imx95_15x15_evk"
 	select IMX95
@@ -160,6 +166,7 @@ source "board/freescale/imx91_evk/Kconfig"
 source "board/freescale/imx91_qsb/Kconfig"
 source "board/technexion/axon-imx91/Kconfig"
 source "board/technexion/edm-imx91/Kconfig"
+source "board/technexion/edm-imx95/Kconfig"
 source "board/freescale/imx93_evk/Kconfig"
 source "board/freescale/imx93_qsb/Kconfig"
 source "board/phytec/phycore_imx93/Kconfig"
