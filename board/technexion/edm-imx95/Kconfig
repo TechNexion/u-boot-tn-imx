@@ -1,0 +1,12 @@
+if TARGET_EDM_IMX95
+
+config SYS_BOARD
+	default "edm-imx95"
+
+config SYS_VENDOR
+	default "technexion"
+
+config SYS_CONFIG_NAME
+	default "edm-imx95"
+
+endif
