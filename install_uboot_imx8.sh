@@ -11,18 +11,12 @@
 
 DRIVE=/dev/sdX
 
-#platform related parameters
-#PLATFORM="imx8mm"
-#SOC_TARGET="iMX8MM"
-#SOC_DIR="iMX8M"
-#DTBS="fsl-imx8mq-evk"
-#DTBS="pico-imx8m"
-
 BRANCH_VER="lf-6.12.20_2.0.0" #branch used by imx-mkimage and imx-atf under meta-imx
 ATF_BRANCH_VER="lf_v2.12"
 MKIMAGE_SRC_GIT_ID='4c2e5b25232f5aa003976ddca9d1d2fb9667beb1' #refer to 'imx-mkimage_git.inc' in Yocto
 ATF_SRC_GIT_ID='6ddd57019494cabfca5065368349109c37f2cc9f' #refer to 'imx-atf_2.12.bb' in Yocto
 DDR_FW_VER="8.28-994fa14" #refer to the name of 'firmware-imx-8m_8.x.bb'
+ELE_FW_VER="2.0.2-89161a8" ##refer to the "{PV of firmware-ele-imx_2.0.2.bb}"-"{IMX_SRCREV_ABBREV}"
 
 FSL_MIRROR="https://www.nxp.com/lgfiles/NMG/MAD/YOCTO"
 FIRMWARE_DIR="firmware_imx8"
@@ -35,47 +29,63 @@ IMX_BOOT="flash.bin"
 TWD=`pwd`
 ATF_BOOT_UART_BASE="0x30890000"
 
-old_imx93=0
-
 setup_platform()
 {
 	SOC=$( echo "${DTBS}" | cut -d'-' -f1 )
-	if [ ${SOC} = "imx8m" ] || [ ${SOC} = "imx8mq" ] ; then
-		PLATFORM="imx8mq"
-		SOC_TARGET="iMX8M"
-		SOC_DIR="iMX8M"
-		IMX_BOOT_SEEK="33"
-	elif [ ${SOC} = "imx8mm" ] ; then
-		PLATFORM="imx8mm"
-		SOC_TARGET="iMX8MM"
-		SOC_DIR="iMX8M"
-		IMX_BOOT_SEEK="33"
-	elif [ ${SOC} = "imx8mp" ] ; then
-		PLATFORM="imx8mp"
-		SOC_TARGET="iMX8MP"
-		SOC_DIR="iMX8M"
-		IMX_BOOT_SEEK="32"
-	elif [ ${SOC} = "imx8mn" ] ; then
-		PLATFORM="imx8mn"
-		SOC_TARGET="iMX8MN"
-		SOC_DIR="iMX8M"
-		IMX_BOOT_SEEK="32"
-	elif [ ${SOC} = "imx93" ] ; then
-		PLATFORM="imx93"
-		SOC_TARGET="iMX9"
-		SOC_DIR="iMX93"
-		IMX_BOOT_SEEK="32"
-		MKIMAGE_TARGET="flash_singleboot"
-	elif [ ${SOC} = "imx91" ] ; then
-		PLATFORM="imx91"
-		SOC_TARGET="iMX91"
-		SOC_DIR="iMX91"
-		IMX_BOOT_SEEK="32"
-		MKIMAGE_TARGET="flash_singleboot"
-	else
-		printf "Targest SOC isn't supported by this script\n"
-		exit 1
-	fi
+	case "${SOC}" in
+		imx8m|imx8mq)
+			PLATFORM="imx8mq"
+			SOC_TARGET="iMX8M"
+			SOC_DIR="iMX8M"
+			IMX_BOOT_SEEK="33"
+			;;
+		imx8mm)
+			PLATFORM="imx8mm"
+			SOC_TARGET="iMX8MM"
+			SOC_DIR="iMX8M"
+			IMX_BOOT_SEEK="33"
+			;;
+		imx8mp)
+			PLATFORM="imx8mp"
+			SOC_TARGET="iMX8MP"
+			SOC_DIR="iMX8M"
+			IMX_BOOT_SEEK="32"
+			;;
+		imx8mn)
+			PLATFORM="imx8mn"
+			SOC_TARGET="iMX8MN"
+			SOC_DIR="iMX8M"
+			IMX_BOOT_SEEK="32"
+			;;
+		imx91)
+			PLATFORM="imx91"
+			SOC_TARGET="iMX91"
+			SOC_DIR="iMX91"
+			SILICON_REV=${SILICON_REV:-A0}
+			IMX_BOOT_SEEK="32"
+			MKIMAGE_TARGET="flash_singleboot"
+			;;
+	    imx93)
+			PLATFORM="imx93"
+			SOC_TARGET="iMX9"
+			SOC_DIR="iMX93"
+			SILICON_REV=${SILICON_REV:-A1}
+			IMX_BOOT_SEEK="32"
+			MKIMAGE_TARGET="flash_singleboot"
+			;;
+		imx95)
+			PLATFORM="imx95"
+			SOC_TARGET="iMX95"
+			SOC_DIR="iMX95"
+			SILICON_REV=${SILICON_REV:-B0}
+			IMX_BOOT_SEEK="32"
+			MKIMAGE_TARGET="flash_all"
+			;;
+		*)
+			printf "Target SOC isn't supported by this script\n"
+			exit 1
+			;;
+	esac
 }
 
 install_firmware()
@@ -130,7 +140,7 @@ install_firmware()
 		printf "Cannot find release/bl31.bin \n"
 	fi
 
-	#Get and copy the DDR and HDMI firmware
+	#Fetch and copy the DDR and HDMI firmware
 	cd ${FWD}
 	if [ ! -d firmware-imx-${DDR_FW_VER} ] ; then
 		wget ${FSL_MIRROR}/firmware-imx-${DDR_FW_VER}.bin && \
@@ -139,44 +149,62 @@ install_firmware()
 		printf "Fails to fetch DDR firmware \n"
 	fi
 
-	if [ -d firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys ] ; then
-		if [ ${SOC} = "imx8mp" ] ; then
-			cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_pmu_train_1d_dmem_202006.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
-			cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_pmu_train_1d_imem_202006.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
-			cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_pmu_train_2d_dmem_202006.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
-			cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_pmu_train_2d_imem_202006.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
-		elif [ ${SOC} = "imx93" ]||[ ${SOC} = "imx91" ] ; then
-			cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_imem_1d_v202201.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
-			cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_dmem_1d_v202201.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
-			cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_imem_2d_v202201.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
-			cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_dmem_2d_v202201.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
-		else
-			cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_pmu_train_1d_dmem.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
-			cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_pmu_train_1d_imem.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
-			cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_pmu_train_2d_dmem.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
-			cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_pmu_train_2d_imem.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
-		fi
-			cp firmware-imx-${DDR_FW_VER}/firmware/hdmi/cadence/signed_hdmi_imx8m.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+	if [ -d firmware-imx-${DDR_FW_VER}/firmware ] ; then
+		case ${SOC} in
+			imx8mp)
+				cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_pmu_train_1d_dmem_202006.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+				cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_pmu_train_1d_imem_202006.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+				cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_pmu_train_2d_dmem_202006.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+				cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_pmu_train_2d_imem_202006.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+				cp firmware-imx-${DDR_FW_VER}/firmware/hdmi/cadence/signed_hdmi_imx8m.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+				;;
+			imx93|imx91)
+				cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_imem_1d_v202201.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+				cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_dmem_1d_v202201.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+				cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_imem_2d_v202201.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+				cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_dmem_2d_v202201.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+				;;
+			imx95)
+				cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr5_dmem_qb_v202409.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+				cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr5_dmem_v202409.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+				cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr5_imem_qb_v202409.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+				cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr5_imem_v202409.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+				;;
+			*)
+				cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_pmu_train_1d_dmem.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+				cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_pmu_train_1d_imem.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+				cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_pmu_train_2d_dmem.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+				cp firmware-imx-${DDR_FW_VER}/firmware/ddr/synopsys/lpddr4_pmu_train_2d_imem.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+				;;
+		esac
 	else
-		printf "Cannot find DDR firmware \n"
+		printf "Cannot find firmware \n"
 	fi
 
-	if [ "${SOC_DIR}" = "iMX93" ]; then
-		if [ ! -d firmware-sentinel-0.11 ] ; then
-			wget https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/firmware-sentinel-0.11.bin
-			chmod +x firmware-sentinel-0.11.bin
-			./firmware-sentinel-0.11.bin
+	#Fetch and copy EdgeLock Secure Enclave firmware
+	if [ "${SOC_DIR}" = "iMX93" ] || [ "${SOC_DIR}" = "iMX91" ] || [ "${SOC_DIR}" = "iMX95" ]; then
+		SOC_LOWER=$(echo $SOC_DIR | sed 's/^i//' | tr '[:upper:]' '[:lower:]')
+		REV_LOWER=$(echo "${SILICON_REV}" | tr '[:upper:]' '[:lower:]')
+		AHAB_IMG="${SOC_LOWER}${REV_LOWER}-ahab-container.img"
+
+		if [ "${SOC_DIR}" = "iMX93" ] && [ "${SILICON_REV}" = "A0" ]; then
+			if [ ! -d firmware-sentinel-0.11 ] ; then
+				wget ${FSL_MIRROR}/firmware-sentinel-0.11.bin
+				chmod +x firmware-sentinel-0.11.bin
+				./firmware-sentinel-0.11.bin
+			fi
+
+			cp firmware-sentinel-0.11/mx93a0-ahab-container.img ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+			printf "Copy firmware-sentinel-0.11/mx93a0-ahab-container.img to $MKIMAGE_DIR \n"
+		else
+			if [ ! -d firmware-ele-imx-${ELE_FW_VER} ] ; then
+				wget ${FSL_MIRROR}/firmware-ele-imx-${ELE_FW_VER}.bin
+				chmod +x firmware-ele-imx-${ELE_FW_VER}.bin
+				./firmware-ele-imx-${ELE_FW_VER}.bin
+			fi
+			cp firmware-ele-imx-${ELE_FW_VER}/${AHAB_IMG} ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+			printf "Copy firmware-ele-imx-${ELE_FW_VER}/${AHAB_IMG} to $MKIMAGE_DIR \n"
 		fi
-		cp firmware-sentinel-0.11/mx93a0-ahab-container.img ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
-		cp firmware-sentinel-0.11/mx93a1-ahab-container.img ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
-	fi
-	if [ "${SOC_DIR}" = "iMX91" ]; then
-		if [ ! -d firmware-ele-imx-1.3.0-17945fc ] ; then
-			wget https://www.nxp.com/lgfiles/NMG/MAD/YOCTO//firmware-ele-imx-1.3.0-17945fc.bin
-			chmod +x firmware-ele-imx-1.3.0-17945fc.bin
-			./firmware-ele-imx-1.3.0-17945fc.bin
-		fi
-		cp firmware-ele-imx-1.3.0-17945fc/mx91a0-ahab-container.img ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
 	fi
 }
 
@@ -184,7 +212,7 @@ install_uboot_dtb()
 {
 	#Copy uboot binary
 	cd ${TWD}
-	if [ "${SOC_DIR}" = "iMX93" ]||[ "${SOC_DIR}" = "iMX91" ] ; then
+	if [ "${SOC_DIR}" = "iMX93" ] || [ "${SOC_DIR}" = "iMX91" ] || [ "${SOC_DIR}" = "iMX95" ] ; then
 		cp u-boot.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
 	elif [ -f u-boot-nodtb.bin ] ; then
 		cp u-boot-nodtb.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
@@ -212,6 +240,29 @@ install_uboot_dtb()
 	done
 }
 
+IMX95_BINARY_FOLDER="imx95_required_binaries"
+
+install_oei_image()
+{
+	#Copy OEI firmware binary
+	cd ${TWD}
+	cp ${IMX95_BINARY_FOLDER}/oei-m33-ddr.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+}
+
+install_sm_image()
+{
+	#Copy SM firmware binary
+	cd ${TWD}
+	cp ${IMX95_BINARY_FOLDER}/m33_image-mx95evk.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}/m33_image.bin
+}
+
+install_mcu_image()
+{
+	#Copy MCU firmware binary
+	cd ${TWD}
+	cp ${IMX95_BINARY_FOLDER}/imx95-19x19-evk_m7_TCM_power_mode_switch.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}/m7_image.bin
+}
+
 generate_imx_boot()
 {
 	cd ${TWD}
@@ -224,15 +275,21 @@ generate_imx_boot()
 
 	#Generate bootable binary (This binary contains SPL and u-boot.bin) for flashing
 	cd ${MKIMAGE_DIR}
-	if [ "${SOC_DIR}" = "iMX93" ] && [ "${old_imx93}" = 0 ] ; then
-		make SOC=${SOC_TARGET} REV=A1 dtbs="${DTBS}" ${MKIMAGE_TARGET} && \
+	if [ "${SOC_DIR}" = "iMX93" ] && [ "${SILICON_REV}" = "A0" ]; then
+		make SOC=${SOC_TARGET} REV=${SILICON_REV} dtbs="${DTBS}" ${MKIMAGE_TARGET} && \
+		printf "Make target: ${MKIMAGE_TARGET} and generate flash.bin... \n" || printf "Fails to generate flash.bin... \n"
+	elif [ "${SOC_DIR}" = "iMX95" ]; then
+		# make SOC=iMX95 REV=A0 OEI=YES LPDDR_TYPE=lpddr5 dtbs= flash_evk
+		if [ "${SILICON_REV}" = "A0" ]; then
+			make SOC=${SOC_TARGET} REV=A0 OEI=YES LPDDR_TYPE=lpddr5 dtbs="${DTBS}" ${MKIMAGE_TARGET} && \
 			printf "Make target: ${MKIMAGE_TARGET} and generate flash.bin... \n" || printf "Fails to generate flash.bin... \n"
-	elif [ "${SOC_DIR}" = "iMX93" ] && [ "${old_imx93}" = 1 ] ; then
-		make SOC=${SOC_TARGET} REV=A0 dtbs="${DTBS}" ${MKIMAGE_TARGET} && \
+		else
+			make SOC=${SOC_TARGET} OEI=YES LPDDR_TYPE=lpddr5 dtbs="${DTBS}" ${MKIMAGE_TARGET} && \
 			printf "Make target: ${MKIMAGE_TARGET} and generate flash.bin... \n" || printf "Fails to generate flash.bin... \n"
+		fi
 	else
 		make SOC=${SOC_TARGET} dtbs="${DTBS}" ${MKIMAGE_TARGET} && \
-			printf "Make target: ${MKIMAGE_TARGET} and generate flash.bin... \n" || printf "Fails to generate flash.bin... \n"
+		printf "Make target: ${MKIMAGE_TARGET} and generate flash.bin... \n" || printf "Fails to generate flash.bin... \n"
 	fi
 }
 
@@ -251,76 +308,84 @@ flash_imx_boot()
 
 usage()
 {
-    echo -e "\nUsage: install_uboot_imx8mq.sh
-    Optional parameters: [-d disk-path] [-b DTBS_name] [-t] [-c] [-h]"
+	echo -e "\nUsage: install_uboot_imx8mq.sh
+	Optional parameters: [-d disk-path] [-b DTBS_name] [-s rev] [-t] [-c] [-h]"
 	echo "
-    * This script is used to download required firmware files, generate and flash bootable u-boot binary
-    *
-    * [-d disk-path]: specify the disk to flash u-boot binary, e.g., /dev/sdd
-    * [-b dtb_name]: specify the name of dtb, which will be included in FIT image
-    * [-t]: target u-boot binary is without HDMI firmware
-    * [-c]: clean temporary directory
-    * [-h]: help
+	* This script is used to download required firmware files, generate and flash bootable u-boot binary
+	*
+	* [-d disk-path]: specify the disk to flash u-boot binary, e.g., /dev/sdd
+	* [-b dtb_name]: specify the name of dtb, which will be included in FIT image
+	* [-s rev]: specify the silicon revision for i.mx9 family to apply corresponding ELE firmware
+				Options for i.mx93: A0, A1(default)
+							i.mx95: A0, B0(default)
+	* [-t]: target u-boot binary is without HDMI firmware
+	* [-c]: clean temporary directory
+	* [-h]: help
 
-    For example:
+	For example:
 
-    i.mx8MM:
-    * PICO-IMX8MM with PICO-PI-IMX8 baseDTBS:
-    ./install_uboot_imx8.sh -b imx8mm-pico-pi.dtb -b imx8mm-pico-wizard.dtb -d /dev/sdX
+	i.mx8MM:
+	* PICO-IMX8MM with PICO-PI-IMX8 baseDTBS:
+	./install_uboot_imx8.sh -b imx8mm-pico-pi.dtb -b imx8mm-pico-wizard.dtb -d /dev/sdX
 
-    * EDM-G-IMX8MM with WB:
-    ./install_uboot_imx8.sh -b imx8mm-edm-g-wb.dtb -d /dev/sdX
+	* EDM-G-IMX8MM with WB:
+	./install_uboot_imx8.sh -b imx8mm-edm-g-wb.dtb -d /dev/sdX
 
-    i.mx8MQ:
-    * EDM-IMX8MQ with EDM-WIZARD baseDTBS:
-    ./install_uboot_imx8.sh -b imx8mq-edm-wizard.dtb -d /dev/sdX
+	i.mx8MQ:
+	* EDM-IMX8MQ with EDM-WIZARD baseDTBS:
+	./install_uboot_imx8.sh -b imx8mq-edm-wizard.dtb -d /dev/sdX
 
-    * PICO-IMX8MQ with PICO-PI-IMX8 baseDTBS:
-    ./install_uboot_imx8.sh -b imx8mq-pico-pi.dtb -b imx8mq-pico-wizard.dtb -d /dev/sdX
+	* PICO-IMX8MQ with PICO-PI-IMX8 baseDTBS:
+	./install_uboot_imx8.sh -b imx8mq-pico-pi.dtb -b imx8mq-pico-wizard.dtb -d /dev/sdX
 
-    i.mx8MP:
-    * AXON-IMX8MP:
-    ./install_uboot_imx8.sh -b imx8mp-axon.dtb -d /dev/sdX
+	i.mx8MP:
+	* AXON-IMX8MP:
+	./install_uboot_imx8.sh -b imx8mp-axon.dtb -d /dev/sdX
 
-    * EDM-G-IMX8MP with WB/WIZARD:
-    ./install_uboot_imx8.sh -b imx8mp-edm-g.dtb -d /dev/sdX
+	* EDM-G-IMX8MP with WB/WIZARD:
+	./install_uboot_imx8.sh -b imx8mp-edm-g.dtb -d /dev/sdX
 
-    * SC-IMX8MP:
-    ./install_uboot_imx8.sh -b imx8mp-sc.dtb -d /dev/sdX
+	* SC-IMX8MP:
+	./install_uboot_imx8.sh -b imx8mp-sc.dtb -d /dev/sdX
 
-    * TEK-IMX8MP:
-    ./install_uboot_imx8.sh -b imx8mp-tek.dtb -d /dev/sdX
+	* TEK-IMX8MP:
+	./install_uboot_imx8.sh -b imx8mp-tek.dtb -d /dev/sdX
 
-    * TEK-IMX8MP with flexspi boot (only generate flash.bin):
-    ./install_uboot_imx8.sh -b imx8mp-tek.dtb -f -d /dev/null
+	* TEK-IMX8MP with flexspi boot (only generate flash.bin):
+	./install_uboot_imx8.sh -b imx8mp-tek.dtb -f -d /dev/null
 
-    * TEP-IMX8MP:
-    ./install_uboot_imx8.sh -b imx8mp-tep.dtb -d /dev/sdX
+	* TEP-IMX8MP:
+	./install_uboot_imx8.sh -b imx8mp-tep.dtb -d /dev/sdX
 
-    * TEP-IMX8MP with flexspi boot (only generate flash.bin):
-    ./install_uboot_imx8.sh -b imx8mp-tep.dtb -f -d /dev/null
+	* TEP-IMX8MP with flexspi boot (only generate flash.bin):
+	./install_uboot_imx8.sh -b imx8mp-tep.dtb -f -d /dev/null
 
-    i.MX8MN:
-    * EDM-G-IMX8MN with WB:
-    ./install_uboot_imx8.sh -b imx8mn-edm-g.dtb -d /dev/sdX
+	i.MX8MN:
+	* EDM-G-IMX8MN with WB:
+	./install_uboot_imx8.sh -b imx8mn-edm-g.dtb -d /dev/sdX
 
-    i.MX9:
-    * AXON-IMX93:
-    ./install_uboot_imx8.sh -b imx93-axon.dtb -d /dev/sdX
-    * IMX93_EVK REV.beta:
-    ./install_uboot_imx8.sh -b imx93-11x11-evk.dtb -d /dev/sdX --old-imx93
+	i.MX93/i.MX91:
+	* AXON-IMX93:
+	./install_uboot_imx8.sh -b imx93-axon.dtb -d /dev/sdX
 
-    * EDM-IMX93:
-    ./install_uboot_imx8.sh -b imx93-edm.dtb -d /dev/sdX
+	* IMX93_EVK with silicon revision `beta`:
+	./install_uboot_imx8.sh -b imx93-11x11-evk.dtb -s A0 -d /dev/sdX
 
-    * PICO-IMX93:
-    ./install_uboot_imx8.sh -b imx93-pico.dtb -d /dev/sdX
+	* EDM-IMX93:
+	./install_uboot_imx8.sh -b imx93-edm.dtb -d /dev/sdX
 
-    * AXON-IMX91:
-    ./install_uboot_imx8.sh -b imx91-axon.dtb -d /dev/sdX
+	* PICO-IMX93:
+	./install_uboot_imx8.sh -b imx93-pico.dtb -d /dev/sdX
 
-    * EDM-IMX91:
-    ./install_uboot_imx8.sh -b imx91-edm.dtb -d /dev/sdX
+	* AXON-IMX91:
+	./install_uboot_imx8.sh -b imx91-axon.dtb -d /dev/sdX
+
+	* EDM-IMX91:
+	./install_uboot_imx8.sh -b imx91-edm.dtb -d /dev/sdX
+
+	* EDM-IMX95:
+	./install_uboot_imx8.sh -b imx95-edm-evm.dtb -d /dev/sdX
+	./install_uboot_imx8.sh -b imx95-edm-evm.dtb -s A0 -d /dev/sdX
 "
 }
 
@@ -344,7 +409,7 @@ if [ $# -eq 0 ]; then
 	exit 1
 fi
 
-while getopts "tcfhd:-:b:" OPTION
+while getopts "tcfhd:s:b:" OPTION
 do
 	case $OPTION in
 		d)
@@ -352,6 +417,9 @@ do
 			;;
 		b)
 			DTBS="$DTBS $OPTARG"
+			;;
+		s)
+			SILICON_REV="$OPTARG"
 			;;
 		t)
 			MKIMAGE_TARGET='flash_spl_uboot';
@@ -363,13 +431,6 @@ do
 			rm -rf ${FIRMWARE_DIR} ${MKIMAGE_DIR}
 			echo "Clean ${FIRMWARE_DIR} ${MKIMAGE_DIR}..."
 			exit
-			;;
-		-)
-			case ${OPTARG} in
-				old-imx93)
-					old_imx93=1
-					;;
-			esac
 			;;
 		?|h)
 			usage
@@ -395,6 +456,11 @@ fi
 setup_platform
 print_settings
 install_firmware
+if [ "${SOC_DIR}" = "iMX95" ]; then
+	install_oei_image
+	install_sm_image
+	install_mcu_image
+fi
 install_uboot_dtb
 generate_imx_boot
 flash_imx_boot
