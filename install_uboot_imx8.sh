@@ -19,7 +19,7 @@ DDR_FW_VER="8.28-994fa14" #refer to the name of 'firmware-imx-8m_8.x.bb'
 ELE_FW_VER="2.0.2-89161a8" ##refer to the "{PV of firmware-ele-imx_2.0.2.bb}"-"{IMX_SRCREV_ABBREV}"
 
 FSL_MIRROR="https://www.nxp.com/lgfiles/NMG/MAD/YOCTO"
-FIRMWARE_DIR="firmware_imx8"
+FIRMWARE_DIR="imx-boot_generation"
 MKIMAGE_DIR="imx-mkimage"
 MKIMAGE_TARGET="flash_hdmi_spl_uboot"
 
@@ -28,6 +28,15 @@ UBOOT_ORI="u-boot-nodtb.bin"
 IMX_BOOT="flash.bin"
 TWD=`pwd`
 ATF_BOOT_UART_BASE="0x30890000"
+
+# Config for i.mx95
+IMX_SM_GIT_REPO="https://github.com/TechNexion/imx-sm.git"
+IMX_SM_BRANCH_VER="tn-imx_6.12.20_2.0.0"
+IMX_SM_CONFIG="mx95evk"
+IMX_OEI_GIT_REPO="https://github.com/TechNexion/imx-oei.git"
+IMX_OEI_BRANCH_VER="tn-imx_6.12.20_2.0.0"
+IMX_OEI_CONFIG="edm-imx95"
+ARM_TOOLCHAIN_VER_DEFAULT="14.2.rel1"
 
 setup_platform()
 {
@@ -79,7 +88,8 @@ setup_platform()
 			SOC_DIR="iMX95"
 			SILICON_REV=${SILICON_REV:-B0}
 			IMX_BOOT_SEEK="32"
-			MKIMAGE_TARGET="flash_all"
+			MKIMAGE_TARGET="flash_a55"
+			RAM_SIZE=${RAM_SIZE:-8gb}
 			;;
 		*)
 			printf "Target SOC isn't supported by this script\n"
@@ -250,27 +260,97 @@ install_uboot_dtb()
 	done
 }
 
-IMX95_BINARY_FOLDER="imx95_required_binaries"
-
-install_oei_image()
+fetch_oei()
 {
-	#Copy OEI firmware binary
 	cd ${TWD}
-	cp ${IMX95_BINARY_FOLDER}/oei-m33-ddr.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+	cd ${FIRMWARE_DIR} && FWD=`pwd`
+	if [ ! -d imx-oei ] ; then
+		git clone ${IMX_OEI_GIT_REPO} -b ${IMX_OEI_BRANCH_VER} || printf "Fails to fetch imx-oei source code from TechNexion git repo\n"
+		cd imx-oei
+	fi
 }
 
-install_sm_image()
+fetch_sm()
 {
-	#Copy SM firmware binary
 	cd ${TWD}
-	cp ${IMX95_BINARY_FOLDER}/m33_image-mx95evk.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}/m33_image.bin
+	cd ${FIRMWARE_DIR} && FWD=`pwd`
+	if [ ! -d imx-sm ] ; then
+		git clone ${IMX_SM_GIT_REPO} -b ${IMX_SM_BRANCH_VER} || printf "Fails to fetch imx-sm source code from TechNexion git repo\n"
+		cd imx-sm
+	fi
+
 }
 
-install_mcu_image()
+prepare_arm_toolchain()
 {
-	#Copy MCU firmware binary
 	cd ${TWD}
-	cp ${IMX95_BINARY_FOLDER}/imx95-19x19-evk_m7_TCM_power_mode_switch.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}/m7_image.bin
+	cd ${FIRMWARE_DIR} && FWD=`pwd`
+	if [ -d arm-gnu-toolchain-*-x86_64-arm-none-eabi ] ; then
+		return
+	fi
+
+	if [ -f imx-sm/sm/makefiles/common.mak ] ; then
+		ARM_TOOLCHAIN_VER=$(grep "TC_VERSION ?=" imx-sm/sm/makefiles/common.mak | cut -d'=' -f2 | xargs)
+	fi
+	if [ -z "${ARM_TOOLCHAIN_VER}" ] ; then
+		ARM_TOOLCHAIN_VER=${ARM_TOOLCHAIN_VER_DEFAULT}
+	fi
+	wget "https://developer.arm.com/-/media/Files/downloads/gnu/${ARM_TOOLCHAIN_VER}/binrel/arm-gnu-toolchain-${ARM_TOOLCHAIN_VER}-x86_64-arm-none-eabi.tar.xz" && \
+	( tar xvf arm-gnu-toolchain-${ARM_TOOLCHAIN_VER}-x86_64-arm-none-eabi.tar.xz && \
+	rm arm-gnu-toolchain-${ARM_TOOLCHAIN_VER}-x86_64-arm-none-eabi.tar.xz ) || \
+	printf "Fails to fetch ARM toolchain \n"
+}
+
+generate_sm_image()
+{
+	cd ${TWD}
+	cd ${FIRMWARE_DIR} && FWD=`pwd`
+
+	if [ -e imx-sm/build/${IMX_SM_CONFIG}/m33_image.bin ] ; then
+		cp imx-sm/build/${IMX_SM_CONFIG}/m33_image.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+		return
+	fi
+
+	if [ -d arm-gnu-toolchain-*-x86_64-arm-none-eabi ] ; then
+		export TOOLS=${FWD}
+	else
+		printf "Cannot find ARM toolchain \n"
+	fi
+
+	cd imx-sm && \
+	make config=${IMX_SM_CONFIG} all && \
+	cp build/${IMX_SM_CONFIG}/m33_image.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR} || \
+	printf "Fails to generate SM firmware \n"
+}
+
+generate_oei_image()
+
+{
+	cd ${TWD}
+	cd ${FIRMWARE_DIR} && FWD=`pwd`
+
+	if [ -e imx-oei/build/${IMX_OEI_CONFIG}/ddr/oei-m33-ddr.bin ] ; then
+		cp imx-oei/build/${IMX_OEI_CONFIG}/ddr/oei-m33-ddr.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}
+		return
+	fi
+
+	if [ -d arm-gnu-toolchain-*-x86_64-arm-none-eabi ] ; then
+		export TOOLS=${FWD}
+	else
+		printf "Cannot find ARM toolchain \n"
+	fi
+
+	cd imx-oei
+	if [ "${SILICON_REV}" = "A0" ] ; then
+		make board=${IMX_OEI_CONFIG} oei=ddr r=A0 DEBUG=1 DDR_CONFIG=XIMX95LPD5EVK19_6400mbps_train_timing_a1
+	elif [ "${RAM_SIZE}" = "8gb" ] ; then
+		make board=${IMX_OEI_CONFIG} oei=ddr r=B0 DEBUG=1 DDR_CONFIG=lpddr5_6400mbps_train_timing_8gb
+	elif [ "${RAM_SIZE}" = "16gb" ] ; then
+		make board=${IMX_OEI_CONFIG} oei=ddr r=B0 DEBUG=1 DDR_CONFIG=lpddr5_6400mbps_train_timing_16gb
+	fi
+
+	cp build/${IMX_OEI_CONFIG}/ddr/oei-m33-ddr.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR} || \
+	printf "Fails to generate OEI firmware \n"
 }
 
 generate_imx_boot()
@@ -289,12 +369,8 @@ generate_imx_boot()
 		make SOC=${SOC_TARGET} REV=${SILICON_REV} dtbs="${DTBS}" ${MKIMAGE_TARGET} && \
 		printf "Make target: ${MKIMAGE_TARGET} and generate flash.bin... \n" || printf "Fails to generate flash.bin... \n"
 	elif [ "${SOC_DIR}" = "iMX95" ]; then
-		# make SOC=iMX95 REV=A0 OEI=YES LPDDR_TYPE=lpddr5 dtbs= flash_evk
-		if [ "${SILICON_REV}" = "A0" ]; then
-			make SOC=${SOC_TARGET} REV=A0 OEI=YES LPDDR_TYPE=lpddr5 dtbs="${DTBS}" ${MKIMAGE_TARGET} && \
-			printf "Make target: ${MKIMAGE_TARGET} and generate flash.bin... \n" || printf "Fails to generate flash.bin... \n"
-		else
-			make SOC=${SOC_TARGET} OEI=YES LPDDR_TYPE=lpddr5 dtbs="${DTBS}" ${MKIMAGE_TARGET} && \
+		if [ "${SILICON_REV}" = "A0" ] || [ "${SILICON_REV}" = "B0" ]; then
+			make SOC=${SOC_TARGET} REV=${SILICON_REV} OEI=YES LPDDR_TYPE=lpddr5 dtbs="${DTBS}" ${MKIMAGE_TARGET} && \
 			printf "Make target: ${MKIMAGE_TARGET} and generate flash.bin... \n" || printf "Fails to generate flash.bin... \n"
 		fi
 	else
@@ -328,6 +404,8 @@ usage()
 	* [-s rev]: specify the silicon revision for i.mx9 family to apply corresponding ELE firmware
 				Options for i.mx93: A0, A1(default)
 							i.mx95: A0, B0(default)
+	* [-r ram_size]: specify the size of RAM for i.mx95
+				Options for i.mx95: 8gb(default), 4gb, 16gb
 	* [-t]: target u-boot binary is without HDMI firmware
 	* [-c]: clean temporary directory
 	* [-h]: help
@@ -395,7 +473,7 @@ usage()
 
 	* EDM-IMX95:
 	./install_uboot_imx8.sh -b imx95-edm-evm.dtb -d /dev/sdX
-	./install_uboot_imx8.sh -b imx95-edm-evm.dtb -s A0 -d /dev/sdX
+	./install_uboot_imx8.sh -b imx95-edm-evm.dtb -r 16gb -d /dev/sdX
 "
 }
 
@@ -419,7 +497,7 @@ if [ $# -eq 0 ]; then
 	exit 1
 fi
 
-while getopts "tcfhd:s:b:" OPTION
+while getopts "tcfhd:s:b:r:" OPTION
 do
 	case $OPTION in
 		d)
@@ -430,6 +508,9 @@ do
 			;;
 		s)
 			SILICON_REV="$OPTARG"
+			;;
+		r)
+			RAM_SIZE="$OPTARG"
 			;;
 		t)
 			MKIMAGE_TARGET='flash_spl_uboot';
@@ -467,11 +548,12 @@ setup_platform
 print_settings
 install_firmware
 if [ "${SOC_DIR}" = "iMX95" ]; then
-	install_oei_image
-	install_sm_image
-	install_mcu_image
+	fetch_oei
+	fetch_sm
+	prepare_arm_toolchain
+	generate_oei_image
+	generate_sm_image
 fi
 install_uboot_dtb
 generate_imx_boot
 flash_imx_boot
-
