@@ -4,7 +4,7 @@
 # SPDX-License-Identifier:      GPL-2.0+
 #
 
-obj-y += axon_imx93.o
+obj-y += axon-imx93.o
 
 ifdef CONFIG_SPL_BUILD
 obj-y += spl.o
