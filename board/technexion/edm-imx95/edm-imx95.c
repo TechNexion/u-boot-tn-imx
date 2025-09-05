@@ -310,30 +310,9 @@ void netc_init(void)
 		return;
 	}
 
-#ifdef CONFIG_TARGET_IMX95_15X15_EVK
-	netc_phy_rst("gpio@22_4", "ENET1_RST_B");
-	netc_phy_rst("gpio@22_5", "ENET2_RST_B");
-#else
-	netc_phy_rst("i2c5_io@21_2", "ENET1_RST_B");
+	netc_phy_rst("gpio@22_1", "ENET1_RST_B");
+	netc_phy_rst("gpio@22_2", "ENET2_RST_B");
 
-	/* Enable in SW count */
-	netc_regulator_enable("regulator-aqr-stby", true);
-	netc_regulator_enable("regulator-mac-stby", true);
-	netc_regulator_enable("regulator-aqr-en", true);
-	netc_regulator_enable("regulator-mac-en", true);
-
-	/* Disable regulator to have explicit reset to AQR PHY and clock generator */
-	udelay(10000);
-	netc_regulator_enable("regulator-aqr-stby", false);
-	netc_regulator_enable("regulator-mac-stby", false);
-	netc_regulator_enable("regulator-aqr-en", false);
-	netc_regulator_enable("regulator-mac-en", false);
-
-	udelay(10000);
-	netc_regulator_enable("regulator-aqr-stby", true);
-	netc_regulator_enable("regulator-mac-stby", true);
-
-#endif
 	pci_init();
 }
 
@@ -683,7 +662,7 @@ int board_fix_fdt(void *fdt)
 {
 	/* Remove nodes based on fuses. */
 	board_fix_fdt_fuse(fdt);
-	
+
 #if IS_ENABLED(CONFIG_TARGET_IMX95_15X15_EVK)
 	return board_fix_15x15_evk(fdt);
 #else
