@@ -25,6 +25,11 @@
 #include <dm/uclass-internal.h>
 #include <command.h>
 
+enum typec_cc_polarity {
+	TYPEC_POLARITY_CC1,
+	TYPEC_POLARITY_CC2,
+};
+
 extern int board_fix_fdt_fuse(void *fdt);
 
 int board_early_init_f(void)
@@ -34,35 +39,6 @@ int board_early_init_f(void)
 
 	return 0;
 }
-
-#ifdef CONFIG_USB_TCPC
-struct tcpc_port port;
-#ifdef CONFIG_TARGET_IMX95_15X15_EVK
-struct tcpc_port portpd;
-struct tcpc_port_config port_config = {
-	.i2c_bus = 2, /* i2c3 */
-	.addr = 0x50,
-	.port_type = TYPEC_PORT_DRP,
-	.disable_pd = true,
-};
-
-struct tcpc_port_config portpd_config = {
-	.i2c_bus = 2, /*i2c3*/
-	.addr = 0x52,
-	.port_type = TYPEC_PORT_UFP,
-	.max_snk_mv = 20000,
-	.max_snk_ma = 3000,
-	.max_snk_mw = 15000,
-	.op_snk_mv = 9000,
-};
-#else
-struct tcpc_port_config port_config = {
-	.i2c_bus = 6, /* i2c7 */
-	.addr = 0x50,
-	.port_type = TYPEC_PORT_DRP,
-	.disable_pd = true,
-};
-#endif
 
 ulong tca_base;
 
@@ -103,17 +79,10 @@ void tca_mux_select(enum typec_cc_polarity pol)
 
 static void setup_typec(void)
 {
-	int ret;
-
 	tca_base = USB1_BASE_ADDR + 0xfc000;
 
-	ret = tcpc_init(&port, port_config, &tca_mux_select);
-	if (ret) {
-		printf("%s: tcpc init failed, err=%d\n", __func__, ret);
-		return;
-	}
+	tca_mux_select(TYPEC_POLARITY_CC1);
 }
-#endif
 
 #ifdef CONFIG_USB_DWC3
 
@@ -217,19 +186,12 @@ int board_usb_init(int index, enum usb_init_type init)
 #ifdef CONFIG_USB_DWC3
 		dwc3_nxp_usb_phy_init(&dwc3_device_data);
 #endif
-#ifdef CONFIG_USB_TCPC
-		ret = tcpc_setup_ufp_mode(&port);
-		if (ret)
-			return ret;
-#endif
+
+		setup_typec();
+
 #ifdef CONFIG_USB_DWC3
 		return dwc3_uboot_init(&dwc3_device_data);
 #endif
-	} else if (index == 0 && init == USB_INIT_HOST) {
-#ifdef CONFIG_USB_TCPC
-		ret = tcpc_setup_dfp_mode(&port);
-#endif
-		return ret;
 	}
 
 	return 0;
@@ -397,10 +359,6 @@ int board_init(void)
 
 	imx9_scmi_power_domain_enable(IMX95_PD_DISPLAY, false);
 	imx9_scmi_power_domain_enable(IMX95_PD_CAMERA, false);
-
-#if defined(CONFIG_USB_TCPC)
-	setup_typec();
-#endif
 
 	netc_init();
 
