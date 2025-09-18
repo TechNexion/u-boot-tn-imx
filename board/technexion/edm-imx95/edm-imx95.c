@@ -24,6 +24,7 @@
 #include <dm/uclass.h>
 #include <dm/uclass-internal.h>
 #include <command.h>
+#include "edm-imx95-ddr.h"
 
 enum typec_cc_polarity {
 	TYPEC_POLARITY_CC1,
@@ -460,9 +461,27 @@ int ft_board_setup(void *blob, struct bd_info *bd)
 }
 #endif
 
+static u8 board_get_ddr_code(void)
+{
+	return (readl(OCRAM_NON_SECURE_BASE_ADDR));
+}
+
 int board_phys_sdram_size(phys_size_t *size)
 {
-	*size = PHYS_SDRAM_SIZE + PHYS_SDRAM_2_SIZE;
+	switch (board_get_ddr_code()) {
+	case LPDDR5_4GB:
+	    *size = PHYS_SDRAM_SIZE + SZ_2G;
+            break;
+        case LPDDR5_8GB:
+	    *size = PHYS_SDRAM_SIZE + SZ_6G;
+            break;
+        case LPDDR5_16GB:
+	    *size = PHYS_SDRAM_SIZE + PHYS_SDRAM_2_SIZE;
+            break;
+        default:
+            puts("Unknown DDR type!!!\n");
+            break;
+	}
 
 	return 0;
 }
