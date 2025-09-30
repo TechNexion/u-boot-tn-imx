@@ -179,7 +179,7 @@ int board_mmc_init(struct bd_info *bis)
 		* mmc0                    USDHC2
 		* mmc1                    USDHC3
 		*/
-	for (i = 0; i < CONFIG_SYS_FSL_USDHC_NUM; i++) {
+	for (i = 0; i < CFG_SYS_FSL_USDHC_NUM; i++) {
 		switch (i) {
 		case 0:
 			usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC2_CLK);
