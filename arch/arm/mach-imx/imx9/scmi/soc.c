@@ -560,6 +560,7 @@ void enable_caches(void)
 	dcache_enable();
 }
 
+#if defined(CFG_SYS_SECURE_SDRAM_SIZE)
 /*
  * Initialize the MMU and activate cache in SPL stage
  */
@@ -587,6 +588,7 @@ void spl_board_prepare_for_boot(void)
 {
 	dcache_disable();
 }
+#endif
 
 __weak int board_phys_sdram_size(phys_size_t *size)
 {
@@ -1918,7 +1920,9 @@ int arch_cpu_init(void)
 		gpio_reset(GPIO7_BASE_ADDR);
 #endif
 
+#if defined(CFG_SYS_SECURE_SDRAM_SIZE)
 		spl_enable_caches();
+#endif
 	}
 
 	return 0;
