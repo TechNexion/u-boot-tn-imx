@@ -470,17 +470,17 @@ int board_phys_sdram_size(phys_size_t *size)
 {
 	switch (board_get_ddr_code()) {
 	case LPDDR5_4GB:
-	    *size = PHYS_SDRAM_SIZE + SZ_2G;
-            break;
-        case LPDDR5_8GB:
-	    *size = PHYS_SDRAM_SIZE + SZ_6G;
-            break;
-        case LPDDR5_16GB:
-	    *size = PHYS_SDRAM_SIZE + PHYS_SDRAM_2_SIZE;
-            break;
-        default:
-            puts("Unknown DDR type!!!\n");
-            break;
+		*size = PHYS_SDRAM_SIZE + SZ_2G;
+		break;
+	case LPDDR5_8GB:
+		*size = PHYS_SDRAM_SIZE + SZ_6G;
+		break;
+	case LPDDR5_16GB:
+		*size = PHYS_SDRAM_SIZE + PHYS_SDRAM_2_SIZE;
+		break;
+	default:
+		puts("Unknown DDR type!!!\n");
+		break;
 	}
 
 	return 0;
