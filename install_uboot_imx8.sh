@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #################################################################################
 # Copyright 2018 Technexion Ltd.
 #
@@ -11,12 +11,12 @@
 
 DRIVE=/dev/sdX
 
-BRANCH_VER="lf-6.12.20_2.0.0" #branch used by imx-mkimage and imx-atf under meta-imx
+BRANCH_VER="lf-6.12.34_2.1.0" #branch used by imx-mkimage and imx-atf under meta-imx
 ATF_BRANCH_VER="lf_v2.12"
-MKIMAGE_SRC_GIT_ID='4c2e5b25232f5aa003976ddca9d1d2fb9667beb1' #refer to 'imx-mkimage_git.inc' in Yocto
-ATF_SRC_GIT_ID='6ddd57019494cabfca5065368349109c37f2cc9f' #refer to 'imx-atf_2.12.bb' in Yocto
-DDR_FW_VER="8.28-994fa14" #refer to the name of 'firmware-imx-8m_8.x.bb'
-ELE_FW_VER="2.0.2-89161a8" ##refer to the "{PV of firmware-ele-imx_2.0.2.bb}"-"{IMX_SRCREV_ABBREV}"
+MKIMAGE_SRC_GIT_ID='8737dc3604e430c902c455da344975e22a594ffe' #refer to 'imx-mkimage_git.inc' in Yocto
+ATF_SRC_GIT_ID='6adc4c6f6d9e8bb647aa5b30112d0ce264900052' #refer to 'imx-atf_2.12.bb' in Yocto
+DDR_FW_VER="8.29-8741a3b" #refer to the name of 'firmware-imx-8m_8.x.bb'
+ELE_FW_VER="2.0.3-286c884" ##refer to the "{PV of firmware-ele-imx_2.0.2.bb}"-"{IMX_SRCREV_ABBREV}"
 
 FSL_MIRROR="https://www.nxp.com/lgfiles/NMG/MAD/YOCTO"
 FIRMWARE_DIR="imx-boot_generation"
@@ -31,10 +31,10 @@ ATF_BOOT_UART_BASE="0x30890000"
 
 # Config for i.mx95
 IMX_SM_GIT_REPO="https://github.com/TechNexion/imx-sm.git"
-IMX_SM_BRANCH_VER="tn-imx_6.12.20_2.0.0"
+IMX_SM_BRANCH_VER="tn-imx_6.12.34_2.1.0"
 IMX_SM_CONFIG="mx95evk"
 IMX_OEI_GIT_REPO="https://github.com/TechNexion/imx-oei.git"
-IMX_OEI_BRANCH_VER="tn-imx_6.12.20_2.0.0"
+IMX_OEI_BRANCH_VER="tn-imx_6.12.34_2.1.0"
 IMX_OEI_CONFIG="edm-imx95"
 ARM_TOOLCHAIN_VER_DEFAULT="14.2.rel1"
 
