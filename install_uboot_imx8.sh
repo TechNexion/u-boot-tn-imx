@@ -343,6 +343,8 @@ generate_oei_image()
 	cd imx-oei
 	if [ "${SILICON_REV}" = "A0" ] ; then
 		make board=${IMX_OEI_CONFIG} oei=ddr r=A0 DEBUG=1 DDR_CONFIG=XIMX95LPD5EVK19_6400mbps_train_timing_a1
+	elif [ "${RAM_SIZE}" = "4gb" ] ; then
+		make board=${IMX_OEI_CONFIG} oei=ddr r=B0 DEBUG=1 DDR_CONFIG=lpddr5_6400mbps_train_timing_4gb
 	elif [ "${RAM_SIZE}" = "8gb" ] ; then
 		make board=${IMX_OEI_CONFIG} oei=ddr r=B0 DEBUG=1 DDR_CONFIG=lpddr5_6400mbps_train_timing_8gb
 	elif [ "${RAM_SIZE}" = "16gb" ] ; then
