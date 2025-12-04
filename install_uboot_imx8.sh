@@ -473,6 +473,9 @@ usage()
 	* EDM-IMX91:
 	./install_uboot_imx8.sh -b imx91-edm.dtb -d /dev/sdX
 
+	* PICO-IMX91:
+	./install_uboot_imx8.sh -b imx91-pico.dtb -d /dev/sdX
+
 	* EDM-IMX95:
 	./install_uboot_imx8.sh -b imx95-edm-evm.dtb -d /dev/sdX
 	./install_uboot_imx8.sh -b imx95-edm-evm.dtb -r 16gb -d /dev/sdX
