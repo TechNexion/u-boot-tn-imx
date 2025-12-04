@@ -1,0 +1,6 @@
+PICO i.MX91 BOARD
+M:	William Tsao <william.tsao@technexion.com>
+S:	Maintained
+F:	board/technexion/pico-imx91/
+F:	include/configs/pico-imx91.h
+F:	configs/pico-imx91_defconfig
