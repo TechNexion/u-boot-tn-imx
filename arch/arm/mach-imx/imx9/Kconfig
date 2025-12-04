@@ -134,6 +134,11 @@ config TARGET_EDM_IMX91
 	select OF_BOARD_FIXUP
 	select IMX91
 
+config TARGET_PICO_IMX91
+	bool "pico_imx91"
+	select OF_BOARD_FIXUP
+	select IMX91
+
 config TARGET_IMX93_14X14_EVK
 	bool "imx93_14x14_evk"
 	select OF_BOARD_FIXUP
@@ -278,6 +283,7 @@ source "board/freescale/imx91_qsb/Kconfig"
 source "board/freescale/imx91_frdm/Kconfig"
 source "board/freescale/imx91_frdm_imx91s/Kconfig"
 source "board/technexion/axon-imx91/Kconfig"
+source "board/technexion/pico-imx91/Kconfig"
 source "board/technexion/edm-imx91/Kconfig"
 source "board/technexion/edm-imx95/Kconfig"
 source "board/freescale/imx93_evk/Kconfig"
