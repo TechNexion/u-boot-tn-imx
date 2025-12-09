@@ -216,6 +216,12 @@ config TARGET_EDM_IMX95
 	imply BOOTSTD_BOOTCOMMAND
 	imply BOOTSTD_FULL
 
+config TARGET_EDGE_AI_IMX95
+	bool "edge-ai-imx95"
+	select IMX95
+	imply BOOTSTD_BOOTCOMMAND
+	imply BOOTSTD_FULL
+
 config TARGET_IMX95_15X15_EVK
 	bool "imx95_15x15_evk"
 	select IMX95
@@ -286,6 +292,7 @@ source "board/technexion/axon-imx91/Kconfig"
 source "board/technexion/pico-imx91/Kconfig"
 source "board/technexion/edm-imx91/Kconfig"
 source "board/technexion/edm-imx95/Kconfig"
+source "board/technexion/edge-ai-imx95/Kconfig"
 source "board/freescale/imx93_evk/Kconfig"
 source "board/freescale/imx93_qsb/Kconfig"
 source "board/freescale/imx93_frdm/Kconfig"
