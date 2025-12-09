@@ -1,0 +1,12 @@
+if TARGET_EDGE_AI_IMX95
+
+config SYS_BOARD
+	default "edge-ai-imx95"
+
+config SYS_VENDOR
+	default "technexion"
+
+config SYS_CONFIG_NAME
+	default "edge-ai-imx95"
+
+endif

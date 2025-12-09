@@ -479,6 +479,9 @@ usage()
 	* EDM-IMX95:
 	./install_uboot_imx8.sh -b imx95-edm-evm.dtb -d /dev/sdX
 	./install_uboot_imx8.sh -b imx95-edm-evm.dtb -r 16gb -d /dev/sdX
+
+	* EDGE-Ai-IMX95:
+	./install_uboot_imx8.sh -b imx95-edge-ai.dtb -d /dev/sdX
 "
 }
 
