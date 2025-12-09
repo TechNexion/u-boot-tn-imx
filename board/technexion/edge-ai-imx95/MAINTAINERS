@@ -1,0 +1,6 @@
+EDGE-Ai-IMX95 BOARD
+M:	Ray Chang <ray.chang@technexion.com>
+S:	Maintained
+F:	board/technexion/edge-ai-imx95/
+F:	include/configs/edge-ai-imx95.h
+F:	configs/edge-ai-imx95_defconfig
