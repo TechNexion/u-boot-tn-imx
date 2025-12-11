@@ -25,11 +25,26 @@
 #include <dm/uclass-internal.h>
 #include <command.h>
 #include "edm-imx95-ddr.h"
+#include "../common/periph_detect.h"
 
 enum typec_cc_polarity {
 	TYPEC_POLARITY_CC1,
 	TYPEC_POLARITY_CC2,
 };
+
+#ifdef CONFIG_TN_PHERIPHERAL_DETECT
+const tn_camera_chk_t tn_camera_chk[] = {
+	{ 1, 4, 0x48, "tevs-csi0" },
+	{ 2, 1, 0x48, "tevs-csi1" },
+};
+size_t tn_camera_chk_cnt = ARRAY_SIZE(tn_camera_chk);
+struct tn_display const displays[]= {
+/*      bus, addr, id_reg, id, detect */
+	{ 0, 0x2a, 0,    101,  "lvds-vl10112880", detect_exc3000_i2c },
+	{ 0, 0x2a, 0,    156,  "lvds-vl156192108", detect_exc3000_i2c },
+};
+size_t tn_display_count = ARRAY_SIZE(displays);
+#endif
 
 extern int board_fix_fdt_fuse(void *fdt);
 
@@ -409,6 +424,10 @@ void board_late_mmc_env_init(void)
 
 int board_late_init(void)
 {
+#ifdef CONFIG_TN_PHERIPHERAL_DETECT
+	detect_display_panel();
+	detect_camera();
+#endif
 	if (IS_ENABLED(CONFIG_ENV_IS_IN_MMC))
 		board_late_mmc_env_init();
 
