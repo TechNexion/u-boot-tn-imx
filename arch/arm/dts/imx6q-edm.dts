@@ -15,3 +15,11 @@
 	model = "TechNexion EDM-IMX6 Quad";
 	compatible = "technexion,imx6q-edm", "fsl,imx6q";
 };
+
+&sata {
+	status = "okay";
+	fsl,transmit-level-mV = <1104>;
+	fsl,transmit-boost-mdB = <0>;
+	fsl,transmit-atten-16ths = <9>;
+	fsl,no-spread-spectrum;
+};
