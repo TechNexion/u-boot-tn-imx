@@ -9,7 +9,7 @@
 #include "imx93-u-boot.dtsi"
 
 / {
-	model = "TechnNexion i.MX93 PICO board";
+	model = "TechNexion PICO-IMX93";
 	compatible = "fsl,imx93-pico", "fsl,imx93";
 
 	chosen {

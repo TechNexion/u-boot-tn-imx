@@ -12,8 +12,8 @@
 #include "imx93-u-boot.dtsi"
 
 / {
-	model = "TechnNexion i.MX93 EDM board";
-	compatible = "fsl,imx93-axon", "fsl,imx93-edm", "fsl,imx93";
+	model = "TechNexion EDM-IMX93";
+	compatible = "fsl,imx93-edm", "fsl,imx93";
 
 	aliases {
 		rtc0 = &pcf2131;
