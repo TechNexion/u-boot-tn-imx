@@ -10,7 +10,7 @@
 #include "imx91-u-boot.dtsi"
 
 / {
-	model = "TechNexion i.MX91 AXON board";
+	model = "TechNexion AXON-IMX91";
 	compatible = "fsl,imx91-axon", "fsl,imx91";
 
 	chosen {
