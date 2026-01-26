@@ -418,8 +418,8 @@ usage()
 	* PICO-IMX8MM with PICO-PI-IMX8 baseDTBS:
 	./install_uboot_imx8.sh -b imx8mm-pico-pi.dtb -b imx8mm-pico-wizard.dtb -d /dev/sdX
 
-	* EDM-G-IMX8MM with WB:
-	./install_uboot_imx8.sh -b imx8mm-edm-g-wb.dtb -d /dev/sdX
+	* EDM-G-IMX8MM with WB/WIZARD:
+	./install_uboot_imx8.sh -b imx8mm-edm-g.dtb -d /dev/sdX
 
 	i.mx8MQ:
 	* EDM-IMX8MQ with EDM-WIZARD baseDTBS:

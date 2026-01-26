@@ -19,6 +19,9 @@
 #include "imx8mm.dtsi"
 
 / {
+	model = "TechNexion EDM-G-IMX8MM";
+	compatible = "fsl,imx8mm-edm-g", "fsl,imx8mm";
+
 	chosen {
 		stdout-path = &uart2;
 	};
@@ -371,6 +374,16 @@
 	};
 };
 
+&usbotg1 {
+	dr_mode = "peripheral";
+	status = "okay";
+};
+
+&usbotg2 {
+	dr_mode = "host";
+	status = "okay";
+};
+
 /* UART_A on EDMG, console */
 &uart2 {
 	pinctrl-names = "default";
@@ -386,7 +399,7 @@
 	pinctrl-2 = <&pinctrl_usdhc1_200mhz>;
 	bus-width = <4>;
 	non-removable;
-	status = "disabled";
+	status = "okay";
 };
 
 /* SD card on baseboard */
