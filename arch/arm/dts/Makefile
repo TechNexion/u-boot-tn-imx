@@ -932,7 +932,7 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mm-icore-mx8mm-edimm2.2.dtb \
 	imx8mm-mx8menlo.dtb \
 	imx8mm-phg.dtb \
-	imx8mm-edm-g-wb.dtb \
+	imx8mm-edm-g.dtb \
 	imx8mm-pico-pi.dtb \
 	imx8mm-pico-wizard.dtb \
 	imx8mq-cm.dtb \
