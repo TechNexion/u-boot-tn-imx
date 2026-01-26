@@ -9,7 +9,7 @@
 #include "imx93-u-boot.dtsi"
 
 / {
-	model = "TechnNexion i.MX93 AXON board";
+	model = "TechNexion AXON-IMX93";
 	compatible = "fsl,imx93-axon", "fsl,imx93";
 
 	aliases {
