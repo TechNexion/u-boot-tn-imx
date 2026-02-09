@@ -100,6 +100,40 @@ static void setup_typec(void)
 	tca_mux_select(TYPEC_POLARITY_CC1);
 }
 
+void camera_init(void)
+{
+	int ret;
+	struct gpio_desc csi1_pdb, csi2_pdb;
+
+	/* CSI1_PDB - gpio@21 pin 12 */
+	ret = dm_gpio_lookup_name("gpio@21_12", &csi1_pdb);
+	if (ret) {
+		printf("%s: lookup gpio@21_12 failed ret = %d\n", __func__, ret);
+	} else {
+		ret = dm_gpio_request(&csi1_pdb, "CSI1_PDB");
+		if (ret) {
+			printf("%s: request CSI1_PDB failed ret = %d\n", __func__, ret);
+		} else {
+			dm_gpio_set_dir_flags(&csi1_pdb, GPIOD_IS_OUT);
+			dm_gpio_set_value(&csi1_pdb, 0); /* Set to LOW */
+		}
+	}
+
+	/* CSI2_PDB - gpio@21 pin 13 */
+	ret = dm_gpio_lookup_name("gpio@21_13", &csi2_pdb);
+	if (ret) {
+		printf("%s: lookup gpio@21_13 failed ret = %d\n", __func__, ret);
+	} else {
+		ret = dm_gpio_request(&csi2_pdb, "CSI2_PDB");
+		if (ret) {
+			printf("%s: request CSI2_PDB failed ret = %d\n", __func__, ret);
+		} else {
+			dm_gpio_set_dir_flags(&csi2_pdb, GPIOD_IS_OUT);
+			dm_gpio_set_value(&csi2_pdb, 0); /* Set to LOW */
+		}
+	}
+}
+
 #ifdef CONFIG_USB_DWC3
 
 #define PHY_CTRL0			0xF0040
@@ -383,6 +417,8 @@ int board_init(void)
 	power_on_m7("mx95evkrpmsg");
 
 	lvds_backlight_on();
+
+	camera_init();
 
 	return 0;
 }
