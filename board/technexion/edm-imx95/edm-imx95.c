@@ -34,8 +34,10 @@ enum typec_cc_polarity {
 
 #ifdef CONFIG_TN_PHERIPHERAL_DETECT
 const tn_camera_chk_t tn_camera_chk[] = {
-	{ 1, 4, 0x48, "tevs-csi0" },
-	{ 2, 1, 0x48, "tevs-csi1" },
+	{ 4, 0x48, "tevs-csi0" },
+	{ 1, 0x48, "tevs-csi1" },
+	{ 4, 0x2e, "vls-gm2-csi0" },
+	{ 1, 0x2e, "vls-gm2-csi1" },
 };
 size_t tn_camera_chk_cnt = ARRAY_SIZE(tn_camera_chk);
 struct tn_display const displays[]= {
@@ -116,6 +118,7 @@ void camera_init(void)
 		} else {
 			dm_gpio_set_dir_flags(&csi1_pdb, GPIOD_IS_OUT);
 			dm_gpio_set_value(&csi1_pdb, 0); /* Set to LOW */
+			dm_gpio_set_value(&csi1_pdb, 1); /* Set to HIGH */
 		}
 	}
 
@@ -130,6 +133,7 @@ void camera_init(void)
 		} else {
 			dm_gpio_set_dir_flags(&csi2_pdb, GPIOD_IS_OUT);
 			dm_gpio_set_value(&csi2_pdb, 0); /* Set to LOW */
+			dm_gpio_set_value(&csi2_pdb, 1); /* Set to HIGH */
 		}
 	}
 }

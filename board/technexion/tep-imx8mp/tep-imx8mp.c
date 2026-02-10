@@ -43,7 +43,7 @@ DECLARE_GLOBAL_DATA_PTR;
 #define OTG_PWR_EN_PAD IMX_GPIO_NR(4, 0)
 
 const tn_camera_chk_t tn_camera_chk[] = {
-	{ 1, 1, 0x0f, "hdmi2mipi-tc358743" },
+	{ 1, 0x0f, "hdmi2mipi-tc358743" },
 };
 size_t tn_camera_chk_cnt = ARRAY_SIZE(tn_camera_chk);
 

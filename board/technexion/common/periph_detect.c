@@ -58,6 +58,46 @@ static int _add_dtoverlay(const char *ov_name)
 	return(env_set(ENV_DTOVERLAY, arr_dtov));
 }
 
+static int _remove_dtoverlay(const char *ov_name)
+{
+	char *dtoverlay = NULL;
+	char arr_dtov[SIZE_DTOVERLAY] = { '\0' };
+	char *token;
+	char temp_dtov[SIZE_DTOVERLAY];
+	int first = 1;
+
+	if (ov_name == NULL) {
+		return(-1);
+	}
+
+	dtoverlay = env_get(ENV_DTOVERLAY);
+	if (dtoverlay == NULL) {
+		return(0); /* Nothing to remove */
+	}
+
+	/* Copy to temp buffer for tokenization */
+	snprintf(temp_dtov, SIZE_DTOVERLAY, "%s", dtoverlay);
+
+	/* Parse space-separated overlays and rebuild without the target */
+	token = strtok(temp_dtov, " ");
+	while (token != NULL) {
+		if (strcmp(token, ov_name) != 0) {
+			if (first) {
+				snprintf(arr_dtov, SIZE_DTOVERLAY, "%s", token);
+				first = 0;
+			} else {
+				int len = strlen(arr_dtov);
+				snprintf(arr_dtov + len, SIZE_DTOVERLAY - len, " %s", token);
+			}
+		} else {
+			printf("%s: removing overlay for %s\n", __FILE__, ov_name);
+		}
+		token = strtok(NULL, " ");
+	}
+
+	return(env_set(ENV_DTOVERLAY, arr_dtov));
+}
+
 static struct udevice * _check_i2c_dev(int bus_idx, uint addr) {
 	struct udevice *bus = NULL;
 	struct udevice *i2c_dev = NULL;
@@ -375,6 +415,14 @@ static int _detect_camera(const tn_camera_chk_t *list, size_t count) {
 		}
 
 		_add_dtoverlay(list[i].ov_name);
+
+		/* Handle vls-gm2/tevs conflict: if vls-gm2 is detected, remove tevs */
+		if (strstr(list[i].ov_name, "vls-gm2-csi0")) {
+			_remove_dtoverlay("tevs-csi0");
+		} else if (strstr(list[i].ov_name, "vls-gm2-csi1")) {
+			_remove_dtoverlay("tevs-csi1");
+		}
+
 		ret = 0;
 	}
 
@@ -417,7 +465,6 @@ __weak int detect_tevi_camera(void) {
 	}
 
 	for (i = 0; i < tevi_camera_cnt; i++) {
-		tevi_cam[i].camera_index = tevi_camera[i].camera_index;
 		tevi_cam[i].i2c_bus_index = tevi_camera[i].i2c_bus_index;
 		tevi_cam[i].i2c_addr = tevi_camera[i].eeprom_i2c_addr;
 		tevi_cam[i].ov_name = "tevi-ov5640";

@@ -39,7 +39,7 @@
 DECLARE_GLOBAL_DATA_PTR;
 
 const tn_camera_chk_t tn_camera_chk[] = {
-	{ 1, 1, 0x0f, "hdmi2mipi-tc358743" },
+	{ 1, 0x0f, "hdmi2mipi-tc358743" },
 };
 size_t tn_camera_chk_cnt = ARRAY_SIZE(tn_camera_chk);
 

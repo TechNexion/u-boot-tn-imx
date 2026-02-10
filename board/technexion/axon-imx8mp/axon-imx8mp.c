@@ -50,12 +50,12 @@ static iomux_v3_cfg_t const wdog_pads[] = {
 #ifndef CONFIG_SPL_BUILD
 #ifdef CONFIG_TN_PHERIPHERAL_DETECT
 const tn_camera_chk_t tn_camera_chk[] = {
-	{ 1, 1, 0x3c, "tevi-ov5640" },
-	{ 2, 4, 0x3c, "tevi-ov5640" },
-	{ 1, 1, 0x3d, "tevi-ap1302" },
-	{ 2, 4, 0x3d, "tevi-ap1302" },
-	{ 1, 1, 0x48, "tevs" },
-	{ 2, 4, 0x48, "tevs" },
+	{ 1, 0x3c, "tevi-ov5640" },
+	{ 4, 0x3c, "tevi-ov5640" },
+	{ 1, 0x3d, "tevi-ap1302" },
+	{ 4, 0x3d, "tevi-ap1302" },
+	{ 1, 0x48, "tevs" },
+	{ 4, 0x48, "tevs" },
 };
 size_t tn_camera_chk_cnt = ARRAY_SIZE(tn_camera_chk);
 

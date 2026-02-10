@@ -19,7 +19,6 @@ struct tn_display {
 };
 
 typedef struct tn_camera_chk {
-	u8 camera_index;
 	u8 i2c_bus_index;
 	u8 i2c_addr;
 	const char *ov_name;
