@@ -57,13 +57,18 @@
 	};
 
 	lvds0_backlight: backlight {
-		compatible = "pwm-backlight";
-		brightness-levels = <0 36 72 108 144 180 216 255>;
-		default-brightness-level = <6>;
+		compatible = "gpio-backlight";
+		gpios = <&tca9555_a21 1 GPIO_ACTIVE_HIGH>;
+		default-on;
+
+		status = "okay";
+
+		// compatible = "pwm-backlight";
+		// brightness-levels = <0 36 72 108 144 180 216 255>;
+		// default-brightness-level = <6>;
 		/* LVDS0_BL_EN */
-		enable-gpios = <&tca9555_a21 1 GPIO_ACTIVE_HIGH>;
-		pwms = <&tpm5 0 50000 0>;
-		status = "disabled";
+		// enable-gpios = <&tca9555_a21 1 GPIO_ACTIVE_HIGH>;
+		// pwms = <&tpm5 0 50000 0>;
 	};
 
 	mdio_gpio: mdio {
@@ -181,6 +186,130 @@
 		#reset-cells = <0>;
 		reset-delay-us = <10>;
 		reset-gpios = <&tca9555_c21 11 GPIO_ACTIVE_LOW>;
+	};
+
+	lvds0_panel {
+		compatible = "simple-panel";
+		backlight = <&lvds0_backlight>;
+		power-supply = <&reg_lvds_pwr>;
+		pinctrl-names = "default";
+		bootph-pre-ram;
+		width-mm = <243>;
+		height-mm = <161>;
+		data-mapping = "vesa-24";
+
+		display-timings {
+			native-mode = <&timing0>;
+			timing0: timing0 {
+				bootph-pre-ram;
+				clock-frequency = <71100000>;
+				hactive = <1280>;
+				vactive = <800>;
+				hback-porch = <40>;
+				hfront-porch = <40>;
+				vback-porch = <10>;
+				vfront-porch = <3>;
+				hsync-len = <80>;
+				vsync-len = <10>;
+				de-active = <1>;
+			};
+		};
+
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			port@0 {
+				reg = <0>;
+				// dual-lvds-odd-pixels;
+				panel_lvds_in: endpoint {
+					remote-endpoint = <&lvds_out>;
+				};
+			};
+		};
+	};
+};
+
+&reg_lvds_pwr {
+	status = "okay";
+};
+
+&dpu {
+	clocks = <&scmi_clk IMX95_CLK_DISP1PIX>,
+		 <&scmi_clk IMX95_CLK_DISPAPB>,
+		 <&scmi_clk IMX95_CLK_DISPAXI>,
+		 <&scmi_clk IMX95_CLK_DISPOCRAM>,
+		 <&scmi_clk IMX95_CLK_LDBPLL>,
+		 <&scmi_clk IMX95_CLK_LDBPLL_VCO>;
+	status = "okay";
+};
+
+&reg_3p3v {
+	status = "okay";
+};
+
+&netcmix_blk_ctrl {
+	status = "okay";
+};
+
+&mipi_dsi {
+	status = "disabled";
+};
+
+&dispmix_csr {
+	status = "okay";
+};
+
+&display_pixel_link {
+	status = "okay";
+};
+
+&lvds_csr {
+	status = "okay";
+};
+
+&ldb {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	assigned-clocks = <&scmi_clk IMX95_CLK_LDBPLL_VCO>,
+			  <&scmi_clk IMX95_CLK_LDBPLL>;
+	assigned-clock-rates = <3291120000>, <1097040000>;
+	assigned-clock-parents = <0>, <&scmi_clk IMX95_CLK_LDBPLL_VCO>;
+	status = "okay";
+
+	channel@0 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0>;
+		fsl,data-mapping = "spwg";
+		fsl,data-width = <24>;
+		status = "okay";
+
+		port@1 {
+			reg = <1>;
+			lvds_out: endpoint {
+				remote-endpoint = <&panel_lvds_in>;
+			};
+		};
+	};
+
+	channel@1 {
+		status = "disabled";
+	};
+};
+
+&ldb0_phy {
+	status = "okay";
+};
+
+&pixel_interleaver {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	status = "okay";
+
+	channel@0 {
+		reg = <0>;
+		status = "okay";
 	};
 };
 
