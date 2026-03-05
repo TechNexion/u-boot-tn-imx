@@ -57,6 +57,7 @@ size_t tn_camera_chk_cnt = ARRAY_SIZE(tn_camera_chk);
 
 struct tn_display const displays[]= {
 /*      bus, addr, id_reg, id, detect */
+	{ 2, 0x2a, 0, 101, "sn65dsi84-vl10112880", detect_exc3000_i2c },
 	{ 2, 0x38, 0xA3, 0x54, "ili9881c", detect_i2c },
 	{ 2, 0x38, 0xA3, 0x58, "g080uan01", detect_i2c },
 	{ 2, 0x38, 0xA3, 0x59, "g101uan02", detect_i2c },
