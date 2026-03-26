@@ -281,6 +281,13 @@
 		#interrupt-cells = <2>;
 		interrupt-parent = <&gpio3>;
 		interrupts = <27 IRQ_TYPE_LEVEL_LOW>;
+
+		csi_pwn-hog {
+			gpio-hog;
+			gpios = <9 GPIO_ACTIVE_HIGH>;
+			output-high;
+			line-name = "INFO_TRIG_IN1";
+		};
 	};
 
 	adp5585gpio: gpio@34 {
