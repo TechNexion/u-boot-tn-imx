@@ -57,6 +57,12 @@ struct efi_capsule_update_info update_info = {
 u8 num_image_type_guids = ARRAY_SIZE(fw_images);
 #endif /* EFI_HAVE_CAPSULE_SUPPORT */
 
+#ifdef CONFIG_TN_PHERIPHERAL_DETECT
+const tn_camera_chk_t tn_camera_chk[] = {
+	{ 1, 0x48, "tevs" },
+};
+size_t tn_camera_chk_cnt = ARRAY_SIZE(tn_camera_chk);
+
 struct tn_display const displays[]= {
 /*      bus, addr, id_reg, id, detect */
 	{ 2, 0x2a, 0, 101,  "lvds-vl10112880", detect_exc3000_i2c },
@@ -66,6 +72,7 @@ struct tn_display const displays[]= {
 	{ 2, 0x38, 0xa6, 0x02, "vxt-vl050-070-8048nt", detect_i2c },
 };
 size_t tn_display_count = ARRAY_SIZE(displays);
+#endif
 
 int board_early_init_f(void)
 {
@@ -273,7 +280,10 @@ int board_late_init(void)
 
 #ifndef CONFIG_AVB_SUPPORT
 	detect_baseboard();
+#ifdef CONFIG_TN_PHERIPHERAL_DETECT
 	detect_display_panel();
+	detect_camera();
+#endif
 #endif
 	return 0;
 }
