@@ -10,7 +10,7 @@ MarkupSafe==3.0.2
 packaging==24.1
 pip==24.2
 Pygments==2.18.0
-requests==2.32.3
+requests==2.33.0
 six==1.16.0
 snowballstemmer==2.2.0
 Sphinx==8.1.3
