@@ -28,6 +28,7 @@
 #include <asm/arch/ddr.h>
 #include <linux/delay.h>
 #include <init.h>
+#include <asm/sections.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 

@@ -299,7 +299,7 @@ static struct dwc3_device dwc3_device_data = {
 	.power_down_scale = 2,
 };
 
-int usb_gadget_handle_interrupts(void)
+int dm_usb_gadget_handle_interrupts(struct udevice *dev)
 {
 	dwc3_uboot_handle_interrupt(0);
 	return 0;
@@ -559,7 +559,7 @@ bool is_power_key_pressed(void) {
 #ifdef CONFIG_SPL_MMC_SUPPORT
 
 #define UBOOT_RAW_SECTOR_OFFSET 0x40
-unsigned long spl_mmc_get_uboot_raw_sector(struct mmc *mmc)
+unsigned long spl_mmc_get_uboot_raw_sector(struct mmc *mmc, unsigned long raw_sect)
 {
 	u32 boot_dev = spl_boot_device();
 	switch (boot_dev) {
