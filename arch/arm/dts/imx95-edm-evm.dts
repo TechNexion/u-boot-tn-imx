@@ -104,6 +104,44 @@
 		status = "disabled";
 	};
 
+	reg_csi1_pwdn_pwr: regulator-csi1-pwdn {
+		/* CSI2_PWDN */
+		compatible = "regulator-fixed";
+		regulator-max-microvolt = <3300000>;
+		regulator-min-microvolt = <3300000>;
+		regulator-name = "csi1_pwdn";
+		gpio = <&tca9555_a21 5 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+		regulator-always-on;
+		regulator-boot-on;
+		status = "okay";
+	};
+
+	reg_csi2_pwdn_pwr: regulator-csi2-pwdn {
+		/* CSI2_PWDN */
+		compatible = "regulator-fixed";
+		regulator-max-microvolt = <3300000>;
+		regulator-min-microvolt = <3300000>;
+		regulator-name = "csi2_pwdn";
+		gpio = <&tca9555_a21 7 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+		regulator-always-on;
+		regulator-boot-on;
+		status = "okay";
+	};
+
+	reg_csi2_rst_n: regulator-rst-n {
+		/* CSI2_RST */
+		compatible = "regulator-fixed";
+		regulator-max-microvolt = <3300000>;
+		regulator-min-microvolt = <3300000>;
+		regulator-name = "csi2_rst";
+		gpio = <&tca9555_a21 6 GPIO_ACTIVE_LOW>;
+		enable-active-low;
+
+		status = "okay";
+	};
+
 	reg_can1_stby: regulator-can1-stby {
 		compatible = "regulator-fixed";
 		enable-active-low;
