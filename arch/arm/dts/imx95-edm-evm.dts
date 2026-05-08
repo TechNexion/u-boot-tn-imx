@@ -18,7 +18,8 @@
 
 	aliases {
 		ethernet0 = &enetc_port1;
-		ethernet1 = &enetc_port2;
+		ethernet1 = &enetc_port0;
+		ethernet2 = &enetc_port2;
 		mmc0 = &usdhc1;
 		mmc1 = &usdhc2;
 		rtc0 = &rtc_ds1337;
@@ -90,6 +91,11 @@
 			reset-gpios = <&tca9555_a22 1 GPIO_ACTIVE_LOW>;
 			realtek,aldps-disable;
 			realtek,clkout-disable;
+		};
+
+		ethphy3: ethernet-phy@8 {
+			compatible = "ethernet-phy-ieee802.3-c45";
+			reg = <8>;
 		};
 	};
 
@@ -178,6 +184,54 @@
 		regulator-name = "PCIe-0 slot-power";
 		/* M2_B_PWR_EN */
 		gpio = <&tca9555_c21 2 GPIO_ACTIVE_HIGH>;
+	};
+
+	reg_m2_m2_pwr: regulator-m2-m2-pwr {
+		compatible = "regulator-fixed";
+		enable-active-high;
+		regulator-always-on;
+		regulator-max-microvolt = <3300000>;
+		regulator-min-microvolt = <3300000>;
+		regulator-name = "M.2_M2 slot-power";
+		/* M2_M2_PWR_EN */
+		gpio = <&tca9555_c21 5 GPIO_ACTIVE_HIGH>;
+	};
+
+	reg_aqr_stby: regulator-aqr-stby {
+		compatible = "regulator-fixed";
+		regulator-name = "aqr-stby";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		gpio = <&tca9555_a21 15 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+	};
+
+	reg_aqr_en: regulator-aqr-en {
+		compatible = "regulator-fixed";
+		regulator-name = "aqr-en";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		vin-supply = <&reg_aqr_stby>;
+		gpio = <&tca9555_a21 3 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+		regulator-always-on;
+	};
+
+	reg_serdes_stby: regulator-mac-stby {
+		compatible = "regulator-fixed";
+		regulator-name = "mac-stby";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		gpio = <&tca9555_a22 14 GPIO_ACTIVE_LOW>;
+	};
+
+	reg_serdes_en: regulator-mac-en {
+		compatible = "regulator-fixed";
+		regulator-name = "mac-en";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		vin-supply = <&reg_serdes_stby>;
+		gpio = <&tca9555_a22 12 GPIO_ACTIVE_LOW>;
 	};
 
 	reg_pcie1_pwr: regulator-pcie1-pwr {
@@ -303,6 +357,14 @@
 };
 
 &lvds_csr {
+	status = "okay";
+};
+
+&enetc_port2 {
+	phy-handle = <&ethphy3>;
+	phy-mode = "10gbase-r";
+	serdes-supply = <&reg_serdes_en>;
+	managed = "in-band-status";
 	status = "okay";
 };
 

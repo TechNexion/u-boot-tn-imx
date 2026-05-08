@@ -26,6 +26,8 @@
 #include <command.h>
 #include "edm-imx95-ddr.h"
 #include "../common/periph_detect.h"
+#include <miiphy.h>
+#include <phy.h>
 
 #ifdef CONFIG_SPLASH_SCREEN
 #include <splash.h>
@@ -379,8 +381,28 @@ void netc_init(void)
 		return;
 	}
 
+	udelay(80000);
+
 	netc_phy_rst("gpio@22_1", "ENET1_RST_B");
 	netc_phy_rst("gpio@22_2", "ENET2_RST_B");
+
+	/* Enable in SW count */
+	netc_regulator_enable("regulator-m2-m2-pwr", true);
+	netc_regulator_enable("regulator-aqr-stby", true);
+	netc_regulator_enable("regulator-mac-stby", true);
+	netc_regulator_enable("regulator-aqr-en", true);
+	netc_regulator_enable("regulator-mac-en", true);
+
+	/* Disable regulator to have explicit reset to AQR PHY and clock generator */
+	udelay(10000);
+	netc_regulator_enable("regulator-aqr-stby", false);
+	netc_regulator_enable("regulator-mac-stby", false);
+	netc_regulator_enable("regulator-aqr-en", false);
+	netc_regulator_enable("regulator-mac-en", false);
+
+	udelay(100000);
+	netc_regulator_enable("regulator-aqr-stby", true);
+	netc_regulator_enable("regulator-mac-stby", true);
 
 	pci_init();
 }
@@ -618,7 +640,7 @@ void board_quiesce_devices(void)
 	ret = uclass_get(UCLASS_SPI_FLASH, &uc_dev);
 	if (uc_dev)
 		ret = uclass_destroy(uc_dev);
-	if (ret)
+	if (ret != 0)
 		printf("couldn't remove SPI FLASH devices\n");
 }
 
@@ -767,3 +789,9 @@ int is_recovery_key_pressing(void)
 }
 #endif /*CONFIG_ANDROID_RECOVERY*/
 #endif /*CONFIG_FSL_FASTBOOT*/
+
+const tn_m2_mdio_device_check_t tn_m2_mdio_device_chk[] = {
+	{ "enetc-2", 0x10, 0x1B32, 0x74CD, "usxgmii-net10g"},
+};
+size_t tn_m2_mdio_device_cnt = ARRAY_SIZE(tn_m2_mdio_device_chk);
+
