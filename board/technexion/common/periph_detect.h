@@ -52,4 +52,17 @@ extern const struct camera_cfg tevi_camera[];
 extern size_t tevi_camera_cnt;
 int detect_tevi_camera(void);
 
+
+typedef struct tn_m2_mdio_device_check {
+	const char* bus_name;
+	u8          addr;
+	u16         phy_id_high;
+	u16         phy_id_low;
+	const char* ov_name;
+} tn_m2_mdio_device_check_t;
+
+extern const tn_m2_mdio_device_check_t tn_m2_mdio_device_chk[];
+extern size_t tn_m2_mdio_device_cnt;
+int detect_m2_mdio_device(void);
+
 #endif	//#ifndef __PERIPH_DETECT_H__

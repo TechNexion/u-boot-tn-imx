@@ -71,6 +71,8 @@
 #include <fb_fsl.h>
 #endif
 
+#include "../board/technexion/common/periph_detect.h"
+
 DECLARE_GLOBAL_DATA_PTR;
 
 ulong monitor_flash_len;
@@ -807,6 +809,7 @@ static init_fnc_t init_sequence_r[] = {
 	INIT_FUNC_WATCHDOG_RESET
 	initr_net,
 #endif
+	detect_m2_mdio_device,
 #ifdef CONFIG_POST
 	initr_post,
 #endif
