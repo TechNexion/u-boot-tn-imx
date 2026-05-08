@@ -15,6 +15,8 @@
 #include <linux/delay.h>
 #include <dm/device.h>
 #include <dm/uclass-internal.h>
+#include <miiphy.h>
+#include <phy.h>
 
 #define ENV_DTOVERLAY		"dtoverlay"
 #define SIZE_DTOVERLAY		(256)
@@ -300,6 +302,7 @@ int detect_vizionpanel_i2c(struct tn_display const *dev)
 	else if ( dev->addr == EDT_FT5X06_addr )
 		return detect_i2c(dev);
 #endif
+	_add_dtoverlay("usxgmii-net10g");
 	return 0;
 }
 
@@ -477,3 +480,45 @@ __weak int detect_tevi_camera(void) {
 _exit:
 	return(ret);
 }
+
+__weak const tn_m2_mdio_device_check_t tn_m2_mdio_device_chk[] = {};
+__weak size_t tn_m2_mdio_device_cnt = 0;
+
+static int detect_device_mdio_bus(const tn_m2_mdio_device_check_t* dev) {
+
+    struct mii_dev *bus = miiphy_get_dev_by_name(dev->bus_name);
+    if (!bus) {
+        printf("mdio bus not found: %s\n", dev->bus_name);
+        return -1;
+    }
+
+    printf("%s %s...\n",  __func__, dev->bus_name);
+	int ret = bus->read(bus, dev->addr, MDIO_DEVAD_NONE, MII_PHYSID1);
+	if(ret == 0xffff || ret < 0) {
+		return -1;
+	}
+
+	u16 phy_id_high = (u16)ret;
+	u16 phy_id_low = (u16)bus->read(bus, dev->addr, MDIO_DEVAD_NONE, MII_PHYSID2);
+	if ((phy_id_high == dev->phy_id_high) && (phy_id_low == dev->phy_id_low)) {
+		printf("Found PHY at addr 0x%02X, ID: 0x%04X%04X\n",
+                    dev->addr, phy_id_high, phy_id_low);
+		return 1;
+	}
+	return -1;
+}
+
+int detect_m2_mdio_device(void) {
+	printf("detect_m2_mdio_device, a a  count:%ld\n", tn_m2_mdio_device_cnt);
+	for (int i = 0; i < tn_m2_mdio_device_cnt; i++) {
+		const tn_m2_mdio_device_check_t* dev = &tn_m2_mdio_device_chk[i];
+
+		int ret = detect_device_mdio_bus(dev);
+		if (ret == 1) {
+			_add_dtoverlay(dev->ov_name);
+		}
+
+	}
+	return 0;
+};
+
