@@ -501,7 +501,7 @@ static int detect_device_mdio_bus(const tn_m2_mdio_device_check_t* dev) {
 	u16 phy_id_high = (u16)ret;
 	u16 phy_id_low = (u16)bus->read(bus, dev->addr, MDIO_DEVAD_NONE, MII_PHYSID2);
 	if ((phy_id_high == dev->phy_id_high) && (phy_id_low == dev->phy_id_low)) {
-		printf("Found PHY at addr 0x%02X, ID: 0x%04X%04X\n",
+		printf("Match PHY at addr 0x%02X, ID: 0x%04X%04X\n",
                     dev->addr, phy_id_high, phy_id_low);
 		return 1;
 	}
