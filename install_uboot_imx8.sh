@@ -310,12 +310,7 @@ install_uboot_dtb()
 
 	#Copy SPL binary
 	cd ${TWD}
-	if [ -f spl/u-boot-spl.bin ] ; then
-		cp spl/u-boot-spl.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}/
-	else
-		printf "Cannot find spl/u-boot-spl.bin. Please build u-boot first! \n"
-		exit -1
-	fi
+	copy_file spl/u-boot-spl.bin ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}/
 
 	#Copy device tree file
 	cd ${TWD}
@@ -367,8 +362,7 @@ generate_sm_image()
 		printf "Cannot find ARM toolchain \n"
 	fi
 	pushd ${script_dir}/${FIRMWARE_DIR}/imx-sm
-	run_cmd "Build imx-sm" "no" "make -j$(nproc) config=${IMX_SM_CONFIG} clean"
-	run_cmd "Build imx-sm" "yes" "make -j$(nproc) config=${IMX_SM_CONFIG} all"
+	run_cmd "Build imx-sm" "yes" "make -j$(nproc) config=${IMX_SM_CONFIG}"
 	# run_cmd "M33_IMAGE elf to bin" "yes" "arm-none-eabi-objcopy -O binary ./build/mx95evk/m33_image.elf ./m33_image.bin"
 	copy_file "build/mx95evk/m33_image.bin" "${TWD}/${MKIMAGE_DIR}/${SOC_DIR}/"
 	popd
@@ -412,6 +406,8 @@ generate_imx_boot()
 	else
 		run_cmd "Generate ${MKIMAGE_TARGET} image" "yes" "make -j$(nproc) SOC=${SOC_TARGET} dtbs=\"${DTBS}\" ${MKIMAGE_TARGET}"
 	fi
+
+	info_msg "Build UBOOT finish"
 }
 
 flash_imx_boot()
