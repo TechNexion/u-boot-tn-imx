@@ -791,7 +791,7 @@ int is_recovery_key_pressing(void)
 #endif /*CONFIG_FSL_FASTBOOT*/
 
 const tn_m2_mdio_device_check_t tn_m2_mdio_device_chk[] = {
-	{ "enetc-2", 0x10, 0x1B32, 0x74CD, "usxgmii-net10g"},
+	{ "mdio", 0x01, 0x001C, 0xC916, "usxgmii-net10g"},
 };
 size_t tn_m2_mdio_device_cnt = ARRAY_SIZE(tn_m2_mdio_device_chk);
 
