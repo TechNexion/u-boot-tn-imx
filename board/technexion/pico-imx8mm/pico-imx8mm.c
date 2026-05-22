@@ -89,10 +89,11 @@ int dram_init(void)
 			gd->ram_size = PHYS_SDRAM_SIZE_4GB;
 	}
 	else if (ddr_size == 0x3) {
+		/* rom_pointer[1] contains the size of TEE occupies */
 		if (rom_pointer[1])
-			gd->ram_size = PHYS_SDRAM_SIZE_3GB - rom_pointer[1];
+			gd->ram_size = PHYS_SDRAM_SIZE_4GB - rom_pointer[1];
 		else
-			gd->ram_size = PHYS_SDRAM_SIZE_3GB;
+			gd->ram_size = PHYS_SDRAM_SIZE_4GB;
 	}
 	else if (ddr_size == 0x2) {
 		if (rom_pointer[1])
