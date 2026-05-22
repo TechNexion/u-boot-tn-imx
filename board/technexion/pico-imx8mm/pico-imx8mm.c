@@ -75,8 +75,8 @@ int board_phys_sdram_size(phys_size_t *size)
 		mem_map[DRAM1_INDEX].size=SZ_4G;
 	}
 	else if (ddr_size == 0x3) {
-		*size = SZ_3G;
-		mem_map[DRAM1_INDEX].size=SZ_3G;
+		*size = SZ_4G;
+		mem_map[DRAM1_INDEX].size=SZ_4G;
 	}
 	else if (ddr_size == 0x2) {
 		*size = SZ_2G;
