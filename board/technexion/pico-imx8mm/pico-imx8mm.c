@@ -117,6 +117,7 @@ int board_phys_sdram_size(phys_size_t *size)
 
 	switch (ddr_size) {
 	case 0x4: /* DRAM size: 4GB */
+	case 0x3: /* DRAM size: 4GB */
 		*size = SZ_4G;
 		break;
 	case 0x2: /* DRAM size: 2GB */
