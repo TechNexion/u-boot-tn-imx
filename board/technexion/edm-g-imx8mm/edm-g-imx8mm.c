@@ -74,9 +74,7 @@ int board_phys_sdram_size(phys_size_t *size)
 	u32 ddr_size = readl(MCU_BOOTROM_BASE_ADDR);
 
 	switch (ddr_size) {
-	case 0x5: /* DRAM size: 8GB */
-		*size = SZ_8G;
-		break;
+	case 0x5: /* DRAM size: 4GB */
 	case 0x4: /* DRAM size: 4GB */
 		*size = SZ_4G;
 		break;
