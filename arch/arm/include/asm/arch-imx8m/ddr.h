@@ -707,6 +707,7 @@ extern struct dram_timing_info dram_timing_1gb;
 extern struct dram_timing_info dram_timing_2gb;
 extern struct dram_timing_info dram_timing_3gb;
 extern struct dram_timing_info dram_timing_4gb;
+extern struct dram_timing_info dram_timing_4gb_1rank;
 extern struct dram_timing_info dram_timing_6gb;
 extern struct dram_timing_info dram_timing_8gb;
 
