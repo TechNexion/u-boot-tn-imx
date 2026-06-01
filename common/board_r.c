@@ -70,7 +70,9 @@
 #include <fb_fsl.h>
 #endif
 
+#ifdef CONFIG_TN_PHERIPHERAL_DETECT
 #include "../board/technexion/common/periph_detect.h"
+#endif
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -821,7 +823,9 @@ static void initcall_run_r(void)
 	WATCHDOG_RESET();
 	INITCALL(initr_net);
 #endif
+#if defined(CONFIG_TN_PHERIPHERAL_DETECT)
 	INITCALL(detect_m2_mdio_device);
+#endif
 #if CONFIG_IS_ENABLED(POST)
 	INITCALL(initr_post);
 #endif
