@@ -71,7 +71,9 @@
 #include <fb_fsl.h>
 #endif
 
+#ifdef CONFIG_TN_PHERIPHERAL_DETECT
 #include "../board/technexion/common/periph_detect.h"
+#endif
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -809,7 +811,9 @@ static init_fnc_t init_sequence_r[] = {
 	INIT_FUNC_WATCHDOG_RESET
 	initr_net,
 #endif
+#if defined(CONFIG_TN_PHERIPHERAL_DETECT)
 	detect_m2_mdio_device,
+#endif
 #ifdef CONFIG_POST
 	initr_post,
 #endif
