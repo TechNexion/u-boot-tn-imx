@@ -62,7 +62,8 @@ u8 num_image_type_guids = ARRAY_SIZE(fw_images);
 
 #ifdef CONFIG_TN_PHERIPHERAL_DETECT
 const tn_camera_chk_t tn_camera_chk[] = {
-	{ 1, 0x48, "tevs" },
+	{ 1, 0x48, 0x3020, 0x00, "tevs" },
+	{ 1, 0x48, 0x3020, 0x01, "tevm" },
 };
 size_t tn_camera_chk_cnt = ARRAY_SIZE(tn_camera_chk);
 
