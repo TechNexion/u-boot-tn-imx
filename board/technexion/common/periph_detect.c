@@ -58,6 +58,46 @@ static int _add_dtoverlay(const char *ov_name)
 	return(env_set(ENV_DTOVERLAY, arr_dtov));
 }
 
+static int _remove_dtoverlay(const char *ov_name)
+{
+	char *dtoverlay = NULL;
+	char arr_dtov[SIZE_DTOVERLAY] = { '\0' };
+	char *token;
+	char temp_dtov[SIZE_DTOVERLAY];
+	int first = 1;
+
+	if (ov_name == NULL) {
+		return(-1);
+	}
+
+	dtoverlay = env_get(ENV_DTOVERLAY);
+	if (dtoverlay == NULL) {
+		return(0); /* Nothing to remove */
+	}
+
+	/* Copy to temp buffer for tokenization */
+	snprintf(temp_dtov, SIZE_DTOVERLAY, "%s", dtoverlay);
+
+	/* Parse space-separated overlays and rebuild without the target */
+	token = strtok(temp_dtov, " ");
+	while (token != NULL) {
+		if (strcmp(token, ov_name) != 0) {
+			if (first) {
+				snprintf(arr_dtov, SIZE_DTOVERLAY, "%s", token);
+				first = 0;
+			} else {
+				int len = strlen(arr_dtov);
+				snprintf(arr_dtov + len, SIZE_DTOVERLAY - len, " %s", token);
+			}
+		} else {
+			printf("%s: removing overlay for %s\n", __FILE__, ov_name);
+		}
+		token = strtok(NULL, " ");
+	}
+
+	return(env_set(ENV_DTOVERLAY, arr_dtov));
+}
+
 static struct udevice * _check_i2c_dev(int bus_idx, uint addr) {
 	struct udevice *bus = NULL;
 	struct udevice *i2c_dev = NULL;
@@ -352,29 +392,48 @@ static int _detect_camera(const tn_camera_chk_t *list, size_t count) {
 	}
 
 	for (i = 0; i < count; ++i) {
-		int j = 0, skip = 0;
+		int j = 0, mode_id = -1;
+		struct udevice *udev = NULL;
 
 		tn_debug("Check %s - i2c#%d 0x%02x\n", list[i].ov_name, list[i].i2c_bus_index, list[i].i2c_addr);
-		if (_check_i2c_dev(list[i].i2c_bus_index, list[i].i2c_addr) == NULL) {
+		udev = _check_i2c_dev(list[i].i2c_bus_index, list[i].i2c_addr);
+		if (udev == NULL) {
 			continue;
+		}
+
+		if (list[i].camera_mode_reg != 0) {
+			i2c_set_chip_offset_len(udev, 2);
+			mode_id = dm_i2c_reg_read(udev, list[i].camera_mode_reg);
+			tn_debug("Read camera mode id: 0x%02x\n", mode_id);
+			if (mode_id != list[i].mode_id) {
+				tn_debug("Camera mode id mismatch, skip %s\n", list[i].ov_name);
+				continue;
+			}
 		}
 
 		// Check exclsive address
 
-		for(j = 0; j < tn_cam_exclusive_i2c_addr_cnt; ++j) {
-			if((tn_cam_exclusive_i2c_addr[j] > 0) &&
+		for (j = 0; j < tn_cam_exclusive_i2c_addr_cnt; ++j) {
+			if ((tn_cam_exclusive_i2c_addr[j] > 0) &&
 				(_check_i2c_dev(list[i].i2c_bus_index, tn_cam_exclusive_i2c_addr[j])) != NULL) {
 				tn_debug("Exclsived address detected, skip %s\n", list[i].ov_name);
-				skip = 1;
-				break;
+				continue;
 			}
 		}
 
-		if(skip) {
-			continue;
+		_add_dtoverlay(list[i].ov_name);
+
+		/* Handle vls-gm2/tevs conflict: if vls-gm2 is detected, remove tevs */
+		if (strstr(list[i].ov_name, "tevs-csi0")) {
+			_remove_dtoverlay("tevm-csi0");
+		} else if (strstr(list[i].ov_name, "tevs-csi1")) {
+			_remove_dtoverlay("tevm-csi1");
+		} else if (strstr(list[i].ov_name, "tevm-csi0")) {
+			_remove_dtoverlay("tevs-csi0");
+		} else if (strstr(list[i].ov_name, "tevm-csi1")) {
+			_remove_dtoverlay("tevs-csi1");
 		}
 
-		_add_dtoverlay(list[i].ov_name);
 		ret = 0;
 	}
 
@@ -417,7 +476,6 @@ __weak int detect_tevi_camera(void) {
 	}
 
 	for (i = 0; i < tevi_camera_cnt; i++) {
-		tevi_cam[i].camera_index = tevi_camera[i].camera_index;
 		tevi_cam[i].i2c_bus_index = tevi_camera[i].i2c_bus_index;
 		tevi_cam[i].i2c_addr = tevi_camera[i].eeprom_i2c_addr;
 		tevi_cam[i].ov_name = "tevi-ov5640";
