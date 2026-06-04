@@ -70,6 +70,7 @@ const tn_camera_chk_t tn_camera_chk[] = {
 	{ 1, 0x3c, 0x0000, 0x00, "tevi-ov5640" },
 	{ 1, 0x3d, 0x0000, 0x00, "tevi-ap1302" },
 	{ 1, 0x48, 0x3020, 0x00, "tevs" },
+	{ 1, 0x48, 0x3020, 0x01, "tevm" },
 };
 size_t tn_camera_chk_cnt = ARRAY_SIZE(tn_camera_chk);
 
