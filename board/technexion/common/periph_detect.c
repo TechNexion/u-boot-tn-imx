@@ -392,26 +392,32 @@ static int _detect_camera(const tn_camera_chk_t *list, size_t count) {
 	}
 
 	for (i = 0; i < count; ++i) {
-		int j = 0, skip = 0;
+		int j = 0, mode_id = -1;
+		struct udevice *udev = NULL;
 
 		tn_debug("Check %s - i2c#%d 0x%02x\n", list[i].ov_name, list[i].i2c_bus_index, list[i].i2c_addr);
-		if (_check_i2c_dev(list[i].i2c_bus_index, list[i].i2c_addr) == NULL) {
+		udev = _check_i2c_dev(list[i].i2c_bus_index, list[i].i2c_addr);
+		if (udev == NULL) {
 			continue;
 		}
 
-		// Check exclsive address
-
-		for(j = 0; j < tn_cam_exclusive_i2c_addr_cnt; ++j) {
-			if((tn_cam_exclusive_i2c_addr[j] > 0) &&
-				(_check_i2c_dev(list[i].i2c_bus_index, tn_cam_exclusive_i2c_addr[j])) != NULL) {
-				tn_debug("Exclsived address detected, skip %s\n", list[i].ov_name);
-				skip = 1;
-				break;
+		if (list[i].camera_mode_reg != 0) {
+			i2c_set_chip_offset_len(udev, 2);
+			mode_id = dm_i2c_reg_read(udev, list[i].camera_mode_reg);
+			tn_debug("Read camera mode id: 0x%02x\n", mode_id);
+			if (mode_id != list[i].mode_id) {
+				tn_debug("Camera mode id mismatch, skip %s\n", list[i].ov_name);
+				continue;
 			}
 		}
 
-		if(skip) {
-			continue;
+		// Check exclsive address
+		for (j = 0; j < tn_cam_exclusive_i2c_addr_cnt; ++j) {
+			if ((tn_cam_exclusive_i2c_addr[j] > 0) &&
+				(_check_i2c_dev(list[i].i2c_bus_index, tn_cam_exclusive_i2c_addr[j])) != NULL) {
+				tn_debug("Exclsived address detected, skip %s\n", list[i].ov_name);
+				continue;
+			}
 		}
 
 		_add_dtoverlay(list[i].ov_name);
@@ -419,7 +425,21 @@ static int _detect_camera(const tn_camera_chk_t *list, size_t count) {
 		/* Handle vls-gm2/tevs conflict: if vls-gm2 is detected, remove tevs */
 		if (strstr(list[i].ov_name, "vls-gm2-csi0")) {
 			_remove_dtoverlay("tevs-csi0");
+			_remove_dtoverlay("tevm-csi0");
 		} else if (strstr(list[i].ov_name, "vls-gm2-csi1")) {
+			_remove_dtoverlay("tevs-csi1");
+			_remove_dtoverlay("tevm-csi1");
+		} else if (strstr(list[i].ov_name, "tevs-csi0")) {
+			_remove_dtoverlay("vls-gm2-csi0");
+			_remove_dtoverlay("tevm-csi0");
+		} else if (strstr(list[i].ov_name, "tevs-csi1")) {
+			_remove_dtoverlay("vls-gm2-csi1");
+			_remove_dtoverlay("tevm-csi1");
+		} else if (strstr(list[i].ov_name, "tevm-csi0")) {
+			_remove_dtoverlay("vls-gm2-csi0");
+			_remove_dtoverlay("tevs-csi0");
+		} else if (strstr(list[i].ov_name, "tevm-csi1")) {
+			_remove_dtoverlay("vls-gm2-csi1");
 			_remove_dtoverlay("tevs-csi1");
 		}
 
