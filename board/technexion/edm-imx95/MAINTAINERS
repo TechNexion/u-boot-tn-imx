@@ -1,6 +1,6 @@
-i.MX95 EVK BOARD
-M:	Alice Guo <alice.guo@nxp.com>
+EDM-IMX95 BOARD
+M:	Ray Chang <ray.chang@technexion.com>
 S:	Maintained
-F:	board/freescale/imx95_evk/
-F:	include/configs/imx95_evk.h
-F:	configs/imx95_19x19_evk_defconfig
+F:	board/technexion/edm-imx95/
+F:	include/configs/edm-imx95.h
+F:	configs/edm-imx95_defconfig

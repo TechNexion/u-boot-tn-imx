@@ -5,15 +5,18 @@
  * Author: Richard Hu <richard.hu@technexion.com>
  */
 
-#include <asm/arch/sys_proto.h>
-#include <asm/arch/clock.h>
-#include <asm/arch/mu.h>
-#include <asm/mach-imx/boot_mode.h>
-#include <asm/sections.h>
 #include <hang.h>
 #include <init.h>
 #include <spl.h>
+#include <asm/global_data.h>
+#include <asm/sections.h>
+#include <asm/arch/clock.h>
+#include <asm/arch/mu.h>
+#include <asm/arch/sys_proto.h>
+#include <asm/arch-imx9/bbsm.h>
+#include <asm/mach-imx/boot_mode.h>
 #include <asm/mach-imx/ele_api.h>
+#include <asm/mach-imx/qb.h>
 #include <asm/gpio.h>
 #include <linux/delay.h>
 
@@ -29,6 +32,7 @@ int spl_board_boot_device(enum boot_device boot_dev_spl)
 	case MMC2_BOOT:
 		return BOOT_DEVICE_MMC2;
 	case USB_BOOT:
+	case USB2_BOOT:
 		return BOOT_DEVICE_BOARD;
 	case QSPI_BOOT:
 		return BOOT_DEVICE_SPI;
@@ -40,39 +44,29 @@ int spl_board_boot_device(enum boot_device boot_dev_spl)
 void spl_board_init(void)
 {
 	int ret;
+	u32 bd;
 
 	puts("Normal Boot\n");
 
 	ret = ele_start_rng();
 	if (ret)
 		printf("Fail to start RNG: %d\n", ret);
-}
 
-static void flexspi_nor_reset(void)
-{
-	int ret;
-	struct gpio_desc desc;
+#ifdef CONFIG_SPL_IMX_BBSM
+	ret = bbsm_tamper_detect_enable();
+	if (ret)
+		printf("Failed to enable BBSM Tamper Detection: %d\n", ret);
+#endif
 
-	/* 15x15 EVK use M.2 QSPI card, not support booting */
-	if (IS_ENABLED(CONFIG_TARGET_IMX95_15X15_EVK))
-		return;
-
-	ret = dm_gpio_lookup_name("GPIO5_11", &desc);
-	if (ret) {
-		printf("%s lookup GPIO5_11 failed ret = %d\n", __func__, ret);
-		return;
+	bd = spl_boot_device();
+	if (bd == BOOT_DEVICE_BOARD) { /* USB */
+		ret = power_on_hsio();
+		if (ret)
+			printf("power on hsio is failed\n");
 	}
 
-	ret = dm_gpio_request(&desc, "XSPI_RST_B");
-	if (ret) {
-		printf("%s request XSPI_RST_B failed ret = %d\n", __func__, ret);
-		return;
-	}
-
-	/* assert the XSPI_RST_B */
-	dm_gpio_set_dir_flags(&desc, GPIOD_IS_OUT | GPIOD_IS_OUT_ACTIVE | GPIOD_ACTIVE_LOW);
-	udelay(200); /* 50 ns at least, so use 200ns */
-	dm_gpio_set_value(&desc, 0); /* deassert the XSPI_RST_B */
+	if (IS_ENABLED(CONFIG_SPL_IMX_QB))
+		spl_qb_save();
 }
 
 void board_init_f(ulong dummy)
@@ -99,8 +93,6 @@ void board_init_f(ulong dummy)
 
 	arch_cpu_init();
 
-	board_early_init_f();
-
 	preloader_console_init();
 
 	debug("SOC: 0x%x\n", gd->arch.soc_rev);
@@ -109,11 +101,6 @@ void board_init_f(ulong dummy)
 	get_reset_reason(true, false);
 
 	disable_smmuv3();
-
-	/* Will set ARM freq to max rate */
-	clock_init_late();
-
-	flexspi_nor_reset();
 
 	board_init_r(NULL, 0);
 }
