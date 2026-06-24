@@ -334,7 +334,7 @@ int board_late_init(void)
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	env_set("board_name", "AXON");
-	env_set("board_rev", "iMX93");
+	env_set("board_rev", "iMX91");
 #endif
 
 #ifndef CONFIG_AVB_SUPPORT
