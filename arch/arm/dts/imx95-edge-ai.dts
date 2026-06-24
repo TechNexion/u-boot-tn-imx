@@ -447,46 +447,36 @@
 	status = "okay";
 };
 
-&usb2 {
-	adp-disable;
-	dr_mode = "host";
-	hnp-disable;
-	srp-disable;
-	usb-role-switch;
-	picophy,dc-vol-level-adjust = <7>;
-	picophy,pre-emp-curr-control = <3>;
-	status = "okay";
-};
-
 &usb3_dwc3 {
-	dr_mode = "host";
+	dr_mode = "otg";
 	hnp-disable;
 	srp-disable;
 	adp-disable;
 	usb-role-switch;
-	role-switch-default-mode = "none";
+	role-switch-default-mode = "peripheral";
 	snps,dis-u1-entry-quirk;
 	snps,dis-u2-entry-quirk;
 	status = "okay";
 
-	ports {
-		#address-cells = <1>;
-		#size-cells = <0>;
-
-		port@0 {
-			reg = <0>;
-
-			otg1_out_ep: endpoint {
-				remote-endpoint = <&hd3ss3220_in_ep>;
-			};
+	port {
+		otg1_out_ep: endpoint {
+			remote-endpoint = <&hd3ss3220_in_ep>;
 		};
+	};
+};
 
-		port@1 {
-			reg = <1>;
+&usb3_phy {
+	fsl,phy-pcs-tx-deemph-3p5db-attenuation-db = <17>;
+	fsl,phy-pcs-tx-swing-full-percent = <100>;
+	fsl,phy-tx-preemp-amp-tune-microamp = <600>;
+	fsl,phy-tx-vboost-level-microvolt = <1156>;
+	fsl,phy-tx-vref-tune-percent = <100>;
+	orientation-switch;
+	status = "okay";
 
-			otg1_in_ep: endpoint {
-				remote-endpoint = <&hd3ss3220_out_ep>;
-			};
+	port {
+		otg1_in_ep: endpoint {
+			remote-endpoint = <&hd3ss3220_out_ep>;
 		};
 	};
 };
