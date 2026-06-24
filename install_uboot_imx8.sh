@@ -13,12 +13,12 @@ script_dir="$(cd "$(dirname "$script_path")" && pwd)"
 
 DRIVE=/dev/sdX
 
-BRANCH_VER="lf-6.18.2_1.0.0" #branch used by imx-mkimage and imx-atf under meta-imx
-ATF_BRANCH_VER="lf_v2.12"
-MKIMAGE_SRC_GIT_ID='c0debd7c0b4a125bd3ca66bc68f1915882b2bb62' #refer to 'imx-mkimage_git.inc' in Yocto
-ATF_SRC_GIT_ID='4a2e9ef5f9f185bda68470b46365add008903b8c' #refer to 'imx-atf_2.12.bb' in Yocto
-DDR_FW_VER="8.31-4fa5b46" #refer to the name of 'firmware-imx-8.x.bb'
-ELE_FW_VER="2.0.5-29313e0" ##refer to the "{PV of firmware-ele-imx_2.0.2.bb}"-"{IMX_SRCREV_ABBREV}"
+BRANCH_VER="lf-6.18.20_2.0.0" #branch used by imx-mkimage and imx-atf under meta-imx
+ATF_BRANCH_VER="lf_v2.14"
+MKIMAGE_SRC_GIT_ID='1b577853ae1afe1f26cdef27548da52fb424af48' #refer to 'imx-mkimage_git.inc' in Yocto
+ATF_SRC_GIT_ID='0779f89a5475a03193f7707f3bbb50cec11707c0' #refer to 'imx-atf_2.x.bb' in Yocto
+DDR_FW_VER="8.32-1991416" #refer to the name of 'firmware-imx-8.x.bb'
+ELE_FW_VER="2.0.6-c0b284c" ##refer to the "{PV of firmware-ele-imx_2.0.2.bb}"-"{IMX_SRCREV_ABBREV}"
 
 FSL_MIRROR="https://www.nxp.com/lgfiles/NMG/MAD/YOCTO"
 FIRMWARE_DIR="imx-boot_generation"
@@ -36,9 +36,9 @@ IMX_SM_GIT_REPO="https://github.com/nxp-imx/imx-sm.git"
 IMX_SM_BRANCH_VER="master"
 IMX_SM_CONFIG="mx95evk"
 IMX_OEI_GIT_REPO="https://github.com/TechNexion/imx-oei.git"
-IMX_OEI_BRANCH_VER="tn-imx_6.18.2_1.0.0"
+IMX_OEI_BRANCH_VER="tn-imx_6.18.20_2.0.0"
 IMX_OEI_CONFIG="edm-imx95"
-ARM_TOOLCHAIN_VER_DEFAULT="14.2.rel1"
+ARM_TOOLCHAIN_VER_DEFAULT="15.2.rel1"
 
 setup_platform()
 {
@@ -192,15 +192,6 @@ install_firmware()
 	# [ -n "${PWD##*imx-atf}" ] && cd imx-atf
 	cd ${FIRMWARE_DIR}/imx-atf
 
-	# Patch for imx-atf: Fix compilation error for imx95
-	# This patch is specific for imx-atf with branch "lf_v2.12"
-	if [ ${SOC_DIR} == "iMX95" ]; then
-		if ( git diff-index --quiet HEAD -- plat/imx/imx9/imx95/imx95_m7.c ); then
-				sed -i '139a {
-			152i }
-			' plat/imx/imx9/imx95/imx95_m7.c
-		fi
-	fi
 	if ( git diff-index --quiet HEAD -- plat/imx/imx8mm/imx8mm_bl31_setup.c ); then
 		if [ -z "${DTBS##*imx8mm-axon*}" ]; then
 			# AXON: Change UART2 base address to UART1 and released UART4 from M4
