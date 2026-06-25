@@ -11,7 +11,6 @@
 #include <linux/sizes.h>
 #include <linux/stringify.h>
 #include <asm/arch/imx-regs.h>
-#include <env/nxp/imx_env.h>
 
 /* ENET Config */
 #if defined(CONFIG_CMD_NET)

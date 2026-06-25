@@ -7,7 +7,7 @@
 
 obj-y += axon-imx8mp.o
 
-ifdef CONFIG_SPL_BUILD
+ifdef CONFIG_XPL_BUILD
 obj-y += axon-imx8mp_spl.o
 obj-$(CONFIG_IMX8M_LPDDR4) += lpddr4_timing_2gb.o lpddr4_timing_4gb.o
 endif

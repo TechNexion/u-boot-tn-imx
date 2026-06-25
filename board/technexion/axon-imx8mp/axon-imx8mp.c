@@ -77,6 +77,26 @@ struct tn_display const displays[]= {
 size_t tn_display_count = ARRAY_SIZE(displays);
 #endif
 
+#if CONFIG_IS_ENABLED(EFI_HAVE_CAPSULE_SUPPORT)
+#define IMX_BOOT_IMAGE_GUID \
+	EFI_GUID(0x928b33bc, 0xe58b, 0x4247, 0x9f, 0x1d, \
+		 0x3b, 0xf1, 0xee, 0x1c, 0xda, 0xff)
+
+struct efi_fw_image fw_images[] = {
+	{
+		.image_type_id = IMX_BOOT_IMAGE_GUID,
+		.fw_name = u"IMX8MP-EVK-RAW",
+		.image_index = 1,
+	},
+};
+
+struct efi_capsule_update_info update_info = {
+	.dfu_string = "mmc 2=flash-bin raw 0 0x2000 mmcpart 1",
+	.num_images = ARRAY_SIZE(fw_images),
+	.images = fw_images,
+};
+#endif /* EFI_HAVE_CAPSULE_SUPPORT */
+
 static u8 board_get_ddr_code(void)
 {
 	return (readl(OCRAM_BASE_ADDR));
@@ -130,8 +150,8 @@ int board_early_init_f(void)
 int ft_board_setup(void *blob, struct bd_info *bd)
 {
 	const int *cell;
-	int offs;
-	uint32_t cma_size;
+	int offs, maxc, minc;
+	uint32_t cma_size, thermal_node;
 	char *cmasize;
 #ifdef CONFIG_IMX8M_DRAM_INLINE_ECC
 	int rc;
@@ -167,6 +187,26 @@ int ft_board_setup(void *blob, struct bd_info *bd)
 		cma_size = env_get_ulong("cma_size", 10, 256 * 1024 * 1024);
 		cma_size = max((u64)(gd->ram_size >> 2), (u64)cma_size);
 		fdt_setprop_u64(blob, offs, "size", (uint64_t)cma_size);
+	}
+
+	get_cpu_temp_grade(&minc, &maxc);
+	maxc *= 1000;
+
+	offs = fdt_path_offset(blob, "/thermal-zones/cpu-thermal/trips/trip1");
+	cell = fdt_getprop(blob, offs, "temperature", NULL);
+	thermal_node = fdt32_to_cpu(cell[0]);
+	if (thermal_node != maxc){
+		printf("Change thermal-zone for different cpu grade.\n");
+
+		fdt_setprop_u32(blob, offs, "temperature", (uint64_t)maxc);
+		offs = fdt_path_offset(blob, "/thermal-zones/soc-thermal/trips/trip1");
+		fdt_setprop_u32(blob, offs, "temperature", (uint64_t)maxc);
+
+		maxc -= 10000;
+		offs = fdt_path_offset(blob, "/thermal-zones/cpu-thermal/trips/trip0");
+		fdt_setprop_u32(blob, offs, "temperature", (uint64_t)maxc);
+		offs = fdt_path_offset(blob, "/thermal-zones/soc-thermal/trips/trip0");
+		fdt_setprop_u32(blob, offs, "temperature", (uint64_t)maxc);
 	}
 
 	return 0;
