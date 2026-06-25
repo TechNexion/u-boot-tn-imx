@@ -237,11 +237,11 @@
 	bootph-pre-ram;
 };
 
-&{/soc@0/bus@30800000/i2c@30a20000/pca9450@25} {
+&{/soc@0/bus@30800000/i2c@30a20000/pmic@25} {
 	bootph-pre-ram;
 };
 
-&{/soc@0/bus@30800000/i2c@30a20000/pca9450@25/regulators} {
+&{/soc@0/bus@30800000/i2c@30a20000/pmic@25/regulators} {
 	bootph-pre-ram;
 };
 

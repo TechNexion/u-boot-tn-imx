@@ -166,7 +166,7 @@
 	sda-gpios = <&gpio5 15 GPIO_ACTIVE_HIGH>;
 	status = "okay";
 
-	pmic: pca9450@25 {
+	pmic: pmic@25 {
 		reg = <0x25>;
 		compatible = "nxp,pca9450c";
 		/* PMIC PCA9450 PMIC_nINT GPIO1_IO3 */
