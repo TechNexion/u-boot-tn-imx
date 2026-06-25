@@ -21,22 +21,24 @@
 #include <asm/arch/sys_proto.h>
 #include <asm/mach-imx/boot_mode.h>
 #include <asm/arch/ddr.h>
+#include <asm/sections.h>
 
 #include <power/pmic.h>
 #include <power/bd71837.h>
 #include <asm/mach-imx/gpio.h>
 #include <asm/mach-imx/mxc_i2c.h>
 #include <fsl_esdhc_imx.h>
-#include <fsl_sec.h>
 #include <mmc.h>
 #include <linux/delay.h>
-#include <asm/sections.h>
+#include <fsl_sec.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
 int spl_board_boot_device(enum boot_device boot_dev_spl)
 {
 	switch (boot_dev_spl) {
+	case USB_BOOT:
+		return BOOT_DEVICE_BOARD;
 	case SD2_BOOT:
 	case MMC2_BOOT:
 		return BOOT_DEVICE_MMC1;
@@ -47,8 +49,6 @@ int spl_board_boot_device(enum boot_device boot_dev_spl)
 		return BOOT_DEVICE_NOR;
 	case NAND_BOOT:
 		return BOOT_DEVICE_NAND;
-	case USB_BOOT:
-		return BOOT_DEVICE_BOARD;
 	default:
 		return BOOT_DEVICE_NONE;
 	}
@@ -171,6 +171,11 @@ static iomux_v3_cfg_t const usdhc2_pads[] = {
 static iomux_v3_cfg_t const usdhc2_cd_pad =
 	IMX8MM_PAD_SD2_CD_B_GPIO2_IO12 | MUX_PAD_CTRL(USDHC_GPIO_PAD_CTRL);
 
+static iomux_v3_cfg_t const usdhc2_dat3_pad =
+	IMX8MM_PAD_SD2_DATA3_USDHC2_DATA3 |
+	MUX_PAD_CTRL(USDHC_PAD_CTRL);
+
+
 static struct fsl_esdhc_cfg usdhc_cfg[2] = {
 	{USDHC2_BASE_ADDR, 0, 1},
 	{USDHC3_BASE_ADDR, 0, 8},
@@ -233,15 +238,16 @@ int board_mmc_getcd(struct mmc *mmc)
 
 		ret = !gpio_get_value(USDHC2_CD_GPIO);
 
+		imx_iomux_v3_setup_pad(usdhc2_dat3_pad);
 		return ret;
 	}
 
 	return 1;
 }
 
-#ifdef CONFIG_POWER
+#if CONFIG_IS_ENABLED(POWER_LEGACY)
 #define I2C_PMIC	0
-
+#ifdef CONFIG_POWER_PCA9450
 int power_init_board(void)
 {
 	struct pmic *p;
@@ -272,22 +278,14 @@ int power_init_board(void)
 	return 0;
 }
 #endif
+#endif
 
 void spl_board_init(void)
 {
-#ifdef CONFIG_FSL_CAAM
-	if (sec_init()) {
-		printf("\nsec_init failed!\n");
+	if (IS_ENABLED(CONFIG_FSL_CAAM)) {
+		if (sec_init())
+			printf("\nsec_init failed!\n");
 	}
-#endif
-
-#ifndef CONFIG_SPL_USB_SDP_SUPPORT
-	/* Serial download mode */
-	if (is_usb_boot()) {
-		puts("Back to ROM, SDP\n");
-		restore_boot_params();
-	}
-#endif
 	puts("Normal Boot\n");
 }
 

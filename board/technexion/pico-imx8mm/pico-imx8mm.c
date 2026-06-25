@@ -83,10 +83,9 @@ struct efi_fw_image fw_images[] = {
 
 struct efi_capsule_update_info update_info = {
 	.dfu_string = "mmc 2=flash-bin raw 0x42 0x2000 mmcpart 1",
+	.num_images = ARRAY_SIZE(fw_images),
 	.images = fw_images,
 };
-
-u8 num_image_type_guids = ARRAY_SIZE(fw_images);
 #endif /* EFI_HAVE_CAPSULE_SUPPORT */
 
 int board_early_init_f(void)
@@ -174,6 +173,9 @@ static int setup_fec(void)
 
 int board_phy_config(struct phy_device *phydev)
 {
+	if (phydev->drv->config)
+		phydev->drv->config(phydev);
+
 #ifndef CONFIG_DM_ETH
 	/* enable rgmii rxc skew and phy mode select to RGMII copper */
 	phy_write(phydev, MDIO_DEVAD_NONE, 0x1d, 0x1f);
@@ -184,8 +186,7 @@ int board_phy_config(struct phy_device *phydev)
 	phy_write(phydev, MDIO_DEVAD_NONE, 0x1d, 0x05);
 	phy_write(phydev, MDIO_DEVAD_NONE, 0x1e, 0x100);
 #endif
-	if (phydev->drv->config)
-		phydev->drv->config(phydev);
+
 	return 0;
 }
 #endif
@@ -438,28 +439,34 @@ int board_late_init(void)
 #endif
 #endif
 
-#ifdef CONFIG_ENV_IS_IN_MMC
-	board_late_mmc_env_init();
-#endif
+	if (IS_ENABLED(CONFIG_ENV_IS_IN_MMC))
+		board_late_mmc_env_init();
 
-#ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
-	env_set("board_name", "PICO");
-	env_set("board_rev", "iMX8MM");
-#endif
+	if (IS_ENABLED(CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG)) {
+		env_set("board_name", "PICO");
+		env_set("board_rev", "iMX8MM");
+	}
+
 	return 0;
 }
+
+#ifdef CONFIG_ANDROID_SUPPORT
+bool is_power_key_pressed(void) {
+	return (bool)(!!(readl(SNVS_HPSR) & (0x1 << 6)));
+}
+#endif
 
 #ifdef CONFIG_FSL_FASTBOOT
 #ifdef CONFIG_ANDROID_RECOVERY
 int is_recovery_key_pressing(void)
 {
-	return 0; /*TODO*/
+	return 0; /* TODO */
 }
-#endif /*CONFIG_ANDROID_RECOVERY*/
-#endif /*CONFIG_FSL_FASTBOOT*/
+#endif /* CONFIG_ANDROID_RECOVERY */
+#endif /* CONFIG_FSL_FASTBOOT */
 
-#ifdef CONFIG_ANDROID_SUPPORT
-bool is_power_key_pressed(void) {
-	return (bool)(!!(readl(SNVS_HPSR) & (0x1 << 6)));
+#ifdef CONFIG_IMX_MATTER_TRUSTY
+int board_get_emmc_id(void) {
+	return 2;
 }
 #endif
