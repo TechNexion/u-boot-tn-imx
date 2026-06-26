@@ -90,6 +90,7 @@ int board_phys_sdram_size(phys_size_t *size)
 		*size = SZ_6G;
 		break;
 	case LPDDR4_4GB:
+	case LPDDR4_4GB_1RANK:
 		*size = SZ_4G;
 		break;
 	case LPDDR4_2GB:
