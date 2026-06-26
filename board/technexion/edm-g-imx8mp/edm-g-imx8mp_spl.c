@@ -110,6 +110,10 @@ void spl_dram_init(void)
 		puts("LPDDR4 4GB\n");
 		ddr_init(&dram_timing_4gb);
 		break;
+	case LPDDR4_4GB_1RANK:
+		puts("LPDDR4(K) 4GB\n");
+		ddr_init(&dram_timing_4gb_1rank);
+		break;
 	case LPDDR4_2GB:
 		puts("LPDDR4 2GB\n");
 		ddr_init(&dram_timing_2gb);
