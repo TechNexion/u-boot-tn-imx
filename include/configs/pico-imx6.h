@@ -12,7 +12,6 @@
 #define __PICO_IMX6_CONFIG_H
 
 #include "mx6_common.h"
-#include "imx6_spl.h"
 
 #define CFG_MXC_UART_BASE		UART1_BASE
 
