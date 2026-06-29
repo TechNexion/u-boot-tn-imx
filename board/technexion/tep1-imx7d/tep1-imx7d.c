@@ -8,6 +8,7 @@
  * SPDX-License-Identifier:	GPL-2.0+
  */
 
+#include <env.h>
 #include <init.h>
 #include <linux/delay.h>
 #include <command.h>

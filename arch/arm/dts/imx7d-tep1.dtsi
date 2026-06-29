@@ -266,7 +266,7 @@
 	display = <&display0>;
 	status = "okay";
 
-	display0: display {
+	display0: panel {
 		bits-per-pixel = <24>;
 		bus-width = <24>;
 		fbpix = "ABGR32";
