@@ -7,6 +7,7 @@
  *
  */
 
+ #include <env.h>
 #include <linux/delay.h>
 #include <command.h>
 #include <asm/arch/clock.h>
