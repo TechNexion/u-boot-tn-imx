@@ -33,7 +33,7 @@ ATF_BOOT_UART_BASE="0x30890000"
 
 # Config for i.mx95
 IMX_SM_GIT_REPO="https://github.com/nxp-imx/imx-sm.git"
-IMX_SM_BRANCH_VER="master"
+IMX_SM_BRANCH_VER="lf-6.18.20-2.0.0"
 IMX_SM_CONFIG="mx95evk"
 IMX_OEI_GIT_REPO="https://github.com/TechNexion/imx-oei.git"
 IMX_OEI_BRANCH_VER="tn-imx_6.18.20_2.0.0"
@@ -322,7 +322,7 @@ fetch_oei() {
 }
 
 fetch_sm() {
-	git_clone "imx-sm" "${IMX_SM_GIT_REPO}" "${IMX_SM_BRANCH_VER}" "origin/${IMX_SM_BRANCH_VER}" "${script_dir}/${FIRMWARE_DIR}/imx-sm"
+	git_clone "imx-sm" "${IMX_SM_GIT_REPO}" "${IMX_SM_BRANCH_VER}" "${IMX_SM_BRANCH_VER}" "${script_dir}/${FIRMWARE_DIR}/imx-sm"
 }
 
 prepare_arm_toolchain()
