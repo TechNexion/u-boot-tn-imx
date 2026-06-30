@@ -34,6 +34,12 @@ int spl_start_uboot(void)
 
 #include <asm/arch/mx6-ddr.h>
 
+#define DDR_TYPE_DET	IMX_GPIO_NR(5, 1)
+
+static iomux_v3_cfg_t const ddr_type_detection_pads[] = {
+	MX6_PAD_SNVS_TAMPER1__GPIO5_IO01 | MUX_PAD_CTRL(NO_PAD_CTRL),
+};
+
 static struct mx6ul_iomux_grp_regs mx6_grp_ioregs = {
 	.grp_addds = 0x00000030,
 	.grp_ddrmode_ctl = 0x00020000,
@@ -59,17 +65,23 @@ static struct mx6ul_iomux_ddr_regs mx6_ddr_ioregs = {
 	.dram_reset = 0x00000030,
 };
 
-static struct mx6_mmdc_calibration mx6_mmcd_calib = {
+static struct mx6_mmdc_calibration mx6_mmcd_calib_256mb = {
 	.p0_mpwldectrl0 = 0x00000000,
 	.p0_mpdgctrl0 = 0x01380134,
 	.p0_mprddlctl = 0x40404244,
 	.p0_mpwrdlctl = 0x40405050,
 };
 
+static struct mx6_mmdc_calibration mx6_mmcd_calib_512mb = {
+	.p0_mpwldectrl0 = 0x00000000,
+	.p0_mpdgctrl0 = 0x41440140,
+	.p0_mprddlctl = 0x40404246,
+	.p0_mpwrdlctl = 0x40405048,
+};
+
 static struct mx6_ddr_sysinfo ddr_sysinfo = {
 	.dsize		= 0,
 	.cs1_mirror	= 0,
-	.cs_density	= 32,
 	.ncs		= 1,
 	.bi_on		= 1,
 	.rtt_nom	= 1,
@@ -79,20 +91,21 @@ static struct mx6_ddr_sysinfo ddr_sysinfo = {
 	.mif3_mode	= 3,
 	.rst_to_cke	= 0x23,
 	.sde_to_rst	= 0x10,
-	.refsel = 1,
-	.refr = 3,
+	.pd_fast_exit	= 1,
+	.refsel = 0,
+	.refr = 1,
 };
 
 static struct mx6_ddr3_cfg mem_ddr = {
 	.mem_speed = 1333,
-	.density = 2,
+	.density = 4,
 	.width = 16,
 	.banks = 8,
 	.coladdr = 10,
-	.pagesz = 2,
+	.pagesz = 1,
 	.trcd = 1350,
 	.trcmin = 4950,
-	.trasmin = 3600,
+	.trasmin = 3500,
 };
 
 static void ccgr_init(void)
@@ -106,31 +119,55 @@ static void ccgr_init(void)
 	writel(0xFFFFFFFF, &ccm->CCGR4);
 	writel(0xFFFFFFFF, &ccm->CCGR5);
 	writel(0xFFFFFFFF, &ccm->CCGR6);
+	writel(0xFFFFFFFF, &ccm->CCGR7);
 }
 
 static void imx6ul_spl_dram_cfg_size(u32 ram_size)
 {
-	if (ram_size == SZ_256M)
+	const struct mx6_mmdc_calibration *calib;
+	struct mmdc_p_regs *mmdc0 = (struct mmdc_p_regs *)MMDC_P0_BASE_ADDR;
+
+	if (ram_size == SZ_256M) {
 		mem_ddr.rowaddr = 14;
-	else
+		ddr_sysinfo.cs_density = 18;
+		calib = &mx6_mmcd_calib_256mb;
+	} else {
 		mem_ddr.rowaddr = 15;
+		ddr_sysinfo.cs_density = 20;
+		calib = &mx6_mmcd_calib_512mb;
+	}
 
 	mx6ul_dram_iocfg(mem_ddr.width, &mx6_ddr_ioregs, &mx6_grp_ioregs);
-	mx6_dram_cfg(&ddr_sysinfo, &mx6_mmcd_calib, &mem_ddr);
+	mx6_dram_cfg(&ddr_sysinfo, calib, &mem_ddr);
+
+	/* Preserve the board-specific values that the DDR API cannot express. */
+	writel(1 << 15, &mmdc0->mdscr);
+	if (ram_size == SZ_256M) {
+		writel(0x00333030, &mmdc0->mdotc);
+		writel(0x0002552D, &mmdc0->mdpdc);
+	} else {
+		writel(0x1B333030, &mmdc0->mdotc);
+		writel(0xB66D0B63, &mmdc0->mdcfg1);
+	}
+	writel(0x00201740, &mmdc0->mdmisc);
+	writel(0x000026D2, &mmdc0->mdrwd);
+	writel(0x00000227, &mmdc0->mpodtctrl);
+	writel(0x00011006, &mmdc0->mapsr);
+	writel(0, &mmdc0->mdscr);
 }
 
 static void imx6ul_spl_dram_cfg(void)
 {
-	ulong ram_size_test, ram_size = 0;
+	ulong ram_size, ram_size_test;
 
-	for (ram_size = SZ_512M; ram_size >= SZ_256M; ram_size >>= 1) {
-		imx6ul_spl_dram_cfg_size(ram_size);
-		ram_size_test = get_ram_size((long int *)PHYS_SDRAM, ram_size);
-		if (ram_size_test == ram_size)
-			break;
-	}
+	imx_iomux_v3_setup_multiple_pads(ddr_type_detection_pads,
+					 ARRAY_SIZE(ddr_type_detection_pads));
+	gpio_direction_input(DDR_TYPE_DET);
+	ram_size = gpio_get_value(DDR_TYPE_DET) ? SZ_256M : SZ_512M;
 
-	if (ram_size < SZ_256M) {
+	imx6ul_spl_dram_cfg_size(ram_size);
+	ram_size_test = get_ram_size((long int *)PHYS_SDRAM, ram_size);
+	if (ram_size_test != ram_size) {
 		puts("ERROR: DRAM size detection failed\n");
 		hang();
 	}
