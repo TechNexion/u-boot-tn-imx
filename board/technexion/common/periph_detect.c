@@ -401,6 +401,7 @@ static int _detect_camera(const tn_camera_chk_t *list, size_t count) {
 		tn_debug("Check %s - i2c#%d 0x%02x\n", list[i].ov_name, list[i].i2c_bus_index, list[i].i2c_addr);
 		udev = _check_i2c_dev(list[i].i2c_bus_index, list[i].i2c_addr);
 		if (udev == NULL) {
+			_remove_dtoverlay(list[i].ov_name);
 			continue;
 		}
 
@@ -409,6 +410,7 @@ static int _detect_camera(const tn_camera_chk_t *list, size_t count) {
 			mode_id = dm_i2c_reg_read(udev, list[i].camera_mode_reg);
 			tn_debug("Read camera mode id: 0x%02x\n", mode_id);
 			if (mode_id != list[i].mode_id) {
+				_remove_dtoverlay(list[i].ov_name);
 				tn_debug("Camera mode id mismatch, skip %s\n", list[i].ov_name);
 				continue;
 			}
@@ -425,27 +427,6 @@ static int _detect_camera(const tn_camera_chk_t *list, size_t count) {
 		}
 
 		_add_dtoverlay(list[i].ov_name);
-
-		/* Handle vls-gm2/tevs conflict: if vls-gm2 is detected, remove tevs */
-		if (strstr(list[i].ov_name, "vls-gm2-csi0")) {
-			_remove_dtoverlay("tevs-csi0");
-			_remove_dtoverlay("tevm-csi0");
-		} else if (strstr(list[i].ov_name, "vls-gm2-csi1")) {
-			_remove_dtoverlay("tevs-csi1");
-			_remove_dtoverlay("tevm-csi1");
-		} else if (strstr(list[i].ov_name, "tevs-csi0")) {
-			_remove_dtoverlay("vls-gm2-csi0");
-			_remove_dtoverlay("tevm-csi0");
-		} else if (strstr(list[i].ov_name, "tevs-csi1")) {
-			_remove_dtoverlay("vls-gm2-csi1");
-			_remove_dtoverlay("tevm-csi1");
-		} else if (strstr(list[i].ov_name, "tevm-csi0")) {
-			_remove_dtoverlay("vls-gm2-csi0");
-			_remove_dtoverlay("tevs-csi0");
-		} else if (strstr(list[i].ov_name, "tevm-csi1")) {
-			_remove_dtoverlay("vls-gm2-csi1");
-			_remove_dtoverlay("tevs-csi1");
-		}
 
 		ret = 0;
 	}
