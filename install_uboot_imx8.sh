@@ -36,12 +36,14 @@ IMX_SM_GIT_REPO="https://github.com/nxp-imx/imx-sm.git"
 IMX_SM_BRANCH_VER="lf-6.18.20-2.0.0"
 IMX_SM_CONFIG="mx95evk"
 IMX_OEI_GIT_REPO="https://github.com/TechNexion/imx-oei.git"
+# imx-oei need to change local server"
 IMX_OEI_BRANCH_VER="tn-imx_6.18.20_2.0.0"
 IMX_OEI_CONFIG="edm-imx95"
 ARM_TOOLCHAIN_VER_DEFAULT="15.2.rel1"
 
-setup_platform()
-{
+DDR_TYPE=lpddr5_multi
+
+setup_platform() {
 	SOC=$( echo "${DTBS}" | cut -d'-' -f1 )
 	case "${SOC}" in
 		imx8m|imx8mq)
@@ -108,6 +110,7 @@ info_msg() {
 }
 error_msg() {
   echo "[ERROR][${FUNCNAME[1]}] $1"
+  exit -1
 }
 warning_msg() {
   echo "[WARN][${FUNCNAME[1]}] $1"
@@ -130,24 +133,24 @@ run_cmd() {
 		return 0
 	fi
 
-	if [ "$ret" != "0" ]; then
-		error_msg "[$label] Command failed: $cmd_str"
+	if [ "$ret" == "0" ]; then
+		return 0
 	fi
 
 	if [ "$err_exit" == "yes" ]; then
-		exit -1
+		error_msg "[$label] Command failed: $cmd_str"
+	else
+		warning_msg "[$label] Command failed: $cmd_str"
 	fi
-	return 1
 }
 
 copy_file() {
 	local src=$1
 	local dest=$2
-	printf "Copy file $src to $dest ..."
+	info_msg "Copy file $src to $dest ..."
 	cp $src $dest
 	if [ "$?" != "0" ]; then
 		error_msg "Fails to copy ${src} to ${dest}"
-		exit -1
 	fi
 	echo " success"
 }
@@ -173,8 +176,24 @@ git_clone() {
 	info_msg "Finish clone $id finish"
 }
 
-install_firmware()
-{
+is_ddr4() {
+	local ddr_type=${DDR_TYPE}
+	case $ddr_type in
+		lpddr4x_multi | lpddr4x_2g | lpddr4x_4g | lpddr4x_8g) echo "1";;
+		*) echo "0" ;;
+	esac
+}
+
+get_ddr_name() {
+	local _is_ddr_4=$(is_ddr4)
+	local ddr_name="lpddr5"
+	if [ "$_is_ddr_4" == "1" ]; then
+		ddr_name="lpddr4x"
+	fi
+	echo "${ddr_name}"
+}
+
+install_firmware() {
 	cd ${script_dir}
 	#Get and Build NXP imx-mkimage tool
 	git_clone "imx-mkimage" "https://github.com/nxp-imx/imx-mkimage.git" "${BRANCH_VER}" "${MKIMAGE_SRC_GIT_ID}" "${script_dir}/${MKIMAGE_DIR}"
@@ -184,12 +203,9 @@ install_firmware()
 
 	cd ${script_dir}
 
-
 	#Get, build and copy the ARM Trusted Firmware
 	git_clone "imx-atf" "https://github.com/nxp-imx/imx-atf.git" "${ATF_BRANCH_VER}" "${ATF_SRC_GIT_ID}" "${FIRMWARE_DIR}/imx-atf"
 
-	# PWD=$(pwd)
-	# [ -n "${PWD##*imx-atf}" ] && cd imx-atf
 	cd ${FIRMWARE_DIR}/imx-atf
 
 	if ( git diff-index --quiet HEAD -- plat/imx/imx8mm/imx8mm_bl31_setup.c ); then
@@ -240,10 +256,11 @@ install_firmware()
 				copy_file ${src_base_dir}/ddr/synopsys/lpddr4_dmem_2d_v202201.bin "${out_dir}/"
 				;;
 			imx95)
-				copy_file ${src_base_dir}/ddr/synopsys/lpddr5_dmem_qb_v202409.bin "${out_dir}/"
-				copy_file ${src_base_dir}/ddr/synopsys/lpddr5_dmem_v202409.bin "${out_dir}/"
-				copy_file ${src_base_dir}/ddr/synopsys/lpddr5_imem_qb_v202409.bin "${out_dir}/"
-				copy_file ${src_base_dir}/ddr/synopsys/lpddr5_imem_v202409.bin "${out_dir}/"
+				local ddr_name=$(get_ddr_name)
+				copy_file ${src_base_dir}/ddr/synopsys/${ddr_name}_dmem_qb_v202409.bin "${out_dir}/"
+				copy_file ${src_base_dir}/ddr/synopsys/${ddr_name}_dmem_v202409.bin "${out_dir}/"
+				copy_file ${src_base_dir}/ddr/synopsys/${ddr_name}_imem_qb_v202409.bin "${out_dir}/"
+				copy_file ${src_base_dir}/ddr/synopsys/${ddr_name}_imem_v202409.bin "${out_dir}/"
 				;;
 			*)
 				copy_file ${src_base_dir}/ddr/synopsys/lpddr4_pmu_train_1d_dmem.bin "${out_dir}/"
@@ -268,26 +285,21 @@ install_firmware()
 				chmod +x firmware-sentinel-0.11.bin
 				./firmware-sentinel-0.11.bin
 			fi
-
-			cp firmware-sentinel-0.11/mx93a0-ahab-container.img ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}/
-			printf "Copy firmware-sentinel-0.11/mx93a0-ahab-container.img to $MKIMAGE_DIR \n"
+			copy_file firmware-sentinel-0.11/mx93a0-ahab-container.img ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}/
 		else
 			if [ ! -d firmware-ele-imx-${ELE_FW_VER} ] ; then
 				wget ${FSL_MIRROR}/firmware-ele-imx-${ELE_FW_VER}.bin
 				chmod +x firmware-ele-imx-${ELE_FW_VER}.bin
 				./firmware-ele-imx-${ELE_FW_VER}.bin
 			fi
-			cp firmware-ele-imx-${ELE_FW_VER}/${AHAB_IMG} ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}/
-			printf "Copy firmware-ele-imx-${ELE_FW_VER}/${AHAB_IMG} to $MKIMAGE_DIR \n"
+			copy_file firmware-ele-imx-${ELE_FW_VER}/${AHAB_IMG} ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}/
 		fi
 	fi
 
 	info_msg "Install firmware finish"
 }
 
-
-install_uboot_dtb()
-{
+install_uboot_dtb() {
 	#Copy uboot binary
 	cd ${TWD}
 	if [ "${SOC_DIR}" == "iMX93" ] || [ "${SOC_DIR}" == "iMX91" ] || [ "${SOC_DIR}" == "iMX95" ] ; then
@@ -306,8 +318,6 @@ install_uboot_dtb()
 	do
 		copy_file ./out/arch/arm/dts/${DTB} ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}/
 	done
-
-
 }
 
 fetch_oei() {
@@ -318,8 +328,7 @@ fetch_sm() {
 	git_clone "imx-sm" "${IMX_SM_GIT_REPO}" "${IMX_SM_BRANCH_VER}" "${IMX_SM_BRANCH_VER}" "${script_dir}/${FIRMWARE_DIR}/imx-sm"
 }
 
-prepare_arm_toolchain()
-{
+prepare_arm_toolchain() {
 	cd ${script_dir}/${FIRMWARE_DIR} && FWD=`pwd`
 	if [ -d arm-gnu-toolchain-*-x86_64-arm-none-eabi ] ; then
 		return
@@ -336,8 +345,7 @@ prepare_arm_toolchain()
 	info_msg "Fails to fetch ARM toolchain"
 }
 
-generate_sm_image()
-{
+generate_sm_image() {
 	cd ${script_dir}/${FIRMWARE_DIR} && FWD=`pwd`
 
 	if [ -d arm-gnu-toolchain-*-x86_64-arm-none-eabi ] ; then
@@ -352,9 +360,26 @@ generate_sm_image()
 	popd
 }
 
-generate_oei_image()
+ddr_type_to_ddr_config() {
+  local ddr_type=$1
+  local ddr_conf=""
 
-{
+  case $ddr_type in
+	lpddr4x_multi)   ddr_conf="lpddr4x_multi"                             ;;
+	lpddr4x_2g)      ddr_conf="lpddr4x_4266mbps_train_timing_2gb"         ;;
+	lpddr4x_4g)      ddr_conf="lpddr4x_4266mbps_train_timing_4gb"         ;;
+	lpddr4x_8g)      ddr_conf="lpddr4x_4266mbps_train_timing_8gb"         ;;
+	lpddr5_multi)    ddr_conf="lpddr5_multi"                              ;;
+	lpddr5_4g)       ddr_conf="lpddr5_6400mbps_train_timing_4gb"          ;;
+	lpddr4_8g)       ddr_conf="lpddr5_6400mbps_train_timing_8gb"          ;;
+	lpddr5_16g)      ddr_conf="lpddr5_6400mbps_train_timing_16gb"         ;;
+	lpddr5_evl_a1)   ddr_conf="XIMX95LPD5EVK19_6400mbps_train_timing_a1"  ;;
+	*)               ddr_conf="lpddr5_multi" ;;
+  esac
+  echo "${ddr_conf}"
+}
+
+generate_oei_image() {
 	cd ${script_dir}/${FIRMWARE_DIR} && FWD=`pwd`
 
 	if [ -d arm-gnu-toolchain-*-x86_64-arm-none-eabi ] ; then
@@ -364,7 +389,11 @@ generate_oei_image()
 	fi
 
 	cd imx-oei
-	run_cmd "Build imx-oei" "yes" "make -j$(nproc) board=${IMX_OEI_CONFIG} oei=ddr r=${SILICON_REV} DEBUG=1"
+	local ddr_conf=$(ddr_type_to_ddr_config "${DDR_TYPE}")
+	if [ "${ddr_conf}" == "" ]; then
+		error_msg "Not support DDR type:${DDR_TYPE}"
+	fi
+	run_cmd "Build imx-oei" "yes" "make -j$(nproc)  board=${IMX_OEI_CONFIG} oei=ddr r=${SILICON_REV} DDR_CONFIG=${ddr_conf} DEBUG=1"
 	copy_file "build/${IMX_OEI_CONFIG}/ddr/oei-m33-ddr.bin" "${TWD}/${MKIMAGE_DIR}/${SOC_DIR}/"
 }
 
@@ -402,12 +431,11 @@ u_boot_build() {
 	echo "Kernel config name:${kernel_conf_name}"
 	run_cmd "Build imx-boot iMX95 config" "yes" "make O=./out ${kernel_conf_name}"
 	run_cmd "Build imx-boot iMX95"        "yes" "make O=./out -j$(nproc)"
-	run_cmd "Build imx-boot iMX95"        "yes" "make O=./out savedefconfig"
+	run_cmd "Build imx-boot iMX95"        "no"  "make O=./out savedefconfig"
 	info_msg "finish build u-boot"
 }
 
-generate_imx_boot()
-{
+generate_imx_boot() {
 	cd ${TWD}
 	#Before generating the flash.bin, transfer the mkimage generated by U-Boot to iMX8M folder
 	copy_file ./out/tools/mkimage ${TWD}/${MKIMAGE_DIR}/${SOC_DIR}/mkimage_uboot
@@ -416,7 +444,13 @@ generate_imx_boot()
 	if [ "${SOC_DIR}" == "iMX93" ] && [ "${SILICON_REV}" == "A0" ]; then
 		run_cmd "Generate ${MKIMAGE_TARGET} image"       "yes" "make -j$(nproc) SOC=${SOC_TARGET} REV=${SILICON_REV} dtbs=\"${DTBS}\" ${MKIMAGE_TARGET}"
 	elif [ "${SOC_DIR}" == "iMX95" ]; then
-		run_cmd "Generate iMX95:${MKIMAGE_TARGET} image" "yes" "make -j$(nproc) SOC=${SOC_TARGET} REV=${SILICON_REV} OEI=\"YES\" LPDDR_TYPE=lpddr5 dtbs=${DTBS} ${MKIMAGE_TARGET}"
+    local is_ddr4_val=$(is_ddr4)
+		local ddr_name="lpddr5"
+		if [ "${is_ddr4_val}" == "1" ]; then
+			ddr_name="lpddr4x"
+		fi
+
+		run_cmd "Generate iMX95:${MKIMAGE_TARGET} image" "yes" "make -j$(nproc) SOC=${SOC_TARGET} REV=${SILICON_REV} OEI=\"YES\" LPDDR_TYPE=${ddr_name} dtbs=${DTBS} ${MKIMAGE_TARGET}"
 	else
 		run_cmd "Generate ${MKIMAGE_TARGET} image"       "yes" "make -j$(nproc) SOC=${SOC_TARGET} dtbs=\"${DTBS}\" ${MKIMAGE_TARGET}"
 	fi
@@ -425,8 +459,7 @@ generate_imx_boot()
 	info_msg "Build UBOOT finish"
 }
 
-flash_imx_boot()
-{
+flash_imx_boot() {
 	cd ${TWD}
 	if [ ! -b $DRIVE ]; then
      echo "$DRIVE doesn't exist !!!"
@@ -439,14 +472,9 @@ flash_imx_boot()
 	echo "sudo umount /media/$(id -un)/boot"
 	sudo umount /media/$(id -un)/boot
 	sudo eject ${DRIVE}
-	# if [ "$?" != "0" ]; then
-	# 	printf "Flash flash.bin... \n" || printf "Fails to flash flash.bin... \n"
-	# 	exit -1
-	# fi
 }
 
-usage()
-{
+usage() {
 	echo -e "\nUsage: install_uboot_imx8mq.sh
 	Optional parameters: [-d disk-path] [-b DTBS_name] [-s rev] [-t] [-c] [-h]"
 	echo "
@@ -529,14 +557,20 @@ usage()
 
 	* EDM-IMX95:
 	./install_uboot_imx8.sh -b imx95-edm-evm.dtb -d /dev/sdX
+	./install_uboot_imx8.sh -b imx95-edm-evm.dtb -m lpddr4x_4g -d /dev/sdX
+	- Memory type options:
+	- lpddr4x_multi, lpddr4x_2g, lpddr4x_4g, lpddr4x_8g
+	- lpddr5_multi, lpddr5_4g, lpddr4_8g, lpddr5_16g
+	- lpddr5_evl_a1
+	※ lpddr4x_multi,lpddr4x_2g, lpddr4x_8g => not ready
+
 
 	* EDGE-Ai-IMX95:
 	./install_uboot_imx8.sh -b imx95-edge-ai.dtb -d /dev/sdX
 "
 }
 
-print_settings()
-{
+print_settings() {
 	echo "*************************************************************"
 	echo "Before run this script, please build u-boot first!
 	"
@@ -545,6 +579,10 @@ print_settings()
 	echo "Make -j$(nproc) target: ${PLATFORM}"
 	echo "Make -j$(nproc) target: ${MKIMAGE_TARGET}"
 	echo "SOC platform: ${SOC}"
+	if [ "${PLATFORM}" == "imx95" ]; then
+		local ddr_conf=$(ddr_type_to_ddr_config ${DDR_TYPE})
+		echo "DDR TYPE: ${DDR_TYPE}, DDR CONFIG:${ddr_conf}"
+	fi
 	echo "*************************************************************
 
 	"
@@ -555,74 +593,71 @@ if [ $# -eq 0 ]; then
 	exit 1
 fi
 
-while getopts "tcfhd:s:b:r:iI" OPTION
+while getopts "tcfhd:s:b:r:iICm:" OPTION
 do
 	case $OPTION in
-		d)
-			DRIVE="$OPTARG"
+		d)  DRIVE="$OPTARG"
 			echo "Set disk path: $DRIVE"
 			;;
-		b)
-			DTBS="$DTBS $OPTARG"
+		b)  DTBS="$DTBS $OPTARG"
 			DTBS=$(echo ${DTBS} | cut -c 1-)
 			;;
-		s)
-			SILICON_REV="$OPTARG"
-			;;
-		t)
-			MKIMAGE_TARGET='flash_spl_uboot';
-			;;
-		f)
-			MKIMAGE_TARGET='flash_evk_flexspi';
-			;;
-		c)
-			rm -rf ${FIRMWARE_DIR} ${MKIMAGE_DIR} ./out
+		s) SILICON_REV="$OPTARG" ;;
+		t) MKIMAGE_TARGET='flash_spl_uboot' ;;
+		m) DDR_TYPE="$OPTARG" ;;
+		f) MKIMAGE_TARGET='flash_evk_flexspi' ;;
+		C)  # Clean build object file.
+		    # rm -rf ./imx-boot_generation/firmware-*/
+			find imx-boot_generation/imx-atf/ -name "*.o" -delete
+			rm -rf  imx-boot_generation/imx-atf/build/
+			find imx-boot_generation/imx-oei/ -name "*.o" -delete
+			rm -rf  imx-boot_generation/imx-oei/build/
+			find imx-boot_generation/imx-sm/ -name "*.o" -delete
+			rm -rf  imx-boot_generation/imx-sm/build/
+			pushd ./imx-mkimage/iMX95
+				git clean -ffxd .
+			popd
+
 			echo "Clean ${FIRMWARE_DIR} ${MKIMAGE_DIR}..."
 			exit
+			;;
+		c)  rm -rf ${FIRMWARE_DIR} ${MKIMAGE_DIR} ./out
+			echo "Clean ${FIRMWARE_DIR} ${MKIMAGE_DIR}..."
 			;;
 		i) 	echo "Flash to $DRIVE"
 		    setup_platform
 		    flash_imx_boot
 		    exit
 			;;
-		I)
-		   export NOT_FLASH=1
-		   ;;
-		?|h)
-			usage
-			exit
-			;;
+		I) export NOT_BUILD=1 ;;
+		?|h) usage
+			 exit
+			 ;;
 		esac
 done
 
-
-
 if [ "$(id -u)" == "0" ]; then
-   echo "This script can not be run as root"
+   info_msg "This script can not be run as root"
    exit 1
 fi
-
-#if [ ! -b $DRIVE ]
-#then
-#   echo Target block device $DRIVE does not exist
-#   usage
-#   exit 1
-#fi
 
 setup_platform
 print_settings
 install_firmware
-u_boot_build
-if [ "${SOC_DIR}" == "iMX95" ]; then
-	fetch_oei
-	fetch_sm
-	prepare_arm_toolchain
-	generate_oei_image
-	generate_sm_image
-fi
-install_uboot_dtb
-generate_imx_boot
 
-if [ "$NOT_FLASH" != "1" ]; then
+if [ "$NOT_BUILD" != "1" ]; then
+	if [ "${SOC_DIR}" == "iMX95" ]; then
+		fetch_oei
+		fetch_sm
+		prepare_arm_toolchain
+		generate_oei_image
+		generate_sm_image
+		u_boot_build
+fi
+	install_uboot_dtb
+	generate_imx_boot
+fi
+
+if [ "$DRIVE" != "/dev/sdX" ]; then
 	flash_imx_boot
 fi
