@@ -281,8 +281,10 @@
 		interrupts = <26 IRQ_TYPE_LEVEL_LOW>;
 		#gpio-cells = <2>;
 		gpio-controller;
-		gpio-line-names = "", "", "", "","", "", "", "CSI2_PWDN", "", "PCIE1_CLKREQ_N", "", "",
-						"PCIE2_CLKREQ_N", "", "", "";
+		gpio-line-names = "LVDS0_VDDEN", "LVDS0_BL_EN", "LVDS1_VDDEN", "LVDS1_BL_EN",
+				"CSI1_RST_N", "CSI1_PWDN", "CSI2_RST_N", "CSI2_PWDN",
+				"PCIE1_WAKE_N", "PCIE1_CLKREQ_N", "PCIE1_RST_N", "PCIE2_WAKE_N",
+				"PCIE2_CLKREQ_N", "PCIE2_RST_N", "EXP_GPIO5", "USB_SS_SEL";
 		pinctrl-0 = <&pinctrl_tca9555_a21_irq>;
 		pinctrl-names = "default";
 		vcc-supply = <&reg_3p3v>;
