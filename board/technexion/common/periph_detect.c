@@ -378,6 +378,77 @@ __weak int detect_display_panel(void)
 	return 0;
 }
 
+#define PCA9554_OUTPUT_REG		0x01
+#define PCA9554_CONFIG_REG		0x03
+#define VLS_STANDBY_GPIO		BIT(2)
+#define VLS_RESET_GPIO			BIT(4)
+
+static int _prepare_camera_io_expander(u8 bus_index, u8 i2c_addr)
+{
+	struct udevice *udev;
+	int output;
+	int config;
+	int ret;
+
+	tn_debug("Prepare camera IO expander: i2c#%d 0x%02x\n",
+		 bus_index, i2c_addr);
+
+	udev = _check_i2c_dev(bus_index, i2c_addr);
+	if (udev == NULL) {
+		tn_debug("Camera IO expander 0x%02x not found on i2c#%d\n",
+			 i2c_addr, bus_index);
+		return -1;
+	}
+
+	i2c_set_chip_offset_len(udev, 1);
+
+	output = dm_i2c_reg_read(udev, PCA9554_OUTPUT_REG);
+	if (output < 0) {
+		printf("%s: read PCA9554 output failed: %d\n",
+		       __func__, output);
+		return output;
+	}
+
+	output &= ~(VLS_STANDBY_GPIO | VLS_RESET_GPIO);
+	ret = dm_i2c_reg_write(udev, PCA9554_OUTPUT_REG, output);
+	if (ret) {
+		printf("%s: write PCA9554 output failed: %d\n",
+		       __func__, ret);
+		return ret;
+	}
+
+	config = dm_i2c_reg_read(udev, PCA9554_CONFIG_REG);
+	if (config < 0) {
+		printf("%s: read PCA9554 config failed: %d\n",
+		       __func__, config);
+		return config;
+	}
+
+	config &= ~(VLS_STANDBY_GPIO | VLS_RESET_GPIO);
+	ret = dm_i2c_reg_write(udev, PCA9554_CONFIG_REG, config);
+	if (ret) {
+		printf("%s: write PCA9554 config failed: %d\n",
+		       __func__, ret);
+		return ret;
+	}
+
+	/* Hold reset low briefly, then release reset and leave standby low. */
+	mdelay(50);
+
+	output |= VLS_RESET_GPIO;
+	output &= ~VLS_STANDBY_GPIO;
+	ret = dm_i2c_reg_write(udev, PCA9554_OUTPUT_REG, output);
+	if (ret) {
+		printf("%s: release camera reset failed: %d\n",
+		       __func__, ret);
+		return ret;
+	}
+
+	mdelay(100);
+
+	return 0;
+}
+
 static int _detect_camera(const tn_camera_chk_t *list, size_t count) {
 	int i = 0, ret = -1;
 	char *cam_autodetect = env_get("cameraautodetect");
@@ -396,9 +467,32 @@ static int _detect_camera(const tn_camera_chk_t *list, size_t count) {
 
 	for (i = 0; i < count; ++i) {
 		int j = 0, mode_id = -1;
+		int excluded = 0;
 		struct udevice *udev = NULL;
 
 		tn_debug("Check %s - i2c#%d 0x%02x\n", list[i].ov_name, list[i].i2c_bus_index, list[i].i2c_addr);
+
+		if ((list[i].io_expander_addr > 0) &&
+		    (_check_i2c_dev(list[i].i2c_bus_index,
+				    list[i].io_expander_addr) == NULL)) {
+			tn_debug("Required IO expander 0x%02x not found, skip %s\n",
+				 list[i].io_expander_addr,
+				 list[i].ov_name);
+			_remove_dtoverlay(list[i].ov_name);
+			continue;
+		}
+		else if ((list[i].io_expander_addr > 0) &&
+		    (_check_i2c_dev(list[i].i2c_bus_index,
+				    list[i].io_expander_addr) != NULL)) {
+			ret = _prepare_camera_io_expander(
+				list[i].i2c_bus_index,
+				list[i].io_expander_addr);
+			if (ret)
+				tn_debug("Skip IO expander 0x%02x on i2c#%d: %d\n",
+					list[i].io_expander_addr,
+					list[i].i2c_bus_index, ret);
+		}
+
 		udev = _check_i2c_dev(list[i].i2c_bus_index, list[i].i2c_addr);
 		if (udev == NULL) {
 			_remove_dtoverlay(list[i].ov_name);
@@ -416,13 +510,33 @@ static int _detect_camera(const tn_camera_chk_t *list, size_t count) {
 			}
 		}
 
-		// Check exclsive address
+		/* Check the exclusive address belonging to this camera rule. */
+		if ((list[i].exclude_i2c_addr > 0) &&
+			(list[i].exclude_i2c_addr != list[i].i2c_addr) &&
+			(_check_i2c_dev(list[i].i2c_bus_index,
+				list[i].exclude_i2c_addr) != NULL)) {
+			tn_debug("Exclusive address 0x%02x detected, skip %s\n",
+				list[i].exclude_i2c_addr, list[i].ov_name);
+			_remove_dtoverlay(list[i].ov_name);
+			continue;
+		}
+
+		/* Check global bus-wide exclusive addresses. */
 		for (j = 0; j < tn_cam_exclusive_i2c_addr_cnt; ++j) {
 			if ((tn_cam_exclusive_i2c_addr[j] > 0) &&
+				(tn_cam_exclusive_i2c_addr[j] != list[i].i2c_addr) &&
 				(_check_i2c_dev(list[i].i2c_bus_index, tn_cam_exclusive_i2c_addr[j])) != NULL) {
-				tn_debug("Exclsived address detected, skip %s\n", list[i].ov_name);
-				continue;
+				tn_debug("Exclusive address 0x%02x detected, skip %s\n",
+					tn_cam_exclusive_i2c_addr[j],
+					list[i].ov_name);
+				excluded = 1;
+				break;
 			}
+		}
+
+		if (excluded) {
+			_remove_dtoverlay(list[i].ov_name);
+			continue;
 		}
 
 		_add_dtoverlay(list[i].ov_name);

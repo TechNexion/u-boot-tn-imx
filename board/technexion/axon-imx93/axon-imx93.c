@@ -58,8 +58,8 @@ struct efi_capsule_update_info update_info = {
 
 #ifdef CONFIG_TN_PHERIPHERAL_DETECT
 const tn_camera_chk_t tn_camera_chk[] = {
-	{ 1, 0x48, 0x3020, 0x00, "tevs" },
-	{ 1, 0x48, 0x3020, 0x01, "tevm" },
+	{ 1, 0x48, 0x00, 0x00, 0x3020, 0x00, "tevs" },
+	{ 1, 0x48, 0x00, 0x00, 0x3020, 0x01, "tevm" },
 };
 size_t tn_camera_chk_cnt = ARRAY_SIZE(tn_camera_chk);
 
