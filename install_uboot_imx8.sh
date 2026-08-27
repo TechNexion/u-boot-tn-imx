@@ -11,19 +11,19 @@
 script_path="$(readlink -f "${BASH_SOURCE[0]}")"
 script_dir="$(cd "$(dirname "$script_path")" && pwd)"
 
-DRIVE=/dev/sdX
+DRIVE="${DRIVE:-/dev/sdX}"
 
-BRANCH_VER="lf-6.18.20_2.0.0" #branch used by imx-mkimage and imx-atf under meta-imx
-ATF_BRANCH_VER="lf_v2.14"
-MKIMAGE_SRC_GIT_ID='1b577853ae1afe1f26cdef27548da52fb424af48' #refer to 'imx-mkimage_git.inc' in Yocto
-ATF_SRC_GIT_ID='0779f89a5475a03193f7707f3bbb50cec11707c0' #refer to 'imx-atf_2.x.bb' in Yocto
-DDR_FW_VER="8.32-1991416" #refer to the name of 'firmware-imx-8.x.bb'
-ELE_FW_VER="2.0.6-c0b284c" ##refer to the "{PV of firmware-ele-imx_2.0.2.bb}"-"{IMX_SRCREV_ABBREV}"
+BRANCH_VER="${BRANCH_VER:-lf-6.18.20_2.0.0}" # branch used by imx-mkimage and imx-atf under meta-imx
+ATF_BRANCH_VER="${ATF_BRANCH_VER:-lf_v2.14}"
+MKIMAGE_SRC_GIT_ID="${MKIMAGE_SRC_GIT_ID:-1b577853ae1afe1f26cdef27548da52fb424af48}" # refer to 'imx-mkimage_git.inc' in Yocto
+ATF_SRC_GIT_ID="${ATF_SRC_GIT_ID:-0779f89a5475a03193f7707f3bbb50cec11707c0}" # refer to 'imx-atf_2.x.bb' in Yocto
+DDR_FW_VER="${DDR_FW_VER:-8.32-1991416}" # refer to the name of 'firmware-imx-8.x.bb'
+ELE_FW_VER="${ELE_FW_VER:-2.0.6-c0b284c}" # refer to the "{PV of firmware-ele-imx_2.0.2.bb}"-"{IMX_SRCREV_ABBREV}"
 
-FSL_MIRROR="https://www.nxp.com/lgfiles/NMG/MAD/YOCTO"
-FIRMWARE_DIR="imx-boot_generation"
-MKIMAGE_DIR="imx-mkimage"
-MKIMAGE_TARGET="flash_hdmi_spl_uboot"
+FSL_MIRROR="${FSL_MIRROR:-https://www.nxp.com/lgfiles/NMG/MAD/YOCTO}"
+FIRMWARE_DIR="${FIRMWARE_DIR:-imx-boot_generation}"
+MKIMAGE_DIR="${MKIMAGE_DIR:-imx-mkimage}"
+MKIMAGE_TARGET="${MKIMAGE_TARGET:-flash_hdmi_spl_uboot}"
 
 SPL_ORI="spl/u-boot-spl.bin"
 UBOOT_ORI="u-boot-nodtb.bin"
@@ -32,16 +32,16 @@ TWD=`pwd`
 ATF_BOOT_UART_BASE="0x30890000"
 
 # Config for i.mx95
-IMX_SM_GIT_REPO="https://github.com/nxp-imx/imx-sm.git"
-IMX_SM_BRANCH_VER="lf-6.18.20-2.0.0"
-IMX_SM_CONFIG="mx95evk"
-IMX_OEI_GIT_REPO="https://github.com/TechNexion/imx-oei.git"
+IMX_SM_GIT_REPO="${IMX_SM_GIT_REPO:-https://github.com/nxp-imx/imx-sm.git}"
+IMX_SM_BRANCH_VER="${IMX_SM_BRANCH_VER:-lf-6.18.20-2.0.0}"
+IMX_SM_CONFIG="${IMX_SM_CONFIG:-mx95evk}"
+IMX_OEI_GIT_REPO="${IMX_OEI_GIT_REPO:-https://github.com/TechNexion/imx-oei.git}"
 # imx-oei need to change local server"
-IMX_OEI_BRANCH_VER="tn-imx_6.18.20_2.0.0"
-IMX_OEI_CONFIG="edm-imx95"
-ARM_TOOLCHAIN_VER_DEFAULT="15.2.rel1"
+IMX_OEI_BRANCH_VER="${IMX_OEI_BRANCH_VER:-tn-imx_6.18.20_2.0.0}"
+IMX_OEI_CONFIG="${IMX_OEI_CONFIG:-edm-imx95}"
+ARM_TOOLCHAIN_VER_DEFAULT="${ARM_TOOLCHAIN_VER_DEFAULT:-15.2.rel1}"
 
-DDR_TYPE=lpddr5_multi
+DDR_TYPE="${DDR_TYPE:-lpddr5_multi}"
 
 setup_platform() {
 	SOC=$( echo "${DTBS}" | cut -d'-' -f1 )
