@@ -600,8 +600,10 @@ __weak const tn_m2_mdio_device_check_t tn_m2_mdio_device_chk[] = {};
 __weak size_t tn_m2_mdio_device_cnt = 0;
 
 static int detect_device_mdio_bus(const tn_m2_mdio_device_check_t* dev) {
+	struct mii_dev *bus;
 
-    struct mii_dev *bus = miiphy_get_dev_by_name(dev->bus_name);
+	dm_mdio_probe_devices();
+    bus = miiphy_get_dev_by_name(dev->bus_name);
     if (!bus) {
         printf("mdio bus not found: %s\n", dev->bus_name);
         return -1;
