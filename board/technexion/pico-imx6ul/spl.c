@@ -137,6 +137,7 @@ static void imx6ul_spl_dram_cfg_size(u32 ram_size)
 	}
 
 	mx6ul_dram_iocfg(mem_ddr.width, &mx6_ddr_ioregs, &mx6_grp_ioregs);
+	writel(0x00921012, &mmdc0->mpdccr);
 	mx6_dram_cfg(&ddr_sysinfo, calib, &mem_ddr);
 
 	/* Preserve the board-specific values that the DDR API cannot express. */
