@@ -823,7 +823,7 @@ static void initcall_run_r(void)
 	WATCHDOG_RESET();
 	INITCALL(initr_net);
 #endif
-#if defined(CONFIG_TN_PHERIPHERAL_DETECT)
+#if defined(CONFIG_TN_PHERIPHERAL_DETECT) && defined(CONFIG_TARGET_EDM_IMX95)
 	INITCALL(detect_m2_mdio_device);
 #endif
 #if CONFIG_IS_ENABLED(POST)
