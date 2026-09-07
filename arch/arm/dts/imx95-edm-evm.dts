@@ -413,6 +413,10 @@
 	};
 };
 
+&netc_blk_ctrl {
+	status = "okay";
+};
+
 &enetc_port0 {
 	/* RTL8211F on baseboard */
 	pinctrl-names = "default";

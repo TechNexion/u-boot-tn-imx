@@ -626,7 +626,7 @@ static int detect_device_mdio_bus(const tn_m2_mdio_device_check_t* dev) {
 }
 
 int detect_m2_mdio_device(void) {
-	printf("detect_m2_mdio_device, a a  count:%ld\n", tn_m2_mdio_device_cnt);
+	printf("detect_m2_mdio_device, count:%ld\n", tn_m2_mdio_device_cnt);
 	for (int i = 0; i < tn_m2_mdio_device_cnt; i++) {
 		const tn_m2_mdio_device_check_t* dev = &tn_m2_mdio_device_chk[i];
 
