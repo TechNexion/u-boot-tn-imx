@@ -449,6 +449,73 @@ static int _prepare_camera_io_expander(u8 bus_index, u8 i2c_addr)
 	return 0;
 }
 
+#define MAX96717_I2C_ADDR		0x40
+#define MAX96717_GPIO_A(x)		(0x2be + (x) * 0x3)
+#define MAX96717_GPIO_A_OUT_DIS		BIT(0)
+#define MAX96717_GPIO_A_TX_EN		BIT(1)
+#define MAX96717_GPIO_A_RX_EN		BIT(2)
+#define MAX96717_GPIO_A_OUT		BIT(4)
+#define VLM_STANDBY_MFP			3
+#define VLM_RESET_MFP			4
+#define TEVS_BOOT_TIME_MS		250
+
+static int _max96717_gpio_set(struct udevice *udev, int mfp, int value)
+{
+	int reg;
+
+	reg = dm_i2c_reg_read(udev, MAX96717_GPIO_A(mfp));
+	if (reg < 0) {
+		printf("%s: read MAX96717 MFP%d failed: %d\n",
+		       __func__, mfp, reg);
+		return reg;
+	}
+
+	reg &= ~(MAX96717_GPIO_A_OUT_DIS | MAX96717_GPIO_A_TX_EN |
+		 MAX96717_GPIO_A_RX_EN | MAX96717_GPIO_A_OUT);
+	if (value)
+		reg |= MAX96717_GPIO_A_OUT;
+
+	return dm_i2c_reg_write(udev, MAX96717_GPIO_A(mfp), reg);
+}
+
+static int _prepare_camera_serializer(u8 bus_index, u8 i2c_addr)
+{
+	struct udevice *udev;
+	int ret;
+
+	tn_debug("Prepare camera serializer: i2c#%d 0x%02x\n",
+		 bus_index, i2c_addr);
+
+	udev = _check_i2c_dev(bus_index, i2c_addr);
+	if (udev == NULL) {
+		tn_debug("Camera serializer 0x%02x not found on i2c#%d\n",
+			 i2c_addr, bus_index);
+		return -ENODEV;
+	}
+
+	i2c_set_chip_offset_len(udev, 2);
+
+	ret = _max96717_gpio_set(udev, VLM_STANDBY_MFP, 0);
+	if (!ret)
+		ret = _max96717_gpio_set(udev, VLM_RESET_MFP, 0);
+	if (ret)
+		return ret;
+
+	/* Hold reset low briefly, then release reset and wait for boot. */
+	mdelay(50);
+
+	ret = _max96717_gpio_set(udev, VLM_RESET_MFP, 1);
+	if (ret) {
+		printf("%s: release camera reset failed: %d\n",
+		       __func__, ret);
+		return ret;
+	}
+
+	mdelay(TEVS_BOOT_TIME_MS);
+
+	return 0;
+}
+
 static int _detect_camera(const tn_camera_chk_t *list, size_t count) {
 	int i = 0, ret = -1;
 	char *cam_autodetect = env_get("cameraautodetect");
@@ -472,7 +539,28 @@ static int _detect_camera(const tn_camera_chk_t *list, size_t count) {
 
 		tn_debug("Check %s - i2c#%d 0x%02x\n", list[i].ov_name, list[i].i2c_bus_index, list[i].i2c_addr);
 
-		if ((list[i].io_expander_addr > 0) &&
+		if (list[i].io_expander_addr == MAX96717_I2C_ADDR) {
+			/*
+			 * Don't touch the serializer GPIOs on boards whose
+			 * camera is controlled through an IO expander.
+			 */
+			if ((list[i].exclude_i2c_addr > 0) &&
+			    (_check_i2c_dev(list[i].i2c_bus_index,
+					    list[i].exclude_i2c_addr) != NULL)) {
+				tn_debug("Exclusive address 0x%02x detected, skip %s\n",
+					 list[i].exclude_i2c_addr,
+					 list[i].ov_name);
+				_remove_dtoverlay(list[i].ov_name);
+				continue;
+			}
+
+			if (_prepare_camera_serializer(list[i].i2c_bus_index,
+						       list[i].io_expander_addr)) {
+				_remove_dtoverlay(list[i].ov_name);
+				continue;
+			}
+		}
+		else if ((list[i].io_expander_addr > 0) &&
 		    (_check_i2c_dev(list[i].i2c_bus_index,
 				    list[i].io_expander_addr) == NULL)) {
 			tn_debug("Required IO expander 0x%02x not found, skip %s\n",
