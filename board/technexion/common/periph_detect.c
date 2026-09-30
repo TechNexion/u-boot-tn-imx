@@ -100,6 +100,65 @@ static int _remove_dtoverlay(const char *ov_name)
 	return(env_set(ENV_DTOVERLAY, arr_dtov));
 }
 
+/*
+ * Keep one camera overlay per CSI port. A saved overlay on the same port is
+ * replaced by the detected one, unless it is the tunnel variant of a GMSL
+ * camera overlay.
+ */
+static int _add_camera_dtoverlay(const char *ov_name)
+{
+	const char *port = strrchr(ov_name, '-');
+	char *dtoverlay = env_get(ENV_DTOVERLAY);
+	char tunnel[64];
+	char temp_dtov[SIZE_DTOVERLAY];
+	char arr_dtov[SIZE_DTOVERLAY] = { '\0' };
+	char *token, *next;
+	size_t len, port_len;
+	int keep_tunnel = 0;
+
+	if ((port == NULL) || strncmp(port, "-csi", 4) || (dtoverlay == NULL))
+		return(_add_dtoverlay(ov_name));
+
+	/* Only GMSL camera overlays have a tunnel variant. */
+	if (strstr(ov_name, "-gm2-"))
+		snprintf(tunnel, sizeof(tunnel), "%.*s-tunnel%s",
+			 (int)(port - ov_name), ov_name, port);
+	else
+		tunnel[0] = '\0';
+	snprintf(temp_dtov, SIZE_DTOVERLAY, "%s", dtoverlay);
+	port_len = strlen(port);
+
+	for (token = temp_dtov; token != NULL; token = next) {
+		next = strchr(token, ' ');
+		if (next != NULL)
+			*next++ = '\0';
+		if (*token == '\0')
+			continue;
+
+		len = strlen(token);
+		if (strcmp(token, tunnel) == 0) {
+			printf("%s: keeping tunnel overlay %s\n", __FILE__, token);
+			keep_tunnel = 1;
+		} else if ((len >= port_len) &&
+			   (strcmp(token + len - port_len, port) == 0) &&
+			   (strcmp(token, ov_name) != 0)) {
+			printf("%s: replacing overlay %s with %s\n",
+			       __FILE__, token, ov_name);
+			continue;
+		}
+
+		len = strlen(arr_dtov);
+		snprintf(arr_dtov + len, SIZE_DTOVERLAY - len, "%s%s",
+			 len ? " " : "", token);
+	}
+
+	env_set(ENV_DTOVERLAY, arr_dtov[0] ? arr_dtov : NULL);
+	if (keep_tunnel)
+		return(0);
+
+	return(_add_dtoverlay(ov_name));
+}
+
 static struct udevice * _check_i2c_dev(int bus_idx, uint addr) {
 	struct udevice *bus = NULL;
 	struct udevice *i2c_dev = NULL;
@@ -627,7 +686,7 @@ static int _detect_camera(const tn_camera_chk_t *list, size_t count) {
 			continue;
 		}
 
-		_add_dtoverlay(list[i].ov_name);
+		_add_camera_dtoverlay(list[i].ov_name);
 
 		ret = 0;
 	}
