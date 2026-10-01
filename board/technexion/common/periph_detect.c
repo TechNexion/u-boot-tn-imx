@@ -537,6 +537,56 @@ static int _max96717_gpio_set(struct udevice *udev, int mfp, int value)
 	return dm_i2c_reg_write(udev, MAX96717_GPIO_A(mfp), reg);
 }
 
+#define MAX96717_DEV_ID			0x0d
+#define MAX96717_DEV_ID_VAL		0xbf
+#define MAX96717_CTRL0			0x10
+#define MAX96717_CTRL0_RESET_ALL	BIT(7)
+#define MAX96717_ALIAS_ADDR_FIRST	0x41
+#define MAX96717_ALIAS_ADDR_LAST	0x44
+#define MAX96717_RESET_RETRY		10
+
+/*
+ * Linux moves the serializer to an address from the deserializer's alias
+ * pool and it keeps that address across a warm reboot. Find it there and
+ * reset it back to its power-up address.
+ */
+static struct udevice *_reset_moved_serializer(u8 bus_index, u8 i2c_addr)
+{
+	struct udevice *udev;
+	int addr, reg, i;
+
+	for (addr = MAX96717_ALIAS_ADDR_FIRST;
+	     addr <= MAX96717_ALIAS_ADDR_LAST; addr++) {
+		udev = _check_i2c_dev(bus_index, addr);
+		if (udev == NULL)
+			continue;
+
+		i2c_set_chip_offset_len(udev, 2);
+		if (dm_i2c_reg_read(udev, MAX96717_DEV_ID) != MAX96717_DEV_ID_VAL)
+			continue;
+
+		reg = dm_i2c_reg_read(udev, MAX96717_CTRL0);
+		if (reg < 0)
+			continue;
+
+		printf("%s: reset camera serializer at 0x%02x on i2c#%d\n",
+		       __FILE__, addr, bus_index);
+		/* The chip resets during this write, so a NAK is expected. */
+		dm_i2c_reg_write(udev, MAX96717_CTRL0,
+				 reg | MAX96717_CTRL0_RESET_ALL);
+
+		for (i = 0; i < MAX96717_RESET_RETRY; i++) {
+			udev = _check_i2c_dev(bus_index, i2c_addr);
+			if (udev != NULL)
+				return udev;
+		}
+
+		return NULL;
+	}
+
+	return NULL;
+}
+
 static int _prepare_camera_serializer(u8 bus_index, u8 i2c_addr)
 {
 	struct udevice *udev;
@@ -546,6 +596,8 @@ static int _prepare_camera_serializer(u8 bus_index, u8 i2c_addr)
 		 bus_index, i2c_addr);
 
 	udev = _check_i2c_dev(bus_index, i2c_addr);
+	if (udev == NULL)
+		udev = _reset_moved_serializer(bus_index, i2c_addr);
 	if (udev == NULL) {
 		tn_debug("Camera serializer 0x%02x not found on i2c#%d\n",
 			 i2c_addr, bus_index);
