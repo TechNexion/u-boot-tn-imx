@@ -13,6 +13,7 @@
 #include <usb.h>
 #include <asm/gpio.h>
 #include <i2c.h>
+#include <linux/delay.h>
 
 #if CONFIG_IS_ENABLED(EFI_HAVE_CAPSULE_SUPPORT)
 #define IMX_BOOT_IMAGE_GUID \
@@ -277,9 +278,57 @@ int board_init(void)
 
 int board_late_init(void)
 {
+	struct udevice *bus, *expander, *camera, *imu;
+	struct gpio_desc reset;
+	int ret, value, attempt;
+
 #if CONFIG_IS_ENABLED(ENV_IS_IN_MMC) || CONFIG_IS_ENABLED(ENV_IS_NOWHERE)
 	board_late_mmc_env_init();
 #endif
+
+	if (IS_ENABLED(CONFIG_TARGET_IMX93_11X11_EVK) &&
+	    strcmp(env_get("cameraautodetect") ?: "yes", "no")) {
+		env_set("fdtfile", "imx93-11x11-evk.dtb");
+
+		/* The RPi camera connector uses ADP5585 GPIO 0 for reset. */
+		ret = dm_gpio_lookup_name("adp5585-gpio0", &reset);
+		if (!ret) {
+			ret = dm_gpio_request(&reset, "camera reset");
+			if (!ret) {
+				dm_gpio_set_dir_flags(&reset, GPIOD_IS_OUT);
+				dm_gpio_set_value(&reset, 1);
+			}
+		}
+
+		ret = uclass_get_device_by_seq(UCLASS_I2C, 2, &bus);
+		if (!ret) {
+			/* PCA9554 pin 6 releases the camera from standby. */
+			ret = dm_i2c_probe(bus, 0x27, 0, &expander);
+			if (!ret) {
+				value = dm_i2c_reg_read(expander, 1);
+				if (value >= 0)
+					dm_i2c_reg_write(expander, 1, value & ~BIT(6));
+				value = dm_i2c_reg_read(expander, 3);
+				if (value >= 0)
+					dm_i2c_reg_write(expander, 3, value & ~BIT(6));
+			}
+
+			mdelay(100);
+			for (attempt = 0; attempt < 20; attempt++) {
+				ret = dm_i2c_probe(bus, 0x48, 0, &camera);
+				if (!ret) {
+					ret = dm_i2c_probe(bus, 0x6a, 0, &imu);
+					if (!ret)
+						env_set("fdtfile", "imx93-11x11-evk-tevm-rpi22.dtb");
+					else
+						env_set("fdtfile", "imx93-11x11-evk-tevs-rpi22.dtb");
+					break;
+				}
+				mdelay(50);
+			}
+		}
+		printf("Camera DTB: %s\n", env_get("fdtfile"));
+	}
 
 	env_set("sec_boot", "no");
 #ifdef CONFIG_AHAB_BOOT
