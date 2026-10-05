@@ -17,6 +17,8 @@
 #include "../common/tcpc.h"
 #include <dm/device.h>
 #include <dm/uclass.h>
+#include <i2c.h>
+#include <linux/delay.h>
 #include <usb.h>
 #include <dwc3-uboot.h>
 #include <asm/gpio.h>
@@ -316,9 +318,48 @@ int board_init(void)
 
 int board_late_init(void)
 {
+	struct udevice *bus, *camera, *imu;
+	struct gpio_desc reset;
+	int ret, attempt;
+
 #if CONFIG_IS_ENABLED(ENV_IS_IN_MMC) || CONFIG_IS_ENABLED(ENV_IS_NOWHERE)
 	board_late_mmc_env_init();
 #endif
+
+	if (strcmp(env_get("cameraautodetect") ?: "yes", "no")) {
+		/* A missing or unrecognized camera keeps the standard board DTB. */
+		env_set("fdtfile", "imx93-11x11-frdm.dtb");
+
+		/* The camera reset input is on PCAL6524 pin 22. */
+		ret = dm_gpio_lookup_name("gpio@22_22", &reset);
+		if (!ret) {
+			ret = dm_gpio_request(&reset, "camera reset");
+			if (!ret) {
+				dm_gpio_set_dir_flags(&reset, GPIOD_IS_OUT);
+				dm_gpio_set_value(&reset, 1);
+				mdelay(100);
+			}
+		}
+
+		ret = uclass_get_device_by_seq(UCLASS_I2C, 2, &bus);
+		if (!ret) {
+			/* The module can take nearly a second to boot after reset. */
+			for (attempt = 0; attempt < 20; attempt++) {
+				ret = dm_i2c_probe(bus, 0x48, 0, &camera);
+				if (!ret) {
+					/* TEVM adds an IMU at 0x6a. */
+					ret = dm_i2c_probe(bus, 0x6a, 0, &imu);
+					if (!ret)
+						env_set("fdtfile", "imx93-11x11-frdm-tevm-rpi22.dtb");
+					else
+						env_set("fdtfile", "imx93-11x11-frdm-tevs-rpi22.dtb");
+					break;
+				}
+				mdelay(50);
+			}
+		}
+		printf("Camera DTB: %s\n", env_get("fdtfile"));
+	}
 
 	env_set("sec_boot", "no");
 #ifdef CONFIG_AHAB_BOOT

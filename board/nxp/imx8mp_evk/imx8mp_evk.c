@@ -28,6 +28,40 @@
 #include <mmc.h>
 #include <spl.h>
 
+static void camera_gpio_output(const char *name, int value)
+{
+	struct gpio_desc gpio;
+
+	if (dm_gpio_lookup_name(name, &gpio))
+		return;
+	if (dm_gpio_request(&gpio, "camera detect"))
+		return;
+	dm_gpio_set_dir_flags(&gpio, GPIOD_IS_OUT);
+	dm_gpio_set_value(&gpio, value);
+}
+
+/* 0: absent, 1: TEVS, 2: TEVM (camera plus IMU). */
+static int camera_probe(int bus_num)
+{
+	struct udevice *bus, *camera, *imu;
+	int ret, attempt;
+
+	ret = uclass_get_device_by_seq(UCLASS_I2C, bus_num, &bus);
+	if (ret)
+		return 0;
+
+	for (attempt = 0; attempt < 20; attempt++) {
+		ret = dm_i2c_probe(bus, 0x48, 0, &camera);
+		if (!ret) {
+			ret = dm_i2c_probe(bus, 0x6a, 0, &imu);
+			return ret ? 1 : 2;
+		}
+		mdelay(50);
+	}
+
+	return 0;
+}
+
 DECLARE_GLOBAL_DATA_PTR;
 
 #define UART_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_FSEL1)
@@ -506,9 +540,42 @@ int board_init(void)
 
 int board_late_init(void)
 {
+	int csi0, csi1;
+	static const char *const camera_dtbs[3][3] = {
+		{ "imx8mp-evk.dtb", "imx8mp-evk-tevs-csi1.dtb",
+		  "imx8mp-evk-tevm-csi1.dtb" },
+		{ "imx8mp-evk-tevs-csi0.dtb", "imx8mp-evk-tevs-tevs.dtb",
+		  "imx8mp-evk-tevs-tevm.dtb" },
+		{ "imx8mp-evk-tevm-csi0.dtb", "imx8mp-evk-tevm-tevs.dtb",
+		  "imx8mp-evk-tevm-tevm.dtb" },
+	};
 #if CONFIG_IS_ENABLED(ENV_IS_IN_MMC)
 	board_late_mmc_env_init();
 #endif
+
+	if (strcmp(env_get("cameraautodetect") ?: "yes", "no")) {
+		env_set("fdtfile", "imx8mp-evk.dtb");
+
+		/* Both camera ports share reset and standby GPIOs. */
+		imx_iomux_v3_setup_pad(MX8MP_PAD_GPIO1_IO06__GPIO1_IO06 |
+					MUX_PAD_CTRL(0x19));
+		camera_gpio_output("GPIO1_6", 1);
+		imx_iomux_v3_setup_pad(MX8MP_PAD_SD1_STROBE__GPIO2_IO11 |
+					MUX_PAD_CTRL(0x9));
+		camera_gpio_output("GPIO2_11", 0);
+		imx_iomux_v3_setup_pad(MX8MP_PAD_GPIO1_IO05__GPIO1_IO05 |
+					MUX_PAD_CTRL(0x9));
+		camera_gpio_output("GPIO1_5", 1);
+		mdelay(100);
+		imx_iomux_v3_setup_pad(MX8MP_PAD_GPIO1_IO07__GPIO1_IO07 |
+					MUX_PAD_CTRL(0x9));
+		camera_gpio_output("GPIO1_7", 1);
+		mdelay(100);
+		csi0 = camera_probe(1);
+		csi1 = camera_probe(2);
+		env_set("fdtfile", camera_dtbs[csi0][csi1]);
+		printf("Camera DTB: %s\n", env_get("fdtfile"));
+	}
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	env_set("board_name", "EVK");
