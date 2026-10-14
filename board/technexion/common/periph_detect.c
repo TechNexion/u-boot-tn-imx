@@ -508,6 +508,7 @@ static int _prepare_camera_io_expander(u8 bus_index, u8 i2c_addr)
 	return 0;
 }
 
+#define MAX96724_I2C_ADDR		0x2e
 #define MAX96717_I2C_ADDR		0x40
 #define MAX96717_GPIO_A(x)		(0x2be + (x) * 0x3)
 #define MAX96717_GPIO_A_OUT_DIS		BIT(0)
@@ -649,6 +650,15 @@ static int _detect_camera(const tn_camera_chk_t *list, size_t count) {
 		struct udevice *udev = NULL;
 
 		tn_debug("Check %s - i2c#%d 0x%02x\n", list[i].ov_name, list[i].i2c_bus_index, list[i].i2c_addr);
+
+		/* EDM-i.MX95 has a baseboard expander at 0x25. */
+		if (IS_ENABLED(CONFIG_TARGET_EDM_IMX95) &&
+		    strstr(list[i].ov_name, "-gm2-") &&
+		    !_check_i2c_dev(list[i].i2c_bus_index,
+				    MAX96724_I2C_ADDR)) {
+			_remove_dtoverlay(list[i].ov_name);
+			continue;
+		}
 
 		if (list[i].io_expander_addr == MAX96717_I2C_ADDR) {
 			/*
@@ -837,4 +847,3 @@ int detect_m2_mdio_device(void) {
 	}
 	return 0;
 };
-
