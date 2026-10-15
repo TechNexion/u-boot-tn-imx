@@ -34,15 +34,25 @@
 	bootph-pre-ram;
 };
 
+
 &usb2 {
 	compatible = "fsl,imx8mm-usb", "fsl,imx7d-usb";
 	/delete-property/power-domains;
 };
 
 &usb3 {
+	clocks = <&scmi_clk IMX95_CLK_HSIO>,
+		 <&scmi_clk IMX95_CLK_24M>,
+		 <&scmi_clk IMX95_CLK_32K>;
+	clock-names = "hsio", "ref", "suspend";
 	/delete-property/power-domains;
+	bootph-pre-ram;
 };
 
 &usb3_dwc3 {
-	compatible = "fsl,imx8mq-dwc3", "snps,dwc3";
+	bootph-pre-ram;
+};
+
+&usb3_phy {
+	bootph-pre-ram;
 };

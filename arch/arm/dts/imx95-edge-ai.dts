@@ -447,6 +447,10 @@
 	status = "okay";
 };
 
+&usb3 {
+	status = "okay";
+};
+
 &usb3_dwc3 {
 	dr_mode = "otg";
 	hnp-disable;
