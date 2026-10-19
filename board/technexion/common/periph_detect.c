@@ -391,6 +391,9 @@ static int _detect_camera(const tn_camera_chk_t *list, size_t count) {
 		return(-1);
 	}
 
+	for (i = 0; i < count; ++i)
+		_remove_dtoverlay(list[i].ov_name);
+
 	for (i = 0; i < count; ++i) {
 		int j = 0, mode_id = -1;
 		struct udevice *udev = NULL;
@@ -398,7 +401,6 @@ static int _detect_camera(const tn_camera_chk_t *list, size_t count) {
 		tn_debug("Check %s - i2c#%d 0x%02x\n", list[i].ov_name, list[i].i2c_bus_index, list[i].i2c_addr);
 		udev = _check_i2c_dev(list[i].i2c_bus_index, list[i].i2c_addr);
 		if (udev == NULL) {
-			_remove_dtoverlay(list[i].ov_name);
 			continue;
 		}
 
@@ -407,7 +409,6 @@ static int _detect_camera(const tn_camera_chk_t *list, size_t count) {
 			mode_id = dm_i2c_reg_read(udev, list[i].camera_mode_reg);
 			tn_debug("Read camera mode id: 0x%02x\n", mode_id);
 			if (mode_id != list[i].mode_id) {
-				_remove_dtoverlay(list[i].ov_name);
 				tn_debug("Camera mode id mismatch, skip %s\n", list[i].ov_name);
 				continue;
 			}
