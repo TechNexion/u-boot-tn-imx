@@ -26,6 +26,7 @@
 #include <fsl_esdhc_imx.h>
 #include <mmc.h>
 #include <asm/arch/ddr.h>
+#include <asm/sections.h>
 #include <linux/delay.h>
 #include <init.h>
 
