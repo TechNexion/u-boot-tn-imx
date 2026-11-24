@@ -12,6 +12,7 @@
 #include <asm/io.h>
 #include <errno.h>
 #include <asm/io.h>
+#include <asm/sections.h>
 #include <asm/arch/ddr.h>
 #include <asm/arch/imx8mq_pins.h>
 #include <asm/arch/sys_proto.h>
